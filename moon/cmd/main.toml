@@ -1,0 +1,22 @@
+[misc]
+appname = "moon"
+env = "test"
+
+[database]
+driver="postgres"
+host="localhost"
+port="5432"
+name="capstone_test"
+username="capstone"
+password="capstone"
+
+[auth]
+secret="test-256-bit-secret-key-12345678910"
+accessTokenExpireMiniutes=15
+refreshTokenExpireMiniutes=10080
+refreshTokenOverlapMiniutes=1440
+passwordIntensity=10
+
+[log]
+level=0
+format="json"
