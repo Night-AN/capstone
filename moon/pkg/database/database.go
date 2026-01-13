@@ -24,7 +24,7 @@ func New(cfg *config.Configuration) (*gorm.DB, error) {
 
 	switch cfg.DatabaseConfiguration.Driver {
 	case "postgres":
-		db, err = gorm.Open(postgres.Open(cfg.DatabaseConfiguration.Dsn), &gormConfig)
+		db, err = gorm.Open(postgres.Open(cfg.DatabaseConfiguration.DSN), &gormConfig)
 	default:
 		return nil, UnsupportDatabase
 	}
