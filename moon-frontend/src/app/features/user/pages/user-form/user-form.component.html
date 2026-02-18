@@ -1,0 +1,86 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">
+      {{ isEditMode ? '编辑用户' : '创建用户' }}
+    </h1>
+    <button
+      mat-raised-button
+      (click)="onCancel()"
+      class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+    >
+      取消
+    </button>
+  </div>
+
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    @if (loading()) {
+      <div class="p-8 text-center">
+        <mat-spinner></mat-spinner>
+        <p class="mt-4">加载中...</p>
+      </div>
+    } @else {
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <mat-form-field class="w-full">
+              <mat-label>昵称</mat-label>
+              <input matInput formControlName="nickname" placeholder="请输入昵称">
+              <mat-error *ngIf="userForm.get('nickname')?.hasError('required')">
+                昵称是必填项
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="w-full">
+              <mat-label>姓名</mat-label>
+              <input matInput formControlName="full_name" placeholder="请输入姓名">
+              <mat-error *ngIf="userForm.get('full_name')?.hasError('required')">
+                姓名是必填项
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div>
+            <mat-form-field class="w-full">
+              <mat-label>邮箱</mat-label>
+              <input matInput formControlName="email" placeholder="请输入邮箱" type="email">
+              <mat-error *ngIf="userForm.get('email')?.hasError('required')">
+                邮箱是必填项
+              </mat-error>
+              <mat-error *ngIf="userForm.get('email')?.hasError('email')">
+                请输入有效的邮箱地址
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="w-full" *ngIf="!isEditMode">
+              <mat-label>密码</mat-label>
+              <input matInput formControlName="password" placeholder="请输入密码" type="password">
+              <mat-error *ngIf="userForm.get('password')?.hasError('required')">
+                密码是必填项
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="mt-8 flex justify-end space-x-4">
+          <button
+            mat-raised-button
+            type="button"
+            (click)="onCancel()"
+            class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+          >
+            取消
+          </button>
+          <button
+            mat-raised-button
+            type="submit"
+            color="primary"
+            [disabled]="userForm.invalid || loading()"
+            class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          >
+            {{ isEditMode ? '保存修改' : '创建用户' }}
+          </button>
+        </div>
+      </form>
+    } 
+  </div>
+</div>

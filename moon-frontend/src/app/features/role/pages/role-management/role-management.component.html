@@ -1,0 +1,57 @@
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <div class="p-6 border-b border-gray-200">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-gray-800">角色管理</h2>
+      <button mat-raised-button color="primary" (click)="createRole()">
+        创建角色
+      </button>
+    </div>
+    <div class="mt-4">
+      <mat-form-field class="w-full">
+        <mat-label>搜索角色</mat-label>
+        <input matInput type="text" [(ngModel)]="searchKeyword" (input)="applyFilter()">
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table mat-table [dataSource]="dataSource" class="w-full">
+      <!-- 名称列 -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>名称</th>
+        <td mat-cell *matCellDef="let role">{{ role.name }}</td>
+      </ng-container>
+
+      <!-- 描述列 -->
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>描述</th>
+        <td mat-cell *matCellDef="let role">{{ role.description }}</td>
+      </ng-container>
+
+      <!-- 创建时间列 -->
+      <ng-container matColumnDef="created_at">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>创建时间</th>
+        <td mat-cell *matCellDef="let role">{{ role.created_at }}</td>
+      </ng-container>
+
+      <!-- 操作列 -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>操作</th>
+        <td mat-cell *matCellDef="let role" class="flex space-x-2">
+          <button mat-icon-button color="primary" (click)="viewRole(role.role_id)">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button mat-icon-button color="accent" (click)="editRole(role.role_id)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteRole(role.role_id)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+  <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+</div>

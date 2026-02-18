@@ -1,0 +1,14 @@
+package aggregate
+
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type Session struct {
+	SessionID uuid.UUID
+	UserID    uuid.UUID
+	AuthToken string
+	ExpireAt  time.Time
+}

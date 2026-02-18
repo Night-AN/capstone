@@ -1,0 +1,12 @@
+/* 组织表单组件样式 */
+
+.space-y-4 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.space-x-2 {
+  display: flex;
+  gap: 8px;
+}

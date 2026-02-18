@@ -1,0 +1,132 @@
+<div class="min-h-screen flex bg-gray-100">
+  <div class="w-full md:w-1/3 h-screen flex items-center justify-center p-8">
+    <mat-card class="w-full max-w-sm">
+      <mat-card-header class="justify-center pb-4">
+        <div class="text-center">
+          <h1 class="text-5xl font-bold text-gray-800 mb-2">Moon</h1>
+          <h2 class="text-2xl text-gray-600">用户注册</h2>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="registerFrom" class="space-y-6">
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>昵称</mat-label>
+            <mat-icon matPrefix>person</mat-icon>
+            <input matInput formControlName="nickname" required minlength="3">
+            @if (registerFrom.get('nickname')?.hasError('required')) {
+              <mat-error>
+                昵称是必填项
+              </mat-error>
+            }
+            @if (registerFrom.get('nickname')?.hasError('minlength')) {
+              <mat-error>
+                昵称至少需要3个字符
+              </mat-error>
+            }
+          </mat-form-field>
+          
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>姓名</mat-label>
+            <mat-icon matPrefix>account_circle</mat-icon>
+            <input matInput formControlName="fullName" required minlength="3">
+            @if (registerFrom.get('fullName')?.hasError('required')) {
+              <mat-error>
+                姓名是必填项
+              </mat-error>
+            }
+            @if (registerFrom.get('fullName')?.hasError('minlength')) {
+              <mat-error>
+                姓名至少需要3个字符
+              </mat-error>
+            }
+          </mat-form-field>
+          
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>邮箱</mat-label>
+            <mat-icon matPrefix>email</mat-icon>
+            <input matInput formControlName="email" required email>
+            @if (registerFrom.get('email')?.hasError('required')) {
+              <mat-error>
+                邮箱是必填项
+              </mat-error>
+            }
+            @if (registerFrom.get('email')?.hasError('email')) {
+              <mat-error>
+                请输入有效的邮箱地址
+              </mat-error>
+            }
+          </mat-form-field>
+          
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>密码</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput type="password" formControlName="password" required minlength="6" (input)="onPasswordInput()">
+            @if (registerFrom.get('password')?.hasError('required')) {
+              <mat-error>
+                密码是必填项
+              </mat-error>
+            }
+            @if (registerFrom.get('password')?.hasError('minlength')) {
+              <mat-error>
+                密码至少需要6个字符
+              </mat-error>
+            }
+          </mat-form-field>
+          
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>确认密码</mat-label>
+            <mat-icon matPrefix>lock_clock</mat-icon>
+            <input matInput type="password" formControlName="confirmPassword" required minlength="6" (input)="onPasswordInput()">
+            @if (registerFrom.get('confirmPassword')?.hasError('required')) {
+              <mat-error>
+                确认密码是必填项
+              </mat-error>
+            }
+            @if (registerFrom.get('confirmPassword')?.hasError('minlength')) {
+              <mat-error>
+                密码至少需要6个字符
+              </mat-error>
+            }
+            @if (registerFrom.hasError('passwordMismatch')) {
+              <mat-error>
+                两次输入的密码不一致
+              </mat-error>
+            }
+          </mat-form-field>
+          
+          <button 
+            mat-raised-button 
+            color="primary" 
+            class="w-full"
+            (click)="onRegister()"
+            [disabled]="!registerFrom.valid"
+          >
+            <mat-icon>person_add</mat-icon>
+            注册
+          </button>
+        </form>
+      </mat-card-content>
+      <mat-card-actions>
+        <div class="w-full p-4 bg-blue-50 rounded-lg border border-blue-200 text-center">
+          <p class="text-sm text-gray-700 mb-2">已经有账户？</p>
+          <button 
+            mat-stroked-button 
+            color="primary" 
+            class="w-full"
+            (click)="goToLogin()"
+          >
+            <mat-icon>login</mat-icon>
+            立即登录
+          </button>
+        </div>
+      </mat-card-actions>
+      <mat-card-footer class="mt-4 pt-6 border-t border-gray-200 text-center text-gray-500 text-xs">
+        &copy;2026 Moon. All rights reserved.
+      </mat-card-footer>
+    </mat-card>
+  </div>
+
+  <div class="hidden md:block w-2/3 h-screen">
+    <img src="/images/register-bg.jpg" alt="Login" class="w-full h-full object-cover" />
+  </div>
+</div>

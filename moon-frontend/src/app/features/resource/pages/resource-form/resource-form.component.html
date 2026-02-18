@@ -1,0 +1,39 @@
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  @if (loading()) {
+    <div class="p-8 text-center">
+      <mat-spinner></mat-spinner>
+      <p class="mt-4">加载中...</p>
+    </div>
+  } @else {
+    <form [formGroup]="resourceForm" (ngSubmit)="onSubmit()" class="p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-semibold text-gray-800">{{ isEditMode ? '编辑资源' : '创建资源' }}</h2>
+        <div class="space-y-2">
+          <button mat-raised-button type="button" (click)="onCancel()">取消</button>
+          <button mat-raised-button type="submit" color="primary" [disabled]="resourceForm.invalid || loading()">
+            {{ isEditMode ? '保存修改' : '创建资源' }}
+          </button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <div>
+            <mat-form-field class="w-full">
+              <mat-label>资源名称</mat-label>
+              <input matInput formControlName="name" placeholder="请输入资源名称">
+              @if (resourceForm.get('name')?.hasError('required')) {
+                <mat-error>资源名称是必填项</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div>
+            <mat-form-field class="w-full">
+              <mat-label>资源描述</mat-label>
+              <textarea matInput formControlName="description" placeholder="请输入资源描述"></textarea>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </form>
+  }
+</div>

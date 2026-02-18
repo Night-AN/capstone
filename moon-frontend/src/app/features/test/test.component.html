@@ -1,0 +1,171 @@
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <div class="p-6">
+    <h1 class="text-2xl font-bold mb-6">Test Directory View</h1>
+    
+    <div class="space-y-4">
+      <div class="border rounded-lg p-4">
+        <h2 class="text-lg font-semibold mb-2">Features Directory</h2>
+        
+        <!-- Auth -->
+        <div class="ml-4 mt-2">
+          <h3 class="font-medium text-blue-600">auth/</h3>
+          <div class="ml-4 mt-1">
+            <h4 class="font-medium">pages/</h4>
+            <div class="ml-4 mt-1">
+              <h5 class="font-medium"><a href="/auth/login" class="text-blue-600 hover:underline">login/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.auth.pages.login">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/auth/register" class="text-blue-600 hover:underline">register/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.auth.pages.register">{{ file }}</li>
+              </ul>
+            </div>
+            <h4 class="font-medium mt-2">Files:</h4>
+            <ul class="list-disc ml-6 text-sm">
+              <li *ngFor="let file of directoryStructure.features.auth.files">{{ file }}</li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Dashboard -->
+        <div class="ml-4 mt-2">
+          <h3 class="font-medium text-blue-600"><a href="/dashboard" class="text-blue-600 hover:underline">dashboard/</a></h3>
+          <ul class="list-disc ml-6 text-sm">
+            <li *ngFor="let file of directoryStructure.features.dashboard.files">{{ file }}</li>
+          </ul>
+        </div>
+        
+        <!-- Organization -->
+        <div class="ml-4 mt-2">
+          <h3 class="font-medium text-blue-600">organization/</h3>
+          <div class="ml-4 mt-1">
+            <h4 class="font-medium">pages/</h4>
+            <div class="ml-4 mt-1">
+              <h5 class="font-medium"><a href="/organizations" class="text-blue-600 hover:underline">organization-management/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.organization.pages['organization-management']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/organizations/create" class="text-blue-600 hover:underline">organization-form/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.organization.pages['organization-form']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/organizations/detail/1" class="text-blue-600 hover:underline">organization-detail/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.organization.pages['organization-detail']">{{ file }}</li>
+              </ul>
+            </div>
+            <h4 class="font-medium mt-2">Files:</h4>
+            <ul class="list-disc ml-6 text-sm">
+              <li *ngFor="let file of directoryStructure.features.organization.files">{{ file }}</li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Permission -->
+        <div class="ml-4 mt-2">
+          <h3 class="font-medium text-blue-600">permission/</h3>
+          <div class="ml-4 mt-1">
+            <h4 class="font-medium">pages/</h4>
+            <div class="ml-4 mt-1">
+              <h5 class="font-medium"><a href="/permissions" class="text-blue-600 hover:underline">permission-management/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.permission.pages['permission-management']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/permissions/create" class="text-blue-600 hover:underline">permission-form/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.permission.pages['permission-form']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/permissions/detail/1" class="text-blue-600 hover:underline">permission-detail/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.permission.pages['permission-detail']">{{ file }}</li>
+              </ul>
+            </div>
+            <h4 class="font-medium mt-2">Files:</h4>
+            <ul class="list-disc ml-6 text-sm">
+              <li *ngFor="let file of directoryStructure.features.permission.files">{{ file }}</li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Resource -->
+        <div class="ml-4 mt-2">
+          <h3 class="font-medium text-blue-600">resource/</h3>
+          <div class="ml-4 mt-1">
+            <h4 class="font-medium">pages/</h4>
+            <div class="ml-4 mt-1">
+              <h5 class="font-medium"><a href="/resources" class="text-blue-600 hover:underline">resource-management/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.resource.pages['resource-management']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/resources/create" class="text-blue-600 hover:underline">resource-form/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.resource.pages['resource-form']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/resources/detail/1" class="text-blue-600 hover:underline">resource-detail/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.resource.pages['resource-detail']">{{ file }}</li>
+              </ul>
+            </div>
+            <h4 class="font-medium mt-2">Files:</h4>
+            <ul class="list-disc ml-6 text-sm">
+              <li *ngFor="let file of directoryStructure.features.resource.files">{{ file }}</li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Role -->
+        <div class="ml-4 mt-2">
+          <h3 class="font-medium text-blue-600">role/</h3>
+          <div class="ml-4 mt-1">
+            <h4 class="font-medium">pages/</h4>
+            <div class="ml-4 mt-1">
+              <h5 class="font-medium"><a href="/roles" class="text-blue-600 hover:underline">role-management/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.role.pages['role-management']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/roles/create" class="text-blue-600 hover:underline">role-form/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.role.pages['role-form']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/roles/detail/1" class="text-blue-600 hover:underline">role-detail/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.role.pages['role-detail']">{{ file }}</li>
+              </ul>
+            </div>
+            <h4 class="font-medium mt-2">Files:</h4>
+            <ul class="list-disc ml-6 text-sm">
+              <li *ngFor="let file of directoryStructure.features.role.files">{{ file }}</li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- User -->
+        <div class="ml-4 mt-2">
+          <h3 class="font-medium text-blue-600">user/</h3>
+          <div class="ml-4 mt-1">
+            <h4 class="font-medium">pages/</h4>
+            <div class="ml-4 mt-1">
+              <h5 class="font-medium"><a href="/users" class="text-blue-600 hover:underline">user-management/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.user.pages['user-management']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/users/create" class="text-blue-600 hover:underline">user-form/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.user.pages['user-form']">{{ file }}</li>
+              </ul>
+              <h5 class="font-medium mt-2"><a href="/users/detail/1" class="text-blue-600 hover:underline">user-detail/</a></h5>
+              <ul class="list-disc ml-6 text-sm">
+                <li *ngFor="let file of directoryStructure.features.user.pages['user-detail']">{{ file }}</li>
+              </ul>
+            </div>
+            <h4 class="font-medium mt-2">Files:</h4>
+            <ul class="list-disc ml-6 text-sm">
+              <li *ngFor="let file of directoryStructure.features.user.files">{{ file }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
