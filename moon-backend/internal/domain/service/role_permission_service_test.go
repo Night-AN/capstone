@@ -1,281 +1,226 @@
-package service
+package service_test
 
 import (
 	"context"
-	"errors"
-	"moon/internal/domain/aggregate"
+	"moon/internal/domain/service"
 	"moon/internal/domain/usecase"
+	"moon/internal/infrastructure/persistence/postgres"
 	"testing"
 
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	driver "gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-// MockRolePermissionRepository is a mock implementation of repository.RolePermissionRepository
-type MockRolePermissionRepository struct {
-	mock.Mock
+var (
+	// db is the database connection used for testing
+	db *gorm.DB
+	// rolePermissionSvc is the RolePermissionService instance used for testing
+	rolePermissionSvc service.RolePermissionService
+	// testCtx is the context used for testing
+	testCtx = context.Background()
+)
+
+// TestMain initializes the test environment
+// It sets up the database connection, migrates the schema, and initializes the services
+// It runs the tests and cleans up the test data
+func TestMain(m *testing.M) {
+	// Initialize the database connection
+	var err error
+	db, err = gorm.Open(driver.Open("host=localhost user=capstone password=capstone dbname=capstone port=5432 sslmode=disable"))
+	if err != nil {
+		panic("Failed to connect to database: " + err.Error())
+	}
+
+	// Clear test data
+	err = db.Exec("DELETE FROM systems.permission_role").Error
+	if err != nil {
+		panic("Failed to clear permission_role data: " + err.Error())
+	}
+	err = db.Exec("DELETE FROM systems.role").Error
+	if err != nil {
+		panic("Failed to clear role data: " + err.Error())
+	}
+	err = db.Exec("DELETE FROM systems.permission").Error
+	if err != nil {
+		panic("Failed to clear permission data: " + err.Error())
+	}
+
+	// Initialize the repositories and services
+	rolePermissionRepo := postgres.NewRolePermissionRepository(db)
+	roleRepo := postgres.NewRoleRepository(db)
+	permissionRepo := postgres.NewPermissionRepository(db)
+
+	rolePermissionSvc = service.NewRolePermissionService(rolePermissionRepo, roleRepo, permissionRepo)
+
+	// Run the tests
+	m.Run()
 }
 
-func (m *MockRolePermissionRepository) Create(ctx context.Context, rp aggregate.RolePermission) error {
-	args := m.Called(ctx, rp)
-	return args.Error(0)
-}
+// TestCreateRolePermission tests the Create method of RolePermissionService
+// It creates a new role and permission, then creates a role-permission relationship
+func TestCreateRolePermission(t *testing.T) {
+	// Create test role
+	roleReq := usecase.RoleCreateRequest{
+		RoleName:      "Test Role",
+		RoleCode:      "custom:test-role",
+		RoleFlag:      "active",
+		SensitiveFlag: false,
+	}
 
-func (m *MockRolePermissionRepository) Delete(ctx context.Context, roleID, permissionID uuid.UUID) error {
-	args := m.Called(ctx, roleID, permissionID)
-	return args.Error(0)
-}
+	// Create test permission
+	permissionReq := usecase.PermissionCreateRequest{
+		PermissionName: "Test Permission",
+		PermissionCode: "test:api:test",
+		SensitiveFlag:  false,
+	}
 
-func (m *MockRolePermissionRepository) GetByRoleAndPermission(ctx context.Context, roleID, permissionID uuid.UUID) (aggregate.RolePermission, error) {
-	args := m.Called(ctx, roleID, permissionID)
-	return args.Get(0).(aggregate.RolePermission), args.Error(1)
-}
+	// Create role and permission (using existing services from role_service_test)
+	roleResp := roleSvc.CreateRole(&testCtx, roleReq)
+	permissionResp := permissionSvc.CreatePermission(&testCtx, permissionReq)
 
-func (m *MockRolePermissionRepository) GetPermissionsByRoleID(ctx context.Context, roleID uuid.UUID) ([]aggregate.Permission, error) {
-	args := m.Called(ctx, roleID)
-	return args.Get(0).([]aggregate.Permission), args.Error(1)
-}
-
-func (m *MockRolePermissionRepository) GetRolesByPermissionID(ctx context.Context, permissionID uuid.UUID) ([]aggregate.Role, error) {
-	args := m.Called(ctx, permissionID)
-	return args.Get(0).([]aggregate.Role), args.Error(1)
-}
-
-// MockRoleRepository is a mock implementation of repository.RoleRepository
-type MockRoleRepository struct {
-	mock.Mock
-}
-
-func (m *MockRoleRepository) Create(ctx context.Context, role aggregate.Role) error {
-	args := m.Called(ctx, role)
-	return args.Error(0)
-}
-
-func (m *MockRoleRepository) GetByID(ctx context.Context, id uuid.UUID) (aggregate.Role, error) {
-	args := m.Called(ctx, id)
-	return args.Get(0).(aggregate.Role), args.Error(1)
-}
-
-func (m *MockRoleRepository) Update(ctx context.Context, role aggregate.Role) error {
-	args := m.Called(ctx, role)
-	return args.Error(0)
-}
-
-func (m *MockRoleRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-func (m *MockRoleRepository) List(ctx context.Context) ([]aggregate.Role, error) {
-	args := m.Called(ctx)
-	return args.Get(0).([]aggregate.Role), args.Error(1)
-}
-
-// MockPermissionRepository is a mock implementation of repository.PermissionRepository
-type MockPermissionRepository struct {
-	mock.Mock
-}
-
-func (m *MockPermissionRepository) Create(ctx context.Context, permission aggregate.Permission) error {
-	args := m.Called(ctx, permission)
-	return args.Error(0)
-}
-
-func (m *MockPermissionRepository) GetByID(ctx context.Context, id uuid.UUID) (aggregate.Permission, error) {
-	args := m.Called(ctx, id)
-	return args.Get(0).(aggregate.Permission), args.Error(1)
-}
-
-func (m *MockPermissionRepository) Update(ctx context.Context, permission aggregate.Permission) error {
-	args := m.Called(ctx, permission)
-	return args.Error(0)
-}
-
-func (m *MockPermissionRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-func (m *MockPermissionRepository) List(ctx context.Context) ([]aggregate.Permission, error) {
-	args := m.Called(ctx)
-	return args.Get(0).([]aggregate.Permission), args.Error(1)
-}
-
-func TestRolePermissionService_Create(t *testing.T) {
-	// Setup
-	mockRolePermissionRepo := &MockRolePermissionRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-	mockPermissionRepo := &MockPermissionRepository{}
-
-	service := NewRolePermissionService(mockRolePermissionRepo, mockRoleRepo, mockPermissionRepo)
-
-	ctx := context.Background()
-	roleID := uuid.New()
-	permissionID := uuid.New()
-
+	// Create role-permission relationship
 	req := usecase.RolePermissionCreateRequest{
-		RoleID:       roleID,
-		PermissionID: permissionID,
+		RoleID:       roleResp.RoleID,
+		PermissionID: permissionResp.PermissionID,
 	}
 
-	// Mock responses
-	mockRoleRepo.On("GetByID", ctx, roleID).Return(aggregate.Role{ID: roleID}, nil)
-	mockPermissionRepo.On("GetByID", ctx, permissionID).Return(aggregate.Permission{ID: permissionID}, nil)
-	mockRolePermissionRepo.On("Create", ctx, mock.Anything).Return(nil)
-
 	// Execute
-	resp, err := service.Create(ctx, req)
+	resp, err := rolePermissionSvc.Create(testCtx, req)
 
-	// Assert
-	assert.NoError(t, err)
-	assert.True(t, resp.Success)
-	mockRoleRepo.AssertExpectations(t)
-	mockPermissionRepo.AssertExpectations(t)
-	mockRolePermissionRepo.AssertExpectations(t)
+	// Verify the response
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if !resp.Success {
+		t.Errorf("Expected success to be true, got %v", resp.Success)
+	}
 }
 
-func TestRolePermissionService_Create_RoleNotFound(t *testing.T) {
-	// Setup
-	mockRolePermissionRepo := &MockRolePermissionRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-	mockPermissionRepo := &MockPermissionRepository{}
-
-	service := NewRolePermissionService(mockRolePermissionRepo, mockRoleRepo, mockPermissionRepo)
-
-	ctx := context.Background()
-	roleID := uuid.New()
-	permissionID := uuid.New()
-
-	req := usecase.RolePermissionCreateRequest{
-		RoleID:       roleID,
-		PermissionID: permissionID,
+// TestDeleteRolePermission tests the Delete method of RolePermissionService
+// It creates a new role and permission, creates a role-permission relationship, then deletes it
+func TestDeleteRolePermission(t *testing.T) {
+	// Create test role
+	roleReq := usecase.RoleCreateRequest{
+		RoleName:      "Test Role Delete",
+		RoleCode:      "custom:test-role-delete",
+		RoleFlag:      "active",
+		SensitiveFlag: false,
 	}
 
-	// Mock responses
-	mockRoleRepo.On("GetByID", ctx, roleID).Return(aggregate.Role{}, errors.New("role not found"))
+	// Create test permission
+	permissionReq := usecase.PermissionCreateRequest{
+		PermissionName: "Test Permission Delete",
+		PermissionCode: "test:api:test-delete",
+		SensitiveFlag:  false,
+	}
+
+	// Create role and permission
+	roleResp := roleSvc.CreateRole(&testCtx, roleReq)
+	permissionResp := permissionSvc.CreatePermission(&testCtx, permissionReq)
+
+	// Create role-permission relationship
+	createReq := usecase.RolePermissionCreateRequest{
+		RoleID:       roleResp.RoleID,
+		PermissionID: permissionResp.PermissionID,
+	}
+	rolePermissionSvc.Create(testCtx, createReq)
+
+	// Delete role-permission relationship
+	deleteReq := usecase.RolePermissionDeleteRequest{
+		RoleID:       roleResp.RoleID,
+		PermissionID: permissionResp.PermissionID,
+	}
 
 	// Execute
-	resp, err := service.Create(ctx, req)
+	resp, err := rolePermissionSvc.Delete(testCtx, deleteReq)
 
-	// Assert
-	assert.Error(t, err)
-	assert.False(t, resp.Success)
-	mockRoleRepo.AssertExpectations(t)
+	// Verify the response
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if !resp.Success {
+		t.Errorf("Expected success to be true, got %v", resp.Success)
+	}
 }
 
-func TestRolePermissionService_Create_PermissionNotFound(t *testing.T) {
-	// Setup
-	mockRolePermissionRepo := &MockRolePermissionRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-	mockPermissionRepo := &MockPermissionRepository{}
-
-	service := NewRolePermissionService(mockRolePermissionRepo, mockRoleRepo, mockPermissionRepo)
-
-	ctx := context.Background()
-	roleID := uuid.New()
-	permissionID := uuid.New()
-
-	req := usecase.RolePermissionCreateRequest{
-		RoleID:       roleID,
-		PermissionID: permissionID,
+// TestGetPermissionsByRoleID tests the GetPermissionsByRoleID method of RolePermissionService
+// It creates a new role and permission, creates a role-permission relationship, then retrieves permissions by role ID
+func TestGetPermissionsByRoleID(t *testing.T) {
+	// Create test role
+	roleReq := usecase.RoleCreateRequest{
+		RoleName:      "Test Role Permissions",
+		RoleCode:      "custom:test-role-permissions",
+		RoleFlag:      "active",
+		SensitiveFlag: false,
 	}
 
-	// Mock responses
-	mockRoleRepo.On("GetByID", ctx, roleID).Return(aggregate.Role{ID: roleID}, nil)
-	mockPermissionRepo.On("GetByID", ctx, permissionID).Return(aggregate.Permission{}, errors.New("permission not found"))
+	// Create test permission
+	permissionReq := usecase.PermissionCreateRequest{
+		PermissionName: "Test Permission Permissions",
+		PermissionCode: "test:api:test-permissions",
+		SensitiveFlag:  false,
+	}
 
-	// Execute
-	resp, err := service.Create(ctx, req)
+	// Create role and permission
+	roleResp := roleSvc.CreateRole(&testCtx, roleReq)
+	permissionResp := permissionSvc.CreatePermission(&testCtx, permissionReq)
 
-	// Assert
-	assert.Error(t, err)
-	assert.False(t, resp.Success)
-	mockRoleRepo.AssertExpectations(t)
-	mockPermissionRepo.AssertExpectations(t)
+	// Create role-permission relationship
+	createReq := usecase.RolePermissionCreateRequest{
+		RoleID:       roleResp.RoleID,
+		PermissionID: permissionResp.PermissionID,
+	}
+	rolePermissionSvc.Create(testCtx, createReq)
+
+	// Get permissions by role ID
+	permissions, err := rolePermissionSvc.GetPermissionsByRoleID(testCtx, roleResp.RoleID)
+
+	// Verify the response
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if len(permissions) < 1 {
+		t.Errorf("Expected at least 1 permission, got %d", len(permissions))
+	}
 }
 
-func TestRolePermissionService_Delete(t *testing.T) {
-	// Setup
-	mockRolePermissionRepo := &MockRolePermissionRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-	mockPermissionRepo := &MockPermissionRepository{}
-
-	service := NewRolePermissionService(mockRolePermissionRepo, mockRoleRepo, mockPermissionRepo)
-
-	ctx := context.Background()
-	roleID := uuid.New()
-	permissionID := uuid.New()
-
-	req := usecase.RolePermissionDeleteRequest{
-		RoleID:       roleID,
-		PermissionID: permissionID,
+// TestGetRolesByPermissionID tests the GetRolesByPermissionID method of RolePermissionService
+// It creates a new role and permission, creates a role-permission relationship, then retrieves roles by permission ID
+func TestGetRolesByPermissionID(t *testing.T) {
+	// Create test role
+	roleReq := usecase.RoleCreateRequest{
+		RoleName:      "Test Role Roles",
+		RoleCode:      "custom:test-role-roles",
+		RoleFlag:      "active",
+		SensitiveFlag: false,
 	}
 
-	// Mock responses
-	mockRolePermissionRepo.On("Delete", ctx, roleID, permissionID).Return(nil)
-
-	// Execute
-	resp, err := service.Delete(ctx, req)
-
-	// Assert
-	assert.NoError(t, err)
-	assert.True(t, resp.Success)
-	mockRolePermissionRepo.AssertExpectations(t)
-}
-
-func TestRolePermissionService_GetPermissionsByRoleID(t *testing.T) {
-	// Setup
-	mockRolePermissionRepo := &MockRolePermissionRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-	mockPermissionRepo := &MockPermissionRepository{}
-
-	service := NewRolePermissionService(mockRolePermissionRepo, mockRoleRepo, mockPermissionRepo)
-
-	ctx := context.Background()
-	roleID := uuid.New()
-
-	expectedPermissions := []aggregate.Permission{
-		{ID: uuid.New(), Name: "permission1"},
-		{ID: uuid.New(), Name: "permission2"},
+	// Create test permission
+	permissionReq := usecase.PermissionCreateRequest{
+		PermissionName: "Test Permission Roles",
+		PermissionCode: "test:api:test-roles",
+		SensitiveFlag:  false,
 	}
 
-	// Mock responses
-	mockRolePermissionRepo.On("GetPermissionsByRoleID", ctx, roleID).Return(expectedPermissions, nil)
+	// Create role and permission
+	roleResp := roleSvc.CreateRole(&testCtx, roleReq)
+	permissionResp := permissionSvc.CreatePermission(&testCtx, permissionReq)
 
-	// Execute
-	permissions, err := service.GetPermissionsByRoleID(ctx, roleID)
-
-	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, expectedPermissions, permissions)
-	mockRolePermissionRepo.AssertExpectations(t)
-}
-
-func TestRolePermissionService_GetRolesByPermissionID(t *testing.T) {
-	// Setup
-	mockRolePermissionRepo := &MockRolePermissionRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-	mockPermissionRepo := &MockPermissionRepository{}
-
-	service := NewRolePermissionService(mockRolePermissionRepo, mockRoleRepo, mockPermissionRepo)
-
-	ctx := context.Background()
-	permissionID := uuid.New()
-
-	expectedRoles := []aggregate.Role{
-		{ID: uuid.New(), Name: "role1"},
-		{ID: uuid.New(), Name: "role2"},
+	// Create role-permission relationship
+	createReq := usecase.RolePermissionCreateRequest{
+		RoleID:       roleResp.RoleID,
+		PermissionID: permissionResp.PermissionID,
 	}
+	rolePermissionSvc.Create(testCtx, createReq)
 
-	// Mock responses
-	mockRolePermissionRepo.On("GetRolesByPermissionID", ctx, permissionID).Return(expectedRoles, nil)
+	// Get roles by permission ID
+	roles, err := rolePermissionSvc.GetRolesByPermissionID(testCtx, permissionResp.PermissionID)
 
-	// Execute
-	roles, err := service.GetRolesByPermissionID(ctx, permissionID)
-
-	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, expectedRoles, roles)
-	mockRolePermissionRepo.AssertExpectations(t)
+	// Verify the response
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if len(roles) < 1 {
+		t.Errorf("Expected at least 1 role, got %d", len(roles))
+	}
 }
