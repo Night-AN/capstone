@@ -62,28 +62,24 @@ export class ResourceDetailComponent implements OnInit {
       return;
     }
     
+    console.log('Loading resource with ID:', this.resourceId);
     // 调用 resourceService.getResourceById 获取资源信息
     this.resourceService.getResourceById(this.resourceId).subscribe({
-      next: (resource: Resource) => {
+      next: (resource: any) => {
         console.log('Loaded Resource Detail:', resource);
-        this.resource.set({
-          resource_id: resource.resource_id,
-          name: resource.name,
-          description: resource.description,
-          sensitive_flag: resource.sensitive_flag || false,
-          created_at: resource.created_at || new Date().toISOString(),
-          updated_at: resource.updated_at || new Date().toISOString()
-        });
+        this.resource.set(resource);
         
         // 无论响应如何，只要请求成功，就停止加载状态
         this.loading.set(false);
         this.isLoading.set(false);
+        console.log('Resource loaded successfully');
       },
       error: (error: any) => {
         console.error('Error loading resource detail:', error);
         this.notificationService.error('加载资源详情失败');
         this.loading.set(false);
         this.isLoading.set(false);
+        console.log('Resource loading failed');
       }
     });
   }

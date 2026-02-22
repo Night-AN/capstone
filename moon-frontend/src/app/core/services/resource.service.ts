@@ -57,7 +57,8 @@ export class ResourceService {
 
   // 根据ID获取资源详情
   getResourceById(resourceId: string): Observable<Resource> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/resources/${resourceId}`, {
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/resources`, {
+      params: { resource_id: resourceId },
       timeout: 5000 // 设置5秒超时
     }).pipe(
       catchError(this.handleError),
@@ -69,9 +70,9 @@ export class ResourceService {
           resource_id: data.resource_id,
           name: data.resource_name,
           description: data.resource_code, // 使用resource_code作为description
-          sensitive_flag: data.sensitive_flag || false, // 添加敏感标志
-          created_at: data.created_at || new Date().toISOString(), // 使用后端返回的created_at或当前时间
-          updated_at: data.updated_at || new Date().toISOString() // 使用后端返回的updated_at或当前时间
+          sensitive_flag: data.resource_flag === 'true', // 使用resource_flag作为sensitive_flag
+          created_at: new Date().toISOString(), // 使用当前时间作为created_at
+          updated_at: new Date().toISOString() // 使用当前时间作为updated_at
         };
       })
     );

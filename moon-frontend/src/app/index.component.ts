@@ -32,6 +32,9 @@ export class IndexComponent {
     { path: '/organizations', name: 'Organizations', icon: 'business' },
     { path: '/roles', name: 'Roles', icon: 'badge' },
     { path: '/permissions', name: 'Permissions', icon: 'lock' },
-    { path: '/resources', name: 'Resources', icon: 'inventory' }
+    { path: '/resources', name: 'Resources', icon: 'inventory' },
+    { path: '/assets', name: 'Assets', icon: 'devices' },
+    { path: '/vulnerabilities', name: 'Vulnerabilities', icon: 'bug_report' },
+    { path: '/asset-vulnerabilities', name: 'Asset Vulnerabilities', icon: 'link' }
   ];
 }

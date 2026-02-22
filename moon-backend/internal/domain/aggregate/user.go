@@ -34,6 +34,10 @@ type User struct {
 	// Usage: Compare hash values during authentication.
 	PasswordHash string `gorm:"column:password_hash;type:text"`
 
+	// OrganizationID is the unique identifier for the organization that the user belongs to.
+	// This establishes a relationship between users and organizations.
+	OrganizationID *uuid.UUID `gorm:"column:organization_id;type:uuid"`
+
 	// CreatedAt records the timestamp when the user account was created.
 	// Usage: Auditing, account lifecycle analysis, compliance reporting.
 	CreatedAt time.Time `gorm:"column:created_at;type:timestamptz"`

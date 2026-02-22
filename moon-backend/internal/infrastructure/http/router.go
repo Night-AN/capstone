@@ -10,6 +10,9 @@ func SetupRouter(
 	roleHandler *RoleHandler,
 	permissionHandler *PermissionHandler,
 	resourceHandler *ResourceHandler,
+	assetHandler *AssetHandler,
+	vulnerabilityHandler *VulnerabilityHandler,
+	assetVulnerabilityHandler *AssetVulnerabilityHandler,
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(CORSMiddleware())
@@ -24,6 +27,9 @@ func SetupRouter(
 		v1.PUT("/users", userHandler.UpdateUser)
 		v1.DELETE("/users", userHandler.DeleteUser)
 		v1.GET("/users/list", userHandler.ListUsers)
+		v1.POST("/users/assign-role", userHandler.AssignRoleToUser)
+		v1.POST("/users/remove-role", userHandler.RemoveRoleFromUser)
+		v1.GET("/users/roles", userHandler.GetUserRoles)
 
 		// Organization routes
 		v1.POST("/organizations", organizationHandler.CreateOrganization)
@@ -31,6 +37,12 @@ func SetupRouter(
 		v1.PUT("/organizations", organizationHandler.UpdateOrganization)
 		v1.DELETE("/organizations", organizationHandler.DeleteOrganization)
 		v1.GET("/organizations/tree", organizationHandler.GetOrganizationTree)
+		v1.GET("/organizations/list", organizationHandler.ListOrganizations)
+		v1.POST("/organizations/move", organizationHandler.MoveOrganization)
+		v1.POST("/organizations/assign-role", organizationHandler.AssignRoleToOrganization)
+		v1.POST("/organizations/remove-role", organizationHandler.RemoveRoleFromOrganization)
+		v1.GET("/organizations/roles", organizationHandler.GetOrganizationRoles)
+		v1.GET("/organizations/users", organizationHandler.GetOrganizationUsers)
 
 		// Role routes
 		v1.POST("/roles", roleHandler.CreateRole)
@@ -40,6 +52,7 @@ func SetupRouter(
 		v1.POST("/roles/assign-permission", roleHandler.AssignPermission)
 		v1.POST("/roles/remove-permission", roleHandler.RemovePermission)
 		v1.GET("/roles/permissions", roleHandler.GetRolePermissions)
+		v1.GET("/roles/list", roleHandler.ListRoles)
 
 		// Permission routes
 		v1.POST("/permissions", permissionHandler.CreatePermission)
@@ -54,6 +67,31 @@ func SetupRouter(
 		v1.PUT("/resources", resourceHandler.UpdateResource)
 		v1.DELETE("/resources", resourceHandler.DeleteResource)
 		v1.GET("/resources/list", resourceHandler.ListResources)
+
+		// Asset routes
+		v1.POST("/assets", assetHandler.CreateAsset)
+		v1.GET("/assets", assetHandler.GetAsset)
+		v1.PUT("/assets", assetHandler.UpdateAsset)
+		v1.DELETE("/assets", assetHandler.DeleteAsset)
+		v1.GET("/assets/list", assetHandler.ListAssets)
+		v1.GET("/assets/organization", assetHandler.ListAssetsByOrganization)
+
+		// Vulnerability routes
+		v1.POST("/vulnerabilities", vulnerabilityHandler.CreateVulnerability)
+		v1.GET("/vulnerabilities", vulnerabilityHandler.GetVulnerability)
+		v1.GET("/vulnerabilities/cve", vulnerabilityHandler.GetVulnerabilityByCVEID)
+		v1.PUT("/vulnerabilities", vulnerabilityHandler.UpdateVulnerability)
+		v1.DELETE("/vulnerabilities", vulnerabilityHandler.DeleteVulnerability)
+		v1.GET("/vulnerabilities/list", vulnerabilityHandler.ListVulnerabilities)
+
+		// Asset-Vulnerability routes
+		v1.POST("/asset-vulnerabilities", assetVulnerabilityHandler.CreateAssetVulnerability)
+		v1.GET("/asset-vulnerabilities", assetVulnerabilityHandler.GetAssetVulnerability)
+		v1.GET("/asset-vulnerabilities/asset", assetVulnerabilityHandler.ListAssetVulnerabilitiesByAssetID)
+		v1.GET("/asset-vulnerabilities/vulnerability", assetVulnerabilityHandler.ListAssetVulnerabilitiesByVulnerabilityID)
+		v1.PUT("/asset-vulnerabilities", assetVulnerabilityHandler.UpdateAssetVulnerability)
+		v1.DELETE("/asset-vulnerabilities", assetVulnerabilityHandler.DeleteAssetVulnerability)
+		v1.GET("/asset-vulnerabilities/list", assetVulnerabilityHandler.ListAssetVulnerabilities)
 	}
 
 	return r

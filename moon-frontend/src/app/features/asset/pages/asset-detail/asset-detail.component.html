@@ -1,0 +1,111 @@
+<div class="asset-detail-container">
+  <div class="header">
+    <h1>资产详情</h1>
+    <div class="header-actions">
+      <button mat-raised-button (click)="backToList()">
+        <mat-icon>arrow_back</mat-icon> 返回列表
+      </button>
+      <button mat-raised-button color="accent" (click)="editAsset()">
+        <mat-icon>edit</mat-icon> 编辑
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-container" *ngIf="loading()">
+    <p>加载中...</p>
+  </div>
+
+  <div *ngIf="!loading() && asset()" class="asset-card">
+    <mat-card class="detail-card">
+      <mat-card-header>
+        <mat-card-title>{{ asset()?.asset_name }}</mat-card-title>
+        <mat-card-subtitle>{{ asset()?.asset_code }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">资产描述:</span>
+            <span class="value">{{ asset()?.asset_description }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">资产类型:</span>
+            <span class="value">{{ asset()?.asset_type }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">资产类别:</span>
+            <span class="value">{{ asset()?.asset_class }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">制造商:</span>
+            <span class="value">{{ asset()?.manufacturer }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">型号:</span>
+            <span class="value">{{ asset()?.model }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">序列号:</span>
+            <span class="value">{{ asset()?.serial_number }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">IP地址:</span>
+            <span class="value">{{ asset()?.ip_address }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">MAC地址:</span>
+            <span class="value">{{ asset()?.mac_address }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">位置:</span>
+            <span class="value">{{ asset()?.location }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">部门:</span>
+            <span class="value">{{ asset()?.department }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">负责人:</span>
+            <span class="value">{{ asset()?.owner }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">联系信息:</span>
+            <span class="value">{{ asset()?.contact_info }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">状态:</span>
+            <span class="value">{{ asset()?.status }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">购买日期:</span>
+            <span class="value">{{ asset()?.purchase_date }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label"> warranty结束日期:</span>
+            <span class="value">{{ asset()?.warranty_end_date }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">价值:</span>
+            <span class="value">{{ asset()?.value }}</span>
+          </div>
+          <div class="detail-item full-width">
+            <span class="label">备注:</span>
+            <span class="value">{{ asset()?.notes }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">创建时间:</span>
+            <span class="value">{{ asset()?.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">更新时间:</span>
+            <span class="value">{{ asset()?.updated_at | date: 'yyyy-MM-dd HH:mm:ss' }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="!loading() && !asset()" class="error-container">
+    <p>资产不存在</p>
+    <button mat-raised-button (click)="backToList()">返回列表</button>
+  </div>
+</div>

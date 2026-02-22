@@ -71,6 +71,22 @@
             </button>
             <button
               mat-icon-button
+              color="primary"
+              (click)="assignRoleToUser(element.user_id)"
+              aria-label="分配角色"
+            >
+              <mat-icon>assignment_ind</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="viewUserRoles(element.user_id)"
+              aria-label="查看角色"
+            >
+              <mat-icon>assignment</mat-icon>
+            </button>
+            <button
+              mat-icon-button
               color="warn"
               (click)="deleteUser(element.user_id)"
               aria-label="删除"

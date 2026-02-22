@@ -39,13 +39,13 @@ func (rr *roleRepository) SaveRole(ctx *context.Context, role aggregate.Role) er
 
 	if err == gorm.ErrRecordNotFound {
 		// Role does not exist, create a new record
-		return rr.db.WithContext(*ctx).Create(role).Error
+		return rr.db.WithContext(*ctx).Create(&role).Error
 	} else if err != nil {
 		// Other error occurred
 		return err
 	} else {
 		// Role exists, update the existing record
-		return rr.db.WithContext(*ctx).Model(&aggregate.Role{}).Where("role_id = ?", role.RoleID).Updates(role).Error
+		return rr.db.WithContext(*ctx).Model(&aggregate.Role{}).Where("role_id = ?", role.RoleID).Updates(&role).Error
 	}
 }
 
@@ -75,6 +75,15 @@ func (rr *roleRepository) FindRoleByCode(ctx *context.Context, roleCode string) 
 	var roles []aggregate.Role
 	pattern := "%" + roleCode + "%"
 	err := rr.db.WithContext(*ctx).Where("role_code LIKE ?", pattern).Find(&roles).Error
+	return roles, err
+}
+
+// FindAllRoles retrieves all roles
+// It returns a list of roles and an error if the operation fails
+// If no roles are found, it returns an empty list and no error
+func (rr *roleRepository) FindAllRoles(ctx *context.Context) ([]aggregate.Role, error) {
+	var roles []aggregate.Role
+	err := rr.db.WithContext(*ctx).Find(&roles).Error
 	return roles, err
 }
 

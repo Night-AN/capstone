@@ -44,6 +44,11 @@ type RoleRepository interface {
 	// If no roles are found, it returns an empty list and no error
 	FindRoleByCode(ctx *context.Context, roleCode string) ([]aggregate.Role, error)
 
+	// FindAllRoles retrieves all roles
+	// It returns a list of roles and an error if the operation fails
+	// If no roles are found, it returns an empty list and no error
+	FindAllRoles(ctx *context.Context) ([]aggregate.Role, error)
+
 	// DeleteRole deletes a role by its ID
 	// It returns an error if the operation fails
 	DeleteRole(ctx *context.Context, roleID uuid.UUID) error

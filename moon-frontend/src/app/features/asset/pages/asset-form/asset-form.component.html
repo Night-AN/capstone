@@ -1,0 +1,177 @@
+<div class="asset-form-container">
+  <div class="header">
+    <h1>{{ isEditMode ? '编辑资产' : '创建资产' }}</h1>
+    <div class="header-actions">
+      <button mat-raised-button (click)="onCancel()">
+        <mat-icon>cancel</mat-icon> 取消
+      </button>
+      <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading() || assetForm.invalid">
+        <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon> {{ isEditMode ? '保存' : '创建' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-container" *ngIf="loading()">
+    <p>加载中...</p>
+  </div>
+
+  <form [formGroup]="assetForm" *ngIf="!loading()" class="asset-form">
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>{{ isEditMode ? '编辑资产信息' : '创建新资产' }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-grid">
+          <!-- 基本信息 -->
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>资产名称</mat-label>
+              <input matInput formControlName="asset_name" required>
+              <mat-error *ngIf="assetForm.get('asset_name')?.hasError('required')">
+                资产名称不能为空
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>资产代码</mat-label>
+              <input matInput formControlName="asset_code" required>
+              <mat-error *ngIf="assetForm.get('asset_code')?.hasError('required')">
+                资产代码不能为空
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>资产描述</mat-label>
+              <textarea matInput formControlName="asset_description" rows="3"></textarea>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>资产类型</mat-label>
+              <input matInput formControlName="asset_type" required>
+              <mat-error *ngIf="assetForm.get('asset_type')?.hasError('required')">
+                资产类型不能为空
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>资产类别</mat-label>
+              <input matInput formControlName="asset_class" required>
+              <mat-error *ngIf="assetForm.get('asset_class')?.hasError('required')">
+                资产类别不能为空
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>制造商</mat-label>
+              <input matInput formControlName="manufacturer">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>型号</mat-label>
+              <input matInput formControlName="model">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>序列号</mat-label>
+              <input matInput formControlName="serial_number">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>IP地址</mat-label>
+              <input matInput formControlName="ip_address">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>MAC地址</mat-label>
+              <input matInput formControlName="mac_address">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>位置</mat-label>
+              <input matInput formControlName="location">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>部门</mat-label>
+              <input matInput formControlName="department">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>负责人</mat-label>
+              <input matInput formControlName="owner">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>联系信息</mat-label>
+              <input matInput formControlName="contact_info">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>状态</mat-label>
+              <input matInput formControlName="status" required>
+              <mat-error *ngIf="assetForm.get('status')?.hasError('required')">
+                状态不能为空
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>购买日期</mat-label>
+              <input matInput formControlName="purchase_date" type="date">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Warranty结束日期</mat-label>
+              <input matInput formControlName="warranty_end_date" type="date">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>价值</mat-label>
+              <input matInput formControlName="value">
+            </mat-form-field>
+          </div>
+
+          <div class="form-group full-width">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>备注</mat-label>
+              <textarea matInput formControlName="notes" rows="4"></textarea>
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </form>
+</div>

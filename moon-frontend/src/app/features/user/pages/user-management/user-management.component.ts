@@ -88,4 +88,35 @@ export class UserManagementComponent implements OnInit {
       });
     }
   }
+
+  // 分配角色给用户
+  assignRoleToUser(userId: string): void {
+    // 这里需要打开角色选择对话框
+    // 暂时使用alert模拟
+    const roleId = prompt('请输入角色ID:');
+    if (roleId) {
+      this.userService.assignRoleToUser(userId, roleId).subscribe({
+        next: (response) => {
+          this.notificationService.success('分配角色成功');
+        },
+        error: (error) => {
+          this.notificationService.error('分配角色失败');
+        }
+      });
+    }
+  }
+
+  // 查看用户角色
+  viewUserRoles(userId: string): void {
+    this.userService.getUserRoles(userId).subscribe({
+      next: (response) => {
+        console.log('User roles:', response);
+        // 这里需要显示用户角色列表
+        alert('用户角色: ' + JSON.stringify(response.data));
+      },
+      error: (error) => {
+        this.notificationService.error('获取用户角色失败');
+      }
+    });
+  }
 }

@@ -17,6 +17,8 @@ type OrganizationCreateRequest struct {
 	OrganizationFlag string `json:"organization_flag"`
 
 	SensitiveFlag bool `json:"sensitive_flag"`
+
+	ParentID *uuid.UUID `json:"parent_id"`
 }
 
 type OrganizationCreateResponse struct {
@@ -33,6 +35,7 @@ func ConvertOrganizationCreateRequestToOrganizationAggregate(req OrganizationCre
 		OrganizationDescription: req.OrganizationDescription,
 		OrganizationFlag:        req.OrganizationFlag,
 		SensitiveFlag:           req.SensitiveFlag,
+		ParentID:                req.ParentID,
 		CreatedAt:               time.Now(),
 		UpdatedAt:               time.Now(),
 	}

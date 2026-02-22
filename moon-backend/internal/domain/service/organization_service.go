@@ -15,14 +15,18 @@ type OrganizationService interface {
 	UpdateOrganization(ctx *context.Context, req usecase.OrganizationUpdateRequest) usecase.OrganizationUpdateResponse
 	DeleteOrganization(ctx *context.Context, req usecase.OrganizationDeleteRequest) usecase.OrganizationDeleteResponse
 	GetOrganizationTree(ctx *context.Context, req usecase.OrganizationTreeRequest) usecase.OrganizationTreeResponse
+	ListOrganizations(ctx *context.Context, req usecase.OrganizationListRequest) usecase.OrganizationListResponse
+	MoveOrganization(ctx *context.Context, req usecase.OrganizationMoveRequest) usecase.OrganizationMoveResponse
+	GetOrganizationUsers(ctx *context.Context, req usecase.OrganizationUsersRequest) usecase.OrganizationUsersResponse
 }
 
 type organizationService struct {
-	orgRepo repository.OrganizationRepository
+	orgRepo  repository.OrganizationRepository
+	userRepo repository.UserRepository
 }
 
-func NewOrganizationService(orgRepo repository.OrganizationRepository) OrganizationService {
-	return &organizationService{orgRepo}
+func NewOrganizationService(orgRepo repository.OrganizationRepository, userRepo repository.UserRepository) OrganizationService {
+	return &organizationService{orgRepo: orgRepo, userRepo: userRepo}
 }
 
 func (os *organizationService) CreateOrganization(ctx *context.Context, req usecase.OrganizationCreateRequest) usecase.OrganizationCreateResponse {
@@ -70,6 +74,7 @@ func (os *organizationService) UpdateOrganization(ctx *context.Context, req usec
 		OrganizationDescription: req.OrganizationDescription,
 		OrganizationFlag:        req.OrganizationFlag,
 		SensitiveFlag:           req.SensitiveFlag,
+		ParentID:                req.ParentID,
 		CreatedAt:               time.Now(),
 		UpdatedAt:               time.Now(),
 	}
@@ -141,4 +146,94 @@ func (os *organizationService) buildOrganizationTree(ctx *context.Context, org a
 	}
 
 	return node
+}
+
+func (os *organizationService) ListOrganizations(ctx *context.Context, req usecase.OrganizationListRequest) usecase.OrganizationListResponse {
+	// 获取所有组织
+	orgs, err := os.orgRepo.FindAllOrganizations(ctx)
+	if err != nil {
+		// 如果获取失败，返回空响应
+		return usecase.OrganizationListResponse{}
+	}
+
+	// 转换为响应格式
+	orgItems := make([]usecase.OrganizationListItem, len(orgs))
+	for i, org := range orgs {
+		orgItems[i] = usecase.OrganizationListItem{
+			OrganizationID:   org.OrganizationID,
+			OrganizationName: org.OrganizationName,
+			OrganizationCode: org.OrganizationCode,
+			OrganizationFlag: org.OrganizationFlag,
+			CreatedAt:        org.CreatedAt,
+		}
+	}
+
+	return usecase.OrganizationListResponse{
+		Organizations: orgItems,
+	}
+}
+
+func (os *organizationService) MoveOrganization(ctx *context.Context, req usecase.OrganizationMoveRequest) usecase.OrganizationMoveResponse {
+	// 检查组织是否存在
+	_, err := os.orgRepo.FindOrganizationByID(ctx, req.OrganizationID)
+	if err != nil {
+		// 如果组织不存在，返回失败响应
+		return usecase.OrganizationMoveResponse{Success: false}
+	}
+
+	// 检查新父组织是否存在（如果指定了）
+	if req.NewParentID != nil {
+		_, err := os.orgRepo.FindOrganizationByID(ctx, *req.NewParentID)
+		if err != nil {
+			// 如果新父组织不存在，返回失败响应
+			return usecase.OrganizationMoveResponse{Success: false}
+		}
+
+		// 检查是否会形成循环引用
+		if *req.NewParentID == req.OrganizationID {
+			// 组织不能成为自己的父组织
+			return usecase.OrganizationMoveResponse{Success: false}
+		}
+	}
+
+	// 执行移动操作
+	err = os.orgRepo.UpdateOrganizationParent(ctx, req.OrganizationID, req.NewParentID)
+	if err != nil {
+		// 如果移动失败，返回失败响应
+		return usecase.OrganizationMoveResponse{Success: false}
+	}
+
+	// 返回成功响应
+	return usecase.OrganizationMoveResponse{Success: true}
+}
+
+func (os *organizationService) GetOrganizationUsers(ctx *context.Context, req usecase.OrganizationUsersRequest) usecase.OrganizationUsersResponse {
+	// 检查组织是否存在
+	_, err := os.orgRepo.FindOrganizationByID(ctx, req.OrganizationID)
+	if err != nil {
+		// 如果组织不存在，返回空响应
+		return usecase.OrganizationUsersResponse{}
+	}
+
+	// 获取组织用户列表
+	users, err := os.userRepo.FindUsersByOrganizationID(ctx, req.OrganizationID)
+	if err != nil {
+		// 如果获取失败，返回空响应
+		return usecase.OrganizationUsersResponse{}
+	}
+
+	// 转换为响应格式
+	userItems := make([]usecase.UserListItem, len(users))
+	for i, user := range users {
+		userItems[i] = usecase.UserListItem{
+			UserID:   user.UserID,
+			Nickname: user.Nickname,
+			FullName: user.FullName,
+			Email:    user.Email,
+		}
+	}
+
+	return usecase.OrganizationUsersResponse{
+		Users: userItems,
+	}
 }

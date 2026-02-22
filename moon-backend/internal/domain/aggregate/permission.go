@@ -45,6 +45,11 @@ type Permission struct {
 	//   - Wildcard support: user:*:view matches all user-related view
 	PermissionCode string `gorm:"column:permission_code"`
 
+	// ParentID is the ID of the parent permission, forming a hierarchical structure
+	// This allows permissions to be organized into parent-child relationships
+	// For example, "user:read" could be a parent of "user:read:own" and "user:read:all"
+	ParentID *uuid.UUID `gorm:"column:parent_id"`
+
 	// SensitiveFlag marks permissions that grant access to sensitive data or critical operations.
 	// When true, additional audit logging and approval workflows may be triggered.
 	// Examples: Permissions accessing PII, financial data, or administrative actions should have this flag set to true

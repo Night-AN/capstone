@@ -22,8 +22,10 @@ import { NotificationService } from '@shared/service/notification/notification.s
 export class OrganizationDetailComponent implements OnInit {
   organizationId: string = '';
   organization = signal<Organization | null>(null);
+  users = signal<any[]>([]);
   loading = signal<boolean>(true);
   isLoading = signal<boolean>(false);
+  loadingUsers = signal<boolean>(false);
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -34,13 +36,16 @@ export class OrganizationDetailComponent implements OnInit {
     // 初始化状态
     this.organizationId = '';
     this.organization.set(null);
+    this.users.set([]);
     this.loading.set(true);
     this.isLoading.set(false);
+    this.loadingUsers.set(false);
   }
 
   ngOnInit(): void {
     this.organizationId = this.route.snapshot.paramMap.get('id') || '';
     this.loadOrganizationDetail();
+    this.loadOrganizationUsers();
   }
 
   loadOrganizationDetail(): void {
@@ -64,21 +69,17 @@ export class OrganizationDetailComponent implements OnInit {
     
     // 调用 organizationService.getOrganizationById 获取组织信息
     this.organizationService.getOrganizationById(this.organizationId).subscribe({
-      next: (response) => {
-        // 检查响应是否包含code和message字段，并且值是否正确
-        if (response.code === '200' || response.message === 'success') {
-          if (response.data) {
-            this.organization.set({
-              organization_id: response.data.organization_id,
-              name: response.data.name,
-              description: response.data.description,
-              created_at: response.data.created_at || new Date().toISOString(),
-              updated_at: response.data.updated_at || new Date().toISOString()
-            });
-          }
-        } else {
-          this.notificationService.error('加载组织详情失败');
-        }
+      next: (organization) => {
+        // 直接使用返回的组织对象
+        this.organization.set({
+          organization_id: organization.organization_id,
+          organization_name: organization.organization_name,
+          organization_code: organization.organization_code,
+          organization_description: organization.organization_description,
+          organization_flag: organization.organization_flag,
+          created_at: organization.created_at || new Date().toISOString(),
+          updated_at: organization.updated_at || new Date().toISOString()
+        });
         
         // 无论响应如何，只要请求成功，就停止加载状态
         this.loading.set(false);
@@ -88,6 +89,38 @@ export class OrganizationDetailComponent implements OnInit {
         this.notificationService.error('加载组织详情失败');
         this.loading.set(false);
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  loadOrganizationUsers(): void {
+    // 防止重复调用
+    if (this.loadingUsers()) {
+      return;
+    }
+    
+    // 设置加载标志位
+    this.loadingUsers.set(true);
+    
+    // 检查organizationId是否为空
+    if (!this.organizationId) {
+      this.notificationService.error('组织ID不能为空');
+      this.loadingUsers.set(false);
+      return;
+    }
+    
+    // 调用 organizationService.getOrganizationUsers 获取组织用户列表
+    this.organizationService.getOrganizationUsers(this.organizationId).subscribe({
+      next: (users) => {
+        // 直接使用返回的用户列表
+        this.users.set(users);
+        
+        // 无论响应如何，只要请求成功，就停止加载状态
+        this.loadingUsers.set(false);
+      },
+      error: (error) => {
+        this.notificationService.error('加载组织用户列表失败');
+        this.loadingUsers.set(false);
       }
     });
   }

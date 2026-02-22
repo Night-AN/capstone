@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS systems.permission
     permission_name        TEXT        NOT NULL DEFAULT '',
     permission_code        TEXT        NOT NULL DEFAULT '',
     permission_description TEXT        NOT NULL DEFAULT '',
+    parent_id              UUID        NULL REFERENCES permission(permission_id),
     sensitive_flag         BOOLEAN     NOT NULL DEFAULT FALSE,
     created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -74,6 +75,7 @@ CREATE TABLE IF NOT EXISTS systems.organization
     organization_name        TEXT        NOT NULL DEFAULT '',
     organization_code        TEXT        NOT NULL DEFAULT '',
     organization_description TEXT        NOT NULL DEFAULT '',
+    parent_id                UUID        NULL REFERENCES organization(organization_id),
     organization_flag        TEXT        NOT NULL DEFAULT '',
     sensitive_flag           BOOLEAN     NOT NULL DEFAULT FALSE,
     created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -106,6 +108,78 @@ CREATE TABLE IF NOT EXISTS systems.resource
     updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS systems.asset
+(
+    asset_id          UUID        NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    asset_name        TEXT        NOT NULL DEFAULT '',
+    asset_code        TEXT        NOT NULL DEFAULT '',
+    asset_description TEXT        NOT NULL DEFAULT '',
+    organization_id   UUID        NOT NULL REFERENCES organization(organization_id),
+    asset_type        TEXT        NOT NULL DEFAULT '',
+    asset_class       TEXT        NOT NULL DEFAULT '',
+    manufacturer     TEXT        NOT NULL DEFAULT '',
+    model            TEXT        NOT NULL DEFAULT '',
+    serial_number     TEXT        NOT NULL DEFAULT '',
+    ip_address        TEXT        NOT NULL DEFAULT '',
+    mac_address       TEXT        NOT NULL DEFAULT '',
+    location         TEXT        NOT NULL DEFAULT '',
+    department       TEXT        NOT NULL DEFAULT '',
+    owner            TEXT        NOT NULL DEFAULT '',
+    contact_info      TEXT        NOT NULL DEFAULT '',
+    status           TEXT        NOT NULL DEFAULT '',
+    purchase_date     TEXT        NOT NULL DEFAULT '',
+    warranty_end_date  TEXT        NOT NULL DEFAULT '',
+    value            TEXT        NOT NULL DEFAULT '',
+    notes            TEXT        NOT NULL DEFAULT '',
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS systems.vulnerability
+(
+    vulnerability_id       UUID        NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    cve_id                 TEXT        NOT NULL DEFAULT '',
+    nist_cve_id             TEXT        NOT NULL DEFAULT '',
+    title                 TEXT        NOT NULL DEFAULT '',
+    description           TEXT        NOT NULL DEFAULT '',
+    severity              TEXT        NOT NULL DEFAULT '',
+    cvss_score             FLOAT       NOT NULL DEFAULT 0.0,
+    cvss_vector            TEXT        NOT NULL DEFAULT '',
+    affected_software      TEXT        NOT NULL DEFAULT '',
+    affected_versions      TEXT        NOT NULL DEFAULT '',
+    attack_vector          TEXT        NOT NULL DEFAULT '',
+    attack_complexity      TEXT        NOT NULL DEFAULT '',
+    privileges_required    TEXT        NOT NULL DEFAULT '',
+    user_interaction       TEXT        NOT NULL DEFAULT '',
+    scope                 TEXT        NOT NULL DEFAULT '',
+    confidentiality_impact TEXT        NOT NULL DEFAULT '',
+    integrity_impact       TEXT        NOT NULL DEFAULT '',
+    availability_impact    TEXT        NOT NULL DEFAULT '',
+    reference_urls         TEXT        NOT NULL DEFAULT '',
+    solution              TEXT        NOT NULL DEFAULT '',
+    status                TEXT        NOT NULL DEFAULT '',
+    published_date         TEXT        NOT NULL DEFAULT '',
+    last_modified_date      TEXT        NOT NULL DEFAULT '',
+    created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS systems.asset_vulnerability
+(
+    asset_vulnerability_id UUID        NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    asset_id             UUID        NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    vulnerability_id     UUID        NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    detection_date       TEXT        NOT NULL DEFAULT '',
+    status              TEXT        NOT NULL DEFAULT '',
+    risk_level           TEXT        NOT NULL DEFAULT '',
+    remediation_plan     TEXT        NOT NULL DEFAULT '',
+    assigned_to          TEXT        NOT NULL DEFAULT '',
+    due_date             TEXT        NOT NULL DEFAULT '',
+    notes               TEXT        NOT NULL DEFAULT '',
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS
     systems.permission_role
 (
@@ -120,6 +194,14 @@ CREATE TABLE IF NOT EXISTS
     id      UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
     user_id UUID NOT NULL REFERENCES  users(user_id),
     role_id UUID NOT NULL REFERENCES  role(role_id)
+);
+
+CREATE TABLE IF NOT EXISTS
+    systems.organization_role
+(
+    id              UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    organization_id UUID NOT NULL REFERENCES  organization(organization_id),
+    role_id         UUID NOT NULL REFERENCES  role(role_id)
 );
 
 CREATE TABLE IF NOT EXISTS
@@ -164,6 +246,16 @@ CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_organization_id ON system
 CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_organization_name ON systems.organization (organization_name);
 
 CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_organization_code ON systems.organization (organization_code);
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_asset_id ON systems.asset (asset_id);
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_asset_code ON systems.asset (asset_code);
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_vulnerability_id ON systems.vulnerability (vulnerability_id);
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_vulnerability_cve_id ON systems.vulnerability (cve_id);
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_asset_vulnerability_id ON systems.asset_vulnerability (asset_vulnerability_id);
 
 -- 0x0003 Alter
 -- 1.DefaultValue And Trigger
@@ -272,6 +364,75 @@ ALTER TABLE systems.organization
     ADD CONSTRAINT chk_organization_name CHECK (LENGTH(organization_name) <= 32),
     ADD CONSTRAINT chk_organization_code CHECK (LENGTH(organization_code) <= 64),
     ADD CONSTRAINT chk_organization_description CHECK (LENGTH(organization_description) <= 1024);
+COMMIT;
+
+BEGIN;
+
+SET LOCAL statement_timeout = '5s';
+
+SET LOCAL lock_timeout = '1s';
+
+DROP TRIGGER IF EXISTS tr_sys_asset_set_updated_at ON systems.asset;
+
+CREATE TRIGGER tr_sys_asset_set_updated_at
+    BEFORE
+        UPDATE
+    ON systems.asset
+    FOR EACH ROW
+EXECUTE FUNCTION systems.set_updated_at();
+
+ALTER TABLE systems.asset
+    ADD CONSTRAINT pk_asset_id PRIMARY KEY USING INDEX idx_sys_asset_id,
+    ADD CONSTRAINT uk_asset_code UNIQUE USING INDEX idx_sys_asset_code,
+    ADD CONSTRAINT chk_asset_name CHECK (LENGTH(asset_name) <= 128),
+    ADD CONSTRAINT chk_asset_code CHECK (LENGTH(asset_code) <= 64),
+    ADD CONSTRAINT chk_asset_description CHECK (LENGTH(asset_description) <= 1024);
+
+COMMIT;
+
+BEGIN;
+
+SET LOCAL statement_timeout = '5s';
+
+SET LOCAL lock_timeout = '1s';
+
+DROP TRIGGER IF EXISTS tr_sys_vulnerability_set_updated_at ON systems.vulnerability;
+
+CREATE TRIGGER tr_sys_vulnerability_set_updated_at
+    BEFORE
+        UPDATE
+    ON systems.vulnerability
+    FOR EACH ROW
+EXECUTE FUNCTION systems.set_updated_at();
+
+ALTER TABLE systems.vulnerability
+    ADD CONSTRAINT pk_vulnerability_id PRIMARY KEY USING INDEX idx_sys_vulnerability_id,
+    ADD CONSTRAINT uk_vulnerability_cve_id UNIQUE USING INDEX idx_sys_vulnerability_cve_id,
+    ADD CONSTRAINT chk_vulnerability_title CHECK (LENGTH(title) <= 256),
+    ADD CONSTRAINT chk_vulnerability_cve_id CHECK (LENGTH(cve_id) <= 64);
+
+COMMIT;
+
+BEGIN;
+
+SET LOCAL statement_timeout = '5s';
+
+SET LOCAL lock_timeout = '1s';
+
+DROP TRIGGER IF EXISTS tr_sys_asset_vulnerability_set_updated_at ON systems.asset_vulnerability;
+
+CREATE TRIGGER tr_sys_asset_vulnerability_set_updated_at
+    BEFORE
+        UPDATE
+    ON systems.asset_vulnerability
+    FOR EACH ROW
+EXECUTE FUNCTION systems.set_updated_at();
+
+ALTER TABLE systems.asset_vulnerability
+    ADD CONSTRAINT pk_asset_vulnerability_id PRIMARY KEY USING INDEX idx_sys_asset_vulnerability_id,
+    ADD CONSTRAINT fk_asset_vulnerability_asset_id FOREIGN KEY (asset_id) REFERENCES systems.asset(asset_id),
+    ADD CONSTRAINT fk_asset_vulnerability_vulnerability_id FOREIGN KEY (vulnerability_id) REFERENCES systems.vulnerability(vulnerability_id);
+
 COMMIT;
 
 

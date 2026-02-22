@@ -5,10 +5,28 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTreeModule } from '@angular/material/tree';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OrganizationService } from '@core/services/organization.service';
 import { OrganizationCreateRequest, OrganizationUpdateRequest } from '@models/organization.model';
 import { NotificationService } from '@shared/service/notification/notification.service';
+import { FlatTreeControl } from '@angular/cdk/tree';
+import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
+
+interface OrganizationNode {
+  organization_id: string;
+  organization_name: string;
+  children?: OrganizationNode[];
+}
+
+interface FlatOrganizationNode {
+  expandable: boolean;
+  organization_name: string;
+  organization_id: string;
+  level: number;
+}
 
 @Component({
   selector: 'app-organization-form',
@@ -18,7 +36,10 @@ import { NotificationService } from '@shared/service/notification/notification.s
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTreeModule,
+    MatIconModule,
+    MatCheckboxModule
   ],
   templateUrl: './organization-form.component.html',
   styleUrl: './organization-form.component.scss'
@@ -29,6 +50,32 @@ export class OrganizationFormComponent implements OnInit {
   isEditMode: boolean = false;
   loading = signal<boolean>(false);
   isLoading = signal<boolean>(false);
+  organizationTree = signal<any>(null);
+  selectedParentId: string | null = null;
+
+  // 树形控件配置
+  private _transformer = (node: OrganizationNode, level: number) => {
+    return {
+      expandable: !!node.children && node.children.length > 0,
+      organization_name: node.organization_name,
+      organization_id: node.organization_id,
+      level: level,
+    };
+  };
+
+  treeControl = new FlatTreeControl<FlatOrganizationNode>(
+    node => node.level,
+    node => node.expandable
+  );
+
+  treeFlattener = new MatTreeFlattener(
+    this._transformer,
+    node => node.level,
+    node => node.expandable,
+    node => node.children
+  );
+
+  dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
 
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
@@ -38,8 +85,10 @@ export class OrganizationFormComponent implements OnInit {
 
   constructor() {
     this.organizationForm = this.fb.group({
-      name: ['', Validators.required],
-      description: ['']
+      organization_name: ['', Validators.required],
+      organization_description: [''],
+      organization_code: ['', Validators.required],
+      organization_flag: ['', Validators.required]
     });
     this.organizationId = '';
     this.isEditMode = false;
@@ -54,6 +103,43 @@ export class OrganizationFormComponent implements OnInit {
     if (this.isEditMode) {
       this.loadOrganizationDetail();
     }
+
+    // 加载组织树
+    this.loadOrganizationTree();
+  }
+
+  loadOrganizationTree(): void {
+    this.organizationService.getOrganizationTree().subscribe({
+      next: (tree: any) => {
+        console.log('Organization Tree:', tree);
+        // 转换组织树数据为树形控件所需的格式
+        const organizationNode: OrganizationNode = {
+          organization_id: tree.organization_id,
+          organization_name: tree.organization_name,
+          children: this.convertToOrganizationNodes(tree.children || [])
+        };
+        this.dataSource.data = [organizationNode];
+        this.organizationTree.set(tree);
+      },
+      error: (error: any) => {
+        this.notificationService.error('加载组织树失败');
+      }
+    });
+  }
+
+  convertToOrganizationNodes(nodes: any[]): OrganizationNode[] {
+    return nodes.map(node => ({
+      organization_id: node.organization_id,
+      organization_name: node.organization_name,
+      children: this.convertToOrganizationNodes(node.children || [])
+    }));
+  }
+
+  hasChild = (_: number, node: FlatOrganizationNode) => node.expandable;
+
+  selectParent(node: FlatOrganizationNode): void {
+    this.selectedParentId = node.organization_id;
+    this.notificationService.success(`已选择父组织: ${node.organization_name}`);
   }
 
   loadOrganizationDetail(): void {
@@ -65,13 +151,13 @@ export class OrganizationFormComponent implements OnInit {
     this.loading.set(true);
     
     this.organizationService.getOrganizationById(this.organizationId).subscribe({
-      next: (response: any) => {
-        if (response.data) {
-          this.organizationForm.patchValue({
-            name: response.data.name,
-            description: response.data.description
-          });
-        }
+      next: (organization: any) => {
+        this.organizationForm.patchValue({
+          organization_name: organization.organization_name,
+          organization_description: organization.organization_description,
+          organization_code: organization.organization_code,
+          organization_flag: organization.organization_flag
+        });
         this.loading.set(false);
         this.isLoading.set(false);
       },
@@ -95,8 +181,11 @@ export class OrganizationFormComponent implements OnInit {
       // 编辑模式
       const updateRequest: OrganizationUpdateRequest = {
         organization_id: this.organizationId,
-        name: this.organizationForm.value.name,
-        description: this.organizationForm.value.description
+        organization_name: this.organizationForm.value.organization_name,
+        organization_description: this.organizationForm.value.organization_description,
+        organization_code: this.organizationForm.value.organization_code,
+        organization_flag: this.organizationForm.value.organization_flag,
+        parent_id: this.selectedParentId
       };
 
       this.organizationService.updateOrganization(updateRequest).subscribe({
@@ -115,8 +204,11 @@ export class OrganizationFormComponent implements OnInit {
     } else {
       // 创建模式
       const createRequest: OrganizationCreateRequest = {
-        name: this.organizationForm.value.name,
-        description: this.organizationForm.value.description
+        organization_name: this.organizationForm.value.organization_name,
+        organization_description: this.organizationForm.value.organization_description,
+        organization_code: this.organizationForm.value.organization_code,
+        organization_flag: this.organizationForm.value.organization_flag,
+        parent_id: this.selectedParentId
       };
 
       this.organizationService.createOrganization(createRequest).subscribe({

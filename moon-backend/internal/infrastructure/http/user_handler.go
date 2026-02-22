@@ -206,3 +206,101 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 		"data":    resp,
 	})
 }
+
+func (h *UserHandler) AssignRoleToUser(c *gin.Context) {
+	var req struct {
+		UserID uuid.UUID `json:"user_id" binding:"required"`
+		RoleID uuid.UUID `json:"role_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    "400",
+			"message": "invalid request: " + err.Error(),
+		})
+		return
+	}
+
+	context := c.Request.Context()
+	success, domainErr := h.userService.AssignRoleToUser(&context, req.UserID, req.RoleID)
+	if domainErr.Code != "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    domainErr.Code,
+			"message": domainErr.Message + domainErr.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    "200",
+		"message": "success",
+		"data":    gin.H{"success": success},
+	})
+}
+
+func (h *UserHandler) RemoveRoleFromUser(c *gin.Context) {
+	var req struct {
+		UserID uuid.UUID `json:"user_id" binding:"required"`
+		RoleID uuid.UUID `json:"role_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    "400",
+			"message": "invalid request: " + err.Error(),
+		})
+		return
+	}
+
+	context := c.Request.Context()
+	success, domainErr := h.userService.RemoveRoleFromUser(&context, req.UserID, req.RoleID)
+	if domainErr.Code != "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    domainErr.Code,
+			"message": domainErr.Message + domainErr.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    "200",
+		"message": "success",
+		"data":    gin.H{"success": success},
+	})
+}
+
+func (h *UserHandler) GetUserRoles(c *gin.Context) {
+	userIDStr := c.Query("user_id")
+	if userIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    "400",
+			"message": "invalid request: user ID is required",
+		})
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    "400",
+			"message": "invalid request: invalid user ID",
+		})
+		return
+	}
+
+	context := c.Request.Context()
+	roles, domainErr := h.userService.GetUserRoles(&context, userID)
+	if domainErr.Code != "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    domainErr.Code,
+			"message": domainErr.Message + domainErr.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    "200",
+		"message": "success",
+		"data":    roles,
+	})
+}

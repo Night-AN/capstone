@@ -87,7 +87,7 @@ func TestMain(m *testing.M) {
 
 	// Initialize organization service
 	organizationRepo := postgres.NewOrganizationRepository(db)
-	organizationSvc = service.NewOrganizationService(organizationRepo)
+	organizationSvc = service.NewOrganizationService(organizationRepo, nil)
 
 	// Run the tests
 	m.Run()

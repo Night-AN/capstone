@@ -22,6 +22,11 @@ type Organization struct {
 	// OrganizationDescription provides additional details about the organization's purpose and scope.
 	OrganizationDescription string `gorm:"column:organization_description;type:text"`
 
+	// ParentID is the ID of the parent organization, forming a hierarchical structure
+	// This allows organizations to be organized into parent-child relationships
+	// For example, a department could be a child of a company
+	ParentID *uuid.UUID `gorm:"column:parent_id;type:uuid"`
+
 	// OrganizationFlag is a generic flag field for extensible organization attributes or state indicators.
 	// Usage depends on business requirements (e.g., type classification, status markers).
 	OrganizationFlag string `gorm:"column:organization_flag;type:text"`

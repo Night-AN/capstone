@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type RoleHandler struct {
@@ -36,13 +37,16 @@ func (h *RoleHandler) CreateRole(c *gin.Context) {
 
 func (h *RoleHandler) GetRole(c *gin.Context) {
 	var req usecase.RoleGetRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	roleIDStr := c.Query("role_id")
+	roleID, err := uuid.Parse(roleIDStr)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    "400",
-			"message": "invalid request: " + err.Error(),
+			"message": "invalid role_id: " + err.Error(),
 		})
 		return
 	}
+	req.RoleID = roleID
 	context := c.Request.Context()
 	resp := h.roleService.GetRole(&context, req)
 	c.JSON(http.StatusOK, gin.H{
@@ -135,6 +139,18 @@ func (h *RoleHandler) GetRolePermissions(c *gin.Context) {
 	}
 	context := c.Request.Context()
 	resp := h.roleService.GetRolePermissions(&context, req)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    "200",
+		"message": "success",
+		"data":    resp,
+	})
+}
+
+func (h *RoleHandler) ListRoles(c *gin.Context) {
+	var req usecase.RoleListRequest
+	// No need to bind JSON for empty request
+	context := c.Request.Context()
+	resp := h.roleService.ListRoles(&context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",

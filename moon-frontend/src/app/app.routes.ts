@@ -5,6 +5,9 @@ import { OrganizationModule } from './features/organization/organization.module'
 import { PermissionModule } from './features/permission/permission.module';
 import { RoleModule } from './features/role/role.module';
 import { ResourceModule } from './features/resource/resource.module';
+import { AssetModule } from './features/asset/asset.module';
+import { VulnerabilityModule } from './features/vulnerability/vulnerability.module';
+import { AssetVulnerabilityModule } from './features/asset-vulnerability/asset-vulnerability.module';
 
 
 export const routes: Routes = [
@@ -43,6 +46,18 @@ export const routes: Routes = [
         {
             path:'resources',
             loadChildren:()=>ResourceModule
+        },
+        {
+            path:'assets',
+            loadChildren:()=>AssetModule
+        },
+        {
+            path:'vulnerabilities',
+            loadChildren:()=>VulnerabilityModule
+        },
+        {
+            path:'asset-vulnerabilities',
+            loadChildren:()=>AssetVulnerabilityModule
         },
         {
             path:'',

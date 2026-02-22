@@ -8,10 +8,11 @@ import (
 )
 
 type UserCreateRequest struct {
-	Nickname string `json:"nickname"`
-	FullName string `json:"full_name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Nickname       string     `json:"nickname"`
+	FullName       string     `json:"full_name"`
+	Email          string     `json:"email"`
+	Password       string     `json:"password"`
+	OrganizationID *uuid.UUID `json:"organization_id"`
 }
 
 type UserCreateResponse struct {
@@ -22,11 +23,12 @@ type UserCreateResponse struct {
 
 func ConvertUserCreateRequestToUserAggregate(req UserCreateRequest) aggregate.User {
 	return aggregate.User{
-		UserID:    uuid.New(),
-		Nickname:  req.Nickname,
-		FullName:  req.FullName,
-		Email:     req.Email,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		UserID:         uuid.New(),
+		Nickname:       req.Nickname,
+		FullName:       req.FullName,
+		Email:          req.Email,
+		OrganizationID: req.OrganizationID,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
 	}
 }

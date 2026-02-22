@@ -1,116 +1,96 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RoleService } from '@core/services/role.service';
-import { Role } from '@models/role.model';
 import { NotificationService } from '@shared/service/notification/notification.service';
+import { Role } from '@models/role.model';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
   selector: 'app-role-detail',
+  standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatButtonModule,
-    MatCardModule,
-    MatProgressSpinnerModule
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatTableModule
   ],
   templateUrl: './role-detail.component.html',
   styleUrl: './role-detail.component.scss'
 })
 export class RoleDetailComponent implements OnInit {
-  roleId: string = '';
-  role = signal<Role | null>(null);
-  loading = signal<boolean>(true);
-  isLoading = signal<boolean>(false);
-
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private roleService = inject(RoleService);
   private notificationService = inject(NotificationService);
 
-  constructor() {
-    // 初始化状态
-    this.roleId = '';
-    this.role.set(null);
-    this.loading.set(true);
-    this.isLoading.set(false);
-  }
+  roleId: string | null = null;
+  role = signal<Role | null>(null);
+  loading = signal<boolean>(false);
+  error = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.roleId = this.route.snapshot.paramMap.get('id') || '';
-    this.loadRoleDetail();
+    this.roleId = this.route.snapshot.paramMap.get('id');
+    if (this.roleId) {
+      this.loadRoleDetail();
+    }
   }
 
   loadRoleDetail(): void {
-    // 防止重复调用
-    if (this.isLoading()) {
-      return;
-    }
-    
-    // 设置加载标志位
-    this.isLoading.set(true);
-    // 设置加载状态为 true
+    if (!this.roleId) return;
+
     this.loading.set(true);
-    
-    // 检查roleId是否为空
-    if (!this.roleId) {
-      this.notificationService.error('角色ID不能为空');
-      this.loading.set(false);
-      this.isLoading.set(false);
-      return;
-    }
-    
-    // 调用 roleService.getRoleById 获取角色信息
+    this.error.set(null);
+
     this.roleService.getRoleById(this.roleId).subscribe({
-      next: (response: any) => {
-        // 检查响应是否包含code和message字段，并且值是否正确
-        if (response.code === '200' || response.message === 'success') {
-          if (response.data) {
-            this.role.set({
-              role_id: response.data.role_id,
-              name: response.data.name,
-              description: response.data.description,
-              created_at: response.data.created_at || new Date().toISOString(),
-              updated_at: response.data.updated_at || new Date().toISOString()
-            });
-          }
-        } else {
-          this.notificationService.error('加载角色详情失败');
-        }
-        
-        // 无论响应如何，只要请求成功，就停止加载状态
+      next: (role) => {
+        this.role.set({
+          role_id: role.role_id,
+          role_name: role.role_name,
+          description: role.description,
+          sensitive_flag: role.sensitive_flag,
+          created_at: role.created_at,
+          updated_at: role.updated_at
+        });
         this.loading.set(false);
-        this.isLoading.set(false);
       },
-      error: (error: any) => {
-        this.notificationService.error('加载角色详情失败');
+      error: (err) => {
+        this.error.set('Failed to load role details');
         this.loading.set(false);
-        this.isLoading.set(false);
+        this.notificationService.error('Failed to load role details');
       }
     });
   }
 
   editRole(): void {
-    this.router.navigate(['/roles/edit', this.roleId]);
+    if (this.roleId) {
+      this.router.navigate(['/role/edit', this.roleId]);
+    }
   }
 
   deleteRole(): void {
-    if (confirm('确定要删除这个角色吗？')) {
+    if (!this.roleId) return;
+
+    if (confirm('Are you sure you want to delete this role?')) {
       this.roleService.deleteRole({ role_id: this.roleId }).subscribe({
         next: () => {
-          this.notificationService.success('删除角色成功');
-          this.router.navigate(['/roles']);
+          this.notificationService.success('Role deleted successfully');
+          this.router.navigate(['/role']);
         },
-        error: (error: any) => {
-          this.notificationService.error('删除角色失败');
+        error: (err) => {
+          this.notificationService.error('Failed to delete role');
         }
       });
     }
   }
 
   backToList(): void {
-    this.router.navigate(['/roles']);
+    this.router.navigate(['/role']);
   }
 }

@@ -1,141 +1,146 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { RoleService } from '@core/services/role.service';
+import { NotificationService } from '@shared/service/notification/notification.service';
+import { Role, RoleCreateRequest, RoleUpdateRequest } from '@models/role.model';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ActivatedRoute, Router } from '@angular/router';
-import { RoleService } from '@core/services/role.service';
-import { RoleCreateRequest, RoleUpdateRequest } from '@models/role.model';
-import { NotificationService } from '@shared/service/notification/notification.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-role-form',
+  standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatIconModule,
     MatProgressSpinnerModule
   ],
   templateUrl: './role-form.component.html',
   styleUrl: './role-form.component.scss'
 })
 export class RoleFormComponent implements OnInit {
-  roleForm: FormGroup;
-  roleId: string = '';
-  isEditMode: boolean = false;
-  loading = signal<boolean>(false);
-  isLoading = signal<boolean>(false);
-
-  private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private fb = inject(FormBuilder);
   private roleService = inject(RoleService);
   private notificationService = inject(NotificationService);
 
+  roleId: string | null = null;
+  roleForm: FormGroup;
+  loading = signal<boolean>(false);
+  error = signal<string | null>(null);
+
   constructor() {
     this.roleForm = this.fb.group({
-      name: ['', Validators.required],
-      description: ['']
+      role_name: ['', Validators.required],
+      description: [''],
+      sensitive_flag: [false]
     });
-    this.roleId = '';
-    this.isEditMode = false;
-    this.loading.set(false);
-    this.isLoading.set(false);
   }
 
   ngOnInit(): void {
-    this.roleId = this.route.snapshot.paramMap.get('id') || '';
-    this.isEditMode = this.roleId !== '';
-
-    if (this.isEditMode) {
-      this.loadRoleDetail();
+    this.roleId = this.route.snapshot.paramMap.get('id');
+    
+    if (this.roleId) {
+      this.loadRoleData();
     }
   }
 
-  loadRoleDetail(): void {
-    if (this.isLoading()) {
-      return;
-    }
-    
-    this.isLoading.set(true);
+  get isEditMode(): boolean {
+    return !!this.roleId;
+  }
+
+  loadRoleData(): void {
+    if (!this.roleId) return;
+
     this.loading.set(true);
-    
+    this.error.set(null);
+
     this.roleService.getRoleById(this.roleId).subscribe({
-      next: (response: any) => {
-        if (response.data) {
-          this.roleForm.patchValue({
-            name: response.data.name,
-            description: response.data.description
-          });
-        }
+      next: (role) => {
+        this.roleForm.patchValue({
+          role_name: role.role_name,
+          description: role.description,
+          sensitive_flag: role.sensitive_flag
+        });
         this.loading.set(false);
-        this.isLoading.set(false);
       },
-      error: (error: any) => {
-        this.notificationService.error('加载角色详情失败');
+      error: (err) => {
+        this.error.set('Failed to load role data');
         this.loading.set(false);
-        this.isLoading.set(false);
+        this.notificationService.error('Failed to load role data');
       }
     });
   }
 
   onSubmit(): void {
-    if (this.roleForm.invalid || this.isLoading()) {
+    if (this.roleForm.invalid) {
+      this.roleForm.markAllAsTouched();
       return;
     }
 
-    this.isLoading.set(true);
     this.loading.set(true);
+    this.error.set(null);
 
-    if (this.isEditMode) {
-      // 编辑模式
+    const formData = this.roleForm.value;
+    
+    if (this.isEditMode && this.roleId) {
+      // Update role
       const updateRequest: RoleUpdateRequest = {
         role_id: this.roleId,
-        name: this.roleForm.value.name,
-        description: this.roleForm.value.description
+        role_name: formData.role_name,
+        description: formData.description,
+        sensitive_flag: formData.sensitive_flag
       };
 
       this.roleService.updateRole(updateRequest).subscribe({
-        next: (response: any) => {
-          this.notificationService.success('更新角色成功');
-          this.router.navigate(['/roles']);
-          this.loading.set(false);
-          this.isLoading.set(false);
+        next: (role) => {
+          this.notificationService.success('Role updated successfully');
+          this.router.navigate(['/role/detail', role.role_id]);
         },
-        error: (error: any) => {
-          this.notificationService.error('更新角色失败');
+        error: (err) => {
+          this.error.set('Failed to update role');
           this.loading.set(false);
-          this.isLoading.set(false);
+          this.notificationService.error('Failed to update role');
         }
       });
     } else {
-      // 创建模式
+      // Create role
       const createRequest: RoleCreateRequest = {
-        name: this.roleForm.value.name,
-        description: this.roleForm.value.description
+        role_name: formData.role_name,
+        description: formData.description,
+        sensitive_flag: formData.sensitive_flag
       };
 
       this.roleService.createRole(createRequest).subscribe({
-        next: (response: any) => {
-          this.notificationService.success('创建角色成功');
-          this.router.navigate(['/roles']);
-          this.loading.set(false);
-          this.isLoading.set(false);
+        next: (role) => {
+          this.notificationService.success('Role created successfully');
+          this.router.navigate(['/role/detail', role.role_id]);
         },
-        error: (error: any) => {
-          this.notificationService.error('创建角色失败');
+        error: (err) => {
+          this.error.set('Failed to create role');
           this.loading.set(false);
-          this.isLoading.set(false);
+          this.notificationService.error('Failed to create role');
         }
       });
     }
   }
 
   onCancel(): void {
-    this.router.navigate(['/roles']);
+    if (this.isEditMode && this.roleId) {
+      this.router.navigate(['/role/detail', this.roleId]);
+    } else {
+      this.router.navigate(['/role']);
+    }
   }
 }

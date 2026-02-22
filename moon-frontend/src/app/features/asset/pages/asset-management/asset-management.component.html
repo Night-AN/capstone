@@ -1,0 +1,94 @@
+<div class="asset-management-container">
+  <div class="header">
+    <h1>资产管理</h1>
+    <div class="header-actions">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>搜索资产</mat-label>
+        <input matInput [(ngModel)]="searchKeyword" placeholder="输入资产名称或代码" (keyup.enter)="applyFilter()">
+        <button mat-icon-button matSuffix (click)="applyFilter()">
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>组织ID</mat-label>
+        <input matInput [(ngModel)]="organizationId" placeholder="输入组织ID">
+        <button mat-icon-button matSuffix (click)="loadAssetsByOrganization()">
+          <mat-icon>filter_list</mat-icon>
+        </button>
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="createAsset()">
+        <mat-icon>add</mat-icon> 新增资产
+      </button>
+      <button mat-raised-button color="accent" (click)="loadAssets()">
+        <mat-icon>refresh</mat-icon> 全部资产
+      </button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <mat-table [dataSource]="dataSource" matSort class="asset-table">
+      <!-- 资产名称 -->
+      <ng-container matColumnDef="asset_name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>资产名称</mat-header-cell>
+        <mat-cell *matCellDef="let element">{{ element.asset_name }}</mat-cell>
+      </ng-container>
+
+      <!-- 资产代码 -->
+      <ng-container matColumnDef="asset_code">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>资产代码</mat-header-cell>
+        <mat-cell *matCellDef="let element">{{ element.asset_code }}</mat-cell>
+      </ng-container>
+
+      <!-- 所属组织 -->
+      <ng-container matColumnDef="organization_id">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>所属组织</mat-header-cell>
+        <mat-cell *matCellDef="let element">{{ element.organization_id }}</mat-cell>
+      </ng-container>
+
+      <!-- 资产类型 -->
+      <ng-container matColumnDef="asset_type">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>资产类型</mat-header-cell>
+        <mat-cell *matCellDef="let element">{{ element.asset_type }}</mat-cell>
+      </ng-container>
+
+      <!-- IP地址 -->
+      <ng-container matColumnDef="ip_address">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>IP地址</mat-header-cell>
+        <mat-cell *matCellDef="let element">{{ element.ip_address }}</mat-cell>
+      </ng-container>
+
+      <!-- 状态 -->
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>状态</mat-header-cell>
+        <mat-cell *matCellDef="let element">{{ element.status }}</mat-cell>
+      </ng-container>
+
+      <!-- 创建时间 -->
+      <ng-container matColumnDef="created_at">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>创建时间</mat-header-cell>
+        <mat-cell *matCellDef="let element">{{ element.created_at | date: 'yyyy-MM-dd HH:mm' }}</mat-cell>
+      </ng-container>
+
+      <!-- 操作 -->
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef>操作</mat-header-cell>
+        <mat-cell *matCellDef="let element" class="actions-cell">
+          <button mat-icon-button color="primary" (click)="viewAsset(element.asset_id)" title="查看详情">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button mat-icon-button color="accent" (click)="editAsset(element.asset_id)" title="编辑">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteAsset(element.asset_id)" title="删除">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+
+    <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+  </div>
+</div>

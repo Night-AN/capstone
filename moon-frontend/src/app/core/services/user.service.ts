@@ -78,4 +78,46 @@ export class UserService {
       timeout: 5000 // 设置5秒超时
     });
   }
+
+  /**
+   * 分配角色给用户
+   * @param userId 用户ID
+   * @param roleId 角色ID
+   * @returns 分配结果
+   */
+  assignRoleToUser(userId: string, roleId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/users/assign-role`, {
+      user_id: userId,
+      role_id: roleId
+    }, {
+      timeout: 5000 // 设置5秒超时
+    });
+  }
+
+  /**
+   * 从用户移除角色
+   * @param userId 用户ID
+   * @param roleId 角色ID
+   * @returns 移除结果
+   */
+  removeRoleFromUser(userId: string, roleId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/users/remove-role`, {
+      user_id: userId,
+      role_id: roleId
+    }, {
+      timeout: 5000 // 设置5秒超时
+    });
+  }
+
+  /**
+   * 获取用户的角色列表
+   * @param userId 用户ID
+   * @returns 用户角色列表
+   */
+  getUserRoles(userId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/users/roles`, {
+      params: { user_id: userId },
+      timeout: 5000 // 设置5秒超时
+    });
+  }
 }

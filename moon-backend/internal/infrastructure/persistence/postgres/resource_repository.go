@@ -18,7 +18,20 @@ func NewResourceRepository(db *gorm.DB) repository.ResourceRepository {
 }
 
 func (rr *resourceRepository) SaveResource(ctx *context.Context, resource aggregate.Resource) error {
-	return rr.db.WithContext(*ctx).Create(&resource).Error
+	// 检查资源是否已存在
+	var existingResource aggregate.Resource
+	err := rr.db.WithContext(*ctx).Where("resource_id = ?", resource.ResourceID).First(&existingResource).Error
+
+	if err == gorm.ErrRecordNotFound {
+		// 资源不存在，创建新记录
+		return rr.db.WithContext(*ctx).Create(&resource).Error
+	} else if err != nil {
+		// 其他错误
+		return err
+	} else {
+		// 资源存在，更新记录
+		return rr.db.WithContext(*ctx).Model(&aggregate.Resource{}).Where("resource_id = ?", resource.ResourceID).Updates(&resource).Error
+	}
 }
 
 func (rr *resourceRepository) UpdateResource(ctx *context.Context, resource aggregate.Resource) error {

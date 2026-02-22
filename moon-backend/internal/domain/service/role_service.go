@@ -47,6 +47,11 @@ type RoleService interface {
 	// If deletion fails, it returns an error response
 	DeleteRole(ctx *context.Context, req usecase.RoleDeleteRequest) usecase.RoleDeleteResponse
 
+	// ListRoles retrieves all roles
+	// It returns a response containing the list of roles
+	// If retrieval fails, it returns an error response
+	ListRoles(ctx *context.Context, req usecase.RoleListRequest) usecase.RoleListResponse
+
 	// AssignPermission assigns a permission to a role
 	// It returns a response indicating whether the assignment was successful
 	// If assignment fails, it returns an error response
@@ -244,5 +249,35 @@ func (rs *roleService) GetRolePermissions(ctx *context.Context, req usecase.Role
 	return usecase.RolePermissionsResponse{
 		RoleID:      req.RoleID,
 		Permissions: permissionResponses,
+	}
+}
+
+// ListRoles retrieves all roles
+// It returns a response containing the list of roles
+// If retrieval fails, it returns an error response
+func (rs *roleService) ListRoles(ctx *context.Context, req usecase.RoleListRequest) usecase.RoleListResponse {
+	// Get all roles
+	roles, err := rs.roleRepo.FindAllRoles(ctx)
+	if err != nil {
+		// If retrieval fails, return an empty response
+		return usecase.RoleListResponse{}
+	}
+
+	// Convert roles to response format
+	roleItems := make([]usecase.RoleListItem, len(roles))
+	for i, role := range roles {
+		roleItems[i] = usecase.RoleListItem{
+			RoleID:        role.RoleID,
+			RoleName:      role.RoleName,
+			RoleCode:      role.RoleCode,
+			RoleFlag:      role.RoleFlag,
+			SensitiveFlag: role.SensitiveFlag,
+			CreatedAt:     role.CreatedAt,
+		}
+	}
+
+	// Return the list of roles
+	return usecase.RoleListResponse{
+		Roles: roleItems,
 	}
 }

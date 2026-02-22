@@ -13,11 +13,17 @@ export const organizationRoutes: Routes = [
     component: OrganizationDetailComponent
   },
   {
-    path: 'create',
+    path: 'edit/:id',
     component: OrganizationFormComponent
   },
   {
-    path: 'edit/:id',
+    path: 'edit',
     component: OrganizationFormComponent
+  },
+  {
+    path: 'create',
+    redirectTo: 'edit',
+    pathMatch: 'full'
   }
 ];
+
