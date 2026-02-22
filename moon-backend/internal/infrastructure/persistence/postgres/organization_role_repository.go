@@ -38,13 +38,13 @@ func (r *organizationRoleRepository) GetByOrganizationAndRole(ctx context.Contex
 // GetRolesByOrganizationID gets all roles for an organization
 func (r *organizationRoleRepository) GetRolesByOrganizationID(ctx context.Context, organizationID uuid.UUID) ([]aggregate.Role, error) {
 	var roles []aggregate.Role
-	err := r.db.WithContext(ctx).Table("systems.roles").Select("systems.roles.*").Joins("INNER JOIN systems.organization_role ON systems.roles.id = systems.organization_role.role_id").Where("systems.organization_role.organization_id = ?", organizationID).Find(&roles).Error
+	err := r.db.WithContext(ctx).Table("systems.role").Select("systems.role.role_id, systems.role.role_name, systems.role.role_code, systems.role.role_description, systems.role.role_flag, systems.role.sensitive_flag, systems.role.created_at, systems.role.updated_at").Joins("INNER JOIN systems.organization_role ON systems.role.role_id = systems.organization_role.role_id").Where("systems.organization_role.organization_id = ?", organizationID).Find(&roles).Error
 	return roles, err
 }
 
 // GetOrganizationsByRoleID gets all organizations for a role
 func (r *organizationRoleRepository) GetOrganizationsByRoleID(ctx context.Context, roleID uuid.UUID) ([]aggregate.Organization, error) {
 	var organizations []aggregate.Organization
-	err := r.db.WithContext(ctx).Table("systems.organizations").Select("systems.organizations.*").Joins("INNER JOIN systems.organization_role ON systems.organizations.id = systems.organization_role.organization_id").Where("systems.organization_role.role_id = ?", roleID).Find(&organizations).Error
+	err := r.db.WithContext(ctx).Table("systems.organization").Select("systems.organization.organization_id, systems.organization.organization_name, systems.organization.organization_code, systems.organization.organization_description, systems.organization.organization_flag, systems.organization.sensitive_flag, systems.organization.created_at, systems.organization.updated_at").Joins("INNER JOIN systems.organization_role ON systems.organization.organization_id = systems.organization_role.organization_id").Where("systems.organization_role.role_id = ?", roleID).Find(&organizations).Error
 	return organizations, err
 }

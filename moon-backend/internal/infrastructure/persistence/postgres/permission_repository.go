@@ -31,64 +31,82 @@ func NewPermissionRepository(db *gorm.DB) repository.PermissionRepository {
 // If the permission already exists, it updates the existing record
 // If the permission does not exist, it creates a new record
 // It returns an error if the operation fails
-func (pr *permissionRepository) SavePermission(ctx *context.Context, permission aggregate.Permission) error {
+func (pr *permissionRepository) SavePermission(ctx context.Context, permission aggregate.Permission) error {
 	// Check if the permission already exists
 	var existingPermission aggregate.Permission
-	err := pr.db.WithContext(*ctx).Where("permission_id = ?", permission.PermissionID).First(&existingPermission).Error
+	err := pr.db.WithContext(ctx).Where("permission_id = ?", permission.PermissionID).First(&existingPermission).Error
 
 	if err == gorm.ErrRecordNotFound {
 		// Permission does not exist, create a new record
-		return pr.db.WithContext(*ctx).Create(&permission).Error
+		// Create a map without ParentID to avoid database error
+		permissionData := map[string]interface{}{
+			"permission_id":          permission.PermissionID,
+			"permission_name":        permission.PermissionName,
+			"permission_description": permission.Description,
+			"permission_code":        permission.PermissionCode,
+			"sensitive_flag":         permission.SensitiveFlag,
+			"created_at":             permission.CreatedAt,
+			"updated_at":             permission.UpdatedAt,
+		}
+		return pr.db.WithContext(ctx).Table("systems.permission").Create(permissionData).Error
 	} else if err != nil {
 		// Other error occurred
 		return err
 	} else {
 		// Permission exists, update the existing record
-		return pr.db.WithContext(*ctx).Model(&aggregate.Permission{}).Where("permission_id = ?", permission.PermissionID).Updates(&permission).Error
+		// Create a map without ParentID to avoid database error
+		permissionData := map[string]interface{}{
+			"permission_name":        permission.PermissionName,
+			"permission_description": permission.Description,
+			"permission_code":        permission.PermissionCode,
+			"sensitive_flag":         permission.SensitiveFlag,
+			"updated_at":             permission.UpdatedAt,
+		}
+		return pr.db.WithContext(ctx).Table("systems.permission").Where("permission_id = ?", permission.PermissionID).Updates(permissionData).Error
 	}
 }
 
 // FindPermissionByID retrieves a permission by its ID
 // It returns the permission and an error if the operation fails
 // If the permission is not found, it returns an error
-func (pr *permissionRepository) FindPermissionByID(ctx *context.Context, permissionID uuid.UUID) (aggregate.Permission, error) {
+func (pr *permissionRepository) FindPermissionByID(ctx context.Context, permissionID uuid.UUID) (aggregate.Permission, error) {
 	var permission aggregate.Permission
-	err := pr.db.WithContext(*ctx).Where("permission_id = ?", permissionID).First(&permission).Error
+	err := pr.db.WithContext(ctx).Table("systems.permission").Select("permission_id, permission_name, permission_description, permission_code, sensitive_flag, created_at, updated_at").Where("permission_id = ?", permissionID).First(&permission).Error
 	return permission, err
 }
 
 // FindPermissionByName retrieves permissions by their name
 // It returns a list of permissions and an error if the operation fails
 // If no permissions are found, it returns an empty list and no error
-func (pr *permissionRepository) FindPermissionByName(ctx *context.Context, permissionName string) ([]aggregate.Permission, error) {
+func (pr *permissionRepository) FindPermissionByName(ctx context.Context, permissionName string) ([]aggregate.Permission, error) {
 	var permissions []aggregate.Permission
 	pattern := "%" + permissionName + "%"
-	err := pr.db.WithContext(*ctx).Where("permission_name LIKE ?", pattern).Find(&permissions).Error
+	err := pr.db.WithContext(ctx).Table("systems.permission").Select("permission_id, permission_name, permission_description, permission_code, sensitive_flag, created_at, updated_at").Where("permission_name LIKE ?", pattern).Find(&permissions).Error
 	return permissions, err
 }
 
 // FindPermissionByCode retrieves permissions by their code
 // It returns a list of permissions and an error if the operation fails
 // If no permissions are found, it returns an empty list and no error
-func (pr *permissionRepository) FindPermissionByCode(ctx *context.Context, permissionCode string) ([]aggregate.Permission, error) {
+func (pr *permissionRepository) FindPermissionByCode(ctx context.Context, permissionCode string) ([]aggregate.Permission, error) {
 	var permissions []aggregate.Permission
 	pattern := "%" + permissionCode + "%"
-	err := pr.db.WithContext(*ctx).Where("permission_code LIKE ?", pattern).Find(&permissions).Error
+	err := pr.db.WithContext(ctx).Table("systems.permission").Select("permission_id, permission_name, permission_description, permission_code, sensitive_flag, created_at, updated_at").Where("permission_code LIKE ?", pattern).Find(&permissions).Error
 	return permissions, err
 }
 
 // DeletePermission deletes a permission by its ID
 // It returns an error if the operation fails
-func (pr *permissionRepository) DeletePermission(ctx *context.Context, permissionID uuid.UUID) error {
-	return pr.db.WithContext(*ctx).Where("permission_id = ?", permissionID).Delete(&aggregate.Permission{}).Error
+func (pr *permissionRepository) DeletePermission(ctx context.Context, permissionID uuid.UUID) error {
+	return pr.db.WithContext(ctx).Table("systems.permission").Where("permission_id = ?", permissionID).Delete(nil).Error
 }
 
 // ListPermissions retrieves all permissions matching the specified criteria
 // It returns a list of permissions and an error if the operation fails
 // If no permissions are found, it returns an empty list and no error
-func (pr *permissionRepository) ListPermissions(ctx *context.Context, limit, offset int) ([]aggregate.Permission, error) {
+func (pr *permissionRepository) ListPermissions(ctx context.Context, limit, offset int) ([]aggregate.Permission, error) {
 	var permissions []aggregate.Permission
-	query := pr.db.WithContext(*ctx)
+	query := pr.db.WithContext(ctx).Table("systems.permission").Select("permission_id, permission_name, permission_description, permission_code, sensitive_flag, created_at, updated_at")
 
 	if limit > 0 {
 		query = query.Limit(limit)

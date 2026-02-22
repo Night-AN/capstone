@@ -29,7 +29,7 @@ func (h *OrganizationHandler) CreateOrganization(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.organizationService.CreateOrganization(&context, req)
+	resp := h.organizationService.CreateOrganization(context, req)
 	c.JSON(http.StatusCreated, gin.H{
 		"code":    "201",
 		"message": "success",
@@ -50,7 +50,7 @@ func (h *OrganizationHandler) GetOrganization(c *gin.Context) {
 	}
 	req.OrganizationID = organizationID
 	context := c.Request.Context()
-	resp := h.organizationService.GetOrganization(&context, req)
+	resp := h.organizationService.GetOrganization(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -68,7 +68,7 @@ func (h *OrganizationHandler) UpdateOrganization(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.organizationService.UpdateOrganization(&context, req)
+	resp := h.organizationService.UpdateOrganization(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -86,7 +86,7 @@ func (h *OrganizationHandler) DeleteOrganization(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.organizationService.DeleteOrganization(&context, req)
+	resp := h.organizationService.DeleteOrganization(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -103,7 +103,7 @@ func (h *OrganizationHandler) GetOrganizationTree(c *gin.Context) {
 		req.RootOrganizationCode = "ROOT"
 	}
 	context := c.Request.Context()
-	resp := h.organizationService.GetOrganizationTree(&context, req)
+	resp := h.organizationService.GetOrganizationTree(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -115,7 +115,7 @@ func (h *OrganizationHandler) ListOrganizations(c *gin.Context) {
 	var req usecase.OrganizationListRequest
 	// No need to bind JSON for empty request
 	context := c.Request.Context()
-	resp := h.organizationService.ListOrganizations(&context, req)
+	resp := h.organizationService.ListOrganizations(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -133,7 +133,7 @@ func (h *OrganizationHandler) MoveOrganization(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.organizationService.MoveOrganization(&context, req)
+	resp := h.organizationService.MoveOrganization(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -237,7 +237,7 @@ func (h *OrganizationHandler) GetOrganizationUsers(c *gin.Context) {
 
 	req.OrganizationID = organizationID
 	context := c.Request.Context()
-	resp := h.organizationService.GetOrganizationUsers(&context, req)
+	resp := h.organizationService.GetOrganizationUsers(context, req)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",

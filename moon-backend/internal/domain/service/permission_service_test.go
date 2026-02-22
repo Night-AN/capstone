@@ -20,7 +20,7 @@ func TestCreatePermission(t *testing.T) {
 	}
 
 	// Create the permission
-	resp := permissionSvc.CreatePermission(&testCtx, req)
+	resp := permissionSvc.CreatePermission(testCtx, req)
 
 	// Verify the response
 	if resp.PermissionID == uuid.Nil {
@@ -47,13 +47,13 @@ func TestGetPermission(t *testing.T) {
 	}
 
 	// Create the permission
-	createResp := permissionSvc.CreatePermission(&testCtx, createReq)
+	createResp := permissionSvc.CreatePermission(testCtx, createReq)
 
 	// Retrieve the permission
 	getReq := usecase.PermissionGetRequest{
 		PermissionID: createResp.PermissionID,
 	}
-	getResp := permissionSvc.GetPermission(&testCtx, getReq)
+	getResp := permissionSvc.GetPermission(testCtx, getReq)
 
 	// Verify the response
 	if getResp.PermissionID != createResp.PermissionID {
@@ -83,7 +83,7 @@ func TestUpdatePermission(t *testing.T) {
 	}
 
 	// Create the permission
-	createResp := permissionSvc.CreatePermission(&testCtx, createReq)
+	createResp := permissionSvc.CreatePermission(testCtx, createReq)
 
 	// Update the permission
 	updatedDescription := "Updated test permission description"
@@ -94,7 +94,7 @@ func TestUpdatePermission(t *testing.T) {
 		PermissionCode: "test:api:update:updated",
 		SensitiveFlag:  true,
 	}
-	updateResp := permissionSvc.UpdatePermission(&testCtx, updateReq)
+	updateResp := permissionSvc.UpdatePermission(testCtx, updateReq)
 
 	// Verify the response
 	if updateResp.PermissionID != createResp.PermissionID {
@@ -121,13 +121,13 @@ func TestDeletePermission(t *testing.T) {
 	}
 
 	// Create the permission
-	createResp := permissionSvc.CreatePermission(&testCtx, createReq)
+	createResp := permissionSvc.CreatePermission(testCtx, createReq)
 
 	// Delete the permission
 	deleteReq := usecase.PermissionDeleteRequest{
 		PermissionID: createResp.PermissionID,
 	}
-	deleteResp := permissionSvc.DeletePermission(&testCtx, deleteReq)
+	deleteResp := permissionSvc.DeletePermission(testCtx, deleteReq)
 
 	// Verify the response
 	if !deleteResp.Success {
@@ -148,7 +148,7 @@ func TestListPermissions(t *testing.T) {
 		PermissionCode: "test:api:list:1",
 		SensitiveFlag:  false,
 	}
-	permissionSvc.CreatePermission(&testCtx, createReq1)
+	permissionSvc.CreatePermission(testCtx, createReq1)
 
 	// Create second permission
 	createReq2 := usecase.PermissionCreateRequest{
@@ -157,14 +157,14 @@ func TestListPermissions(t *testing.T) {
 		PermissionCode: "test:api:list:2",
 		SensitiveFlag:  true,
 	}
-	permissionSvc.CreatePermission(&testCtx, createReq2)
+	permissionSvc.CreatePermission(testCtx, createReq2)
 
 	// List permissions
 	listReq := usecase.PermissionListRequest{
 		Limit:  10,
 		Offset: 0,
 	}
-	listResp := permissionSvc.ListPermissions(&testCtx, listReq)
+	listResp := permissionSvc.ListPermissions(testCtx, listReq)
 
 	// Verify the response
 	if len(listResp.Permissions) < 2 {

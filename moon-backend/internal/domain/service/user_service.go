@@ -11,25 +11,25 @@ import (
 )
 
 type UserService interface {
-	Login(ctx *context.Context, email string, password string) (usecase.LoginResponse, errors.DomainError)
-	Logout(ctx *context.Context, user_id uuid.UUID) (bool, errors.DomainError)
-	Register(ctx *context.Context, user usecase.RegisterRequest) (usecase.RegisterResponse, errors.DomainError)
+	Login(ctx context.Context, email string, password string) (usecase.LoginResponse, errors.DomainError)
+	Logout(ctx context.Context, user_id uuid.UUID) (bool, errors.DomainError)
+	Register(ctx context.Context, user usecase.RegisterRequest) (usecase.RegisterResponse, errors.DomainError)
 
-	QueryUserProfile(ctx *context.Context, user_id uuid.UUID) (usecase.UserProfileResponse, errors.DomainError)
-	UpdateUserProfile(ctx *context.Context, user aggregate.User) (bool, errors.DomainError)
+	QueryUserProfile(ctx context.Context, user_id uuid.UUID) (usecase.UserProfileResponse, errors.DomainError)
+	UpdateUserProfile(ctx context.Context, user aggregate.User) (bool, errors.DomainError)
 
-	CreateUser(ctx *context.Context, req usecase.UserCreateRequest) (usecase.UserCreateResponse, errors.DomainError)
-	UpdateUser(ctx *context.Context, req usecase.UserUpdateRequest) (usecase.UserUpdateResponse, errors.DomainError)
-	DeleteUser(ctx *context.Context, req usecase.UserDeleteRequest) (usecase.UserDeleteResponse, errors.DomainError)
-	GetUserByID(ctx *context.Context, req usecase.UserGetRequest) (usecase.UserGetResponse, errors.DomainError)
-	ListUsers(ctx *context.Context, req usecase.UserListRequest) (usecase.UserListResponse, errors.DomainError)
-	GetUsersByOrganizationID(ctx *context.Context, organization_id uuid.UUID) ([]usecase.UserListItem, errors.DomainError)
+	CreateUser(ctx context.Context, req usecase.UserCreateRequest) (usecase.UserCreateResponse, errors.DomainError)
+	UpdateUser(ctx context.Context, req usecase.UserUpdateRequest) (usecase.UserUpdateResponse, errors.DomainError)
+	DeleteUser(ctx context.Context, req usecase.UserDeleteRequest) (usecase.UserDeleteResponse, errors.DomainError)
+	GetUserByID(ctx context.Context, req usecase.UserGetRequest) (usecase.UserGetResponse, errors.DomainError)
+	ListUsers(ctx context.Context, req usecase.UserListRequest) (usecase.UserListResponse, errors.DomainError)
+	GetUsersByOrganizationID(ctx context.Context, organization_id uuid.UUID) ([]usecase.UserListItem, errors.DomainError)
 
-	AssignRoleToUser(ctx *context.Context, user_id uuid.UUID, role_id uuid.UUID) (bool, errors.DomainError)
-	RemoveRoleFromUser(ctx *context.Context, user_id uuid.UUID, role_id uuid.UUID) (bool, errors.DomainError)
-	GetUserRoles(ctx *context.Context, user_id uuid.UUID) ([]aggregate.Role, errors.DomainError)
-	CheckUserHasRole(ctx *context.Context, user_id uuid.UUID, role_code string) (bool, errors.DomainError)
-	CheckUserHasPermission(ctx *context.Context, user_id uuid.UUID, permission_code string) (bool, errors.DomainError)
+	AssignRoleToUser(ctx context.Context, user_id uuid.UUID, role_id uuid.UUID) (bool, errors.DomainError)
+	RemoveRoleFromUser(ctx context.Context, user_id uuid.UUID, role_id uuid.UUID) (bool, errors.DomainError)
+	GetUserRoles(ctx context.Context, user_id uuid.UUID) ([]aggregate.Role, errors.DomainError)
+	CheckUserHasRole(ctx context.Context, user_id uuid.UUID, role_code string) (bool, errors.DomainError)
+	CheckUserHasPermission(ctx context.Context, user_id uuid.UUID, permission_code string) (bool, errors.DomainError)
 }
 
 func NewUserService(user_repo repository.UserRepository) UserService {
@@ -42,7 +42,7 @@ type userService struct {
 	UserSession    map[uuid.UUID]aggregate.User
 }
 
-func (us *userService) Login(ctx *context.Context, email string, password string) (usecase.LoginResponse, errors.DomainError) {
+func (us *userService) Login(ctx context.Context, email string, password string) (usecase.LoginResponse, errors.DomainError) {
 	user, err := us.UserRepository.FindUserByEmail(ctx, email)
 	if err != nil {
 		delete(us.UserSession, user.UserID)
@@ -53,12 +53,12 @@ func (us *userService) Login(ctx *context.Context, email string, password string
 	return usecase.ConvertUserAggregateToLoginResponse(user), errors.DomainError{}
 }
 
-func (us *userService) Logout(ctx *context.Context, user_id uuid.UUID) (bool, errors.DomainError) {
+func (us *userService) Logout(ctx context.Context, user_id uuid.UUID) (bool, errors.DomainError) {
 	delete(us.UserSession, user_id)
 	return true, errors.DomainError{}
 }
 
-func (us *userService) Register(ctx *context.Context, user usecase.RegisterRequest) (usecase.RegisterResponse, errors.DomainError) {
+func (us *userService) Register(ctx context.Context, user usecase.RegisterRequest) (usecase.RegisterResponse, errors.DomainError) {
 	req := usecase.ConvertRegisterRequestToUserAggregate(user)
 	err := us.UserRepository.SaveUser(ctx, req)
 	if err != nil {
@@ -67,7 +67,7 @@ func (us *userService) Register(ctx *context.Context, user usecase.RegisterReque
 	return usecase.RegisterResponse{Status: true}, errors.DomainError{}
 }
 
-func (us *userService) QueryUserProfile(ctx *context.Context, user_id uuid.UUID) (usecase.UserProfileResponse, errors.DomainError) {
+func (us *userService) QueryUserProfile(ctx context.Context, user_id uuid.UUID) (usecase.UserProfileResponse, errors.DomainError) {
 	user, err := us.UserRepository.FindUserByID(ctx, user_id)
 	if err != nil {
 		return usecase.UserProfileResponse{}, errors.NewDomainWithError("401", "Query Profile Err", err)
@@ -76,11 +76,11 @@ func (us *userService) QueryUserProfile(ctx *context.Context, user_id uuid.UUID)
 	return usecase.UserProfileResponse{}, errors.DomainError{}
 }
 
-func (us *userService) UpdateUserProfile(ctx *context.Context, user aggregate.User) (bool, errors.DomainError) {
+func (us *userService) UpdateUserProfile(ctx context.Context, user aggregate.User) (bool, errors.DomainError) {
 	return true, errors.DomainError{}
 }
 
-func (us *userService) CreateUser(ctx *context.Context, req usecase.UserCreateRequest) (usecase.UserCreateResponse, errors.DomainError) {
+func (us *userService) CreateUser(ctx context.Context, req usecase.UserCreateRequest) (usecase.UserCreateResponse, errors.DomainError) {
 	user := usecase.ConvertUserCreateRequestToUserAggregate(req)
 	err := us.UserRepository.SaveUser(ctx, user)
 	if err != nil {
@@ -93,7 +93,7 @@ func (us *userService) CreateUser(ctx *context.Context, req usecase.UserCreateRe
 	}, errors.DomainError{}
 }
 
-func (us *userService) UpdateUser(ctx *context.Context, req usecase.UserUpdateRequest) (usecase.UserUpdateResponse, errors.DomainError) {
+func (us *userService) UpdateUser(ctx context.Context, req usecase.UserUpdateRequest) (usecase.UserUpdateResponse, errors.DomainError) {
 	user := usecase.ConvertUserUpdateRequestToUserAggregate(req)
 	err := us.UserRepository.SaveUser(ctx, user)
 	if err != nil {
@@ -106,7 +106,7 @@ func (us *userService) UpdateUser(ctx *context.Context, req usecase.UserUpdateRe
 	}, errors.DomainError{}
 }
 
-func (us *userService) DeleteUser(ctx *context.Context, req usecase.UserDeleteRequest) (usecase.UserDeleteResponse, errors.DomainError) {
+func (us *userService) DeleteUser(ctx context.Context, req usecase.UserDeleteRequest) (usecase.UserDeleteResponse, errors.DomainError) {
 	// 使用DeleteUser方法从数据库中删除用户记录
 	err := us.UserRepository.DeleteUser(ctx, req.UserID)
 	if err != nil {
@@ -115,7 +115,7 @@ func (us *userService) DeleteUser(ctx *context.Context, req usecase.UserDeleteRe
 	return usecase.UserDeleteResponse{Success: true}, errors.DomainError{}
 }
 
-func (us *userService) ListUsers(ctx *context.Context, req usecase.UserListRequest) (usecase.UserListResponse, errors.DomainError) {
+func (us *userService) ListUsers(ctx context.Context, req usecase.UserListRequest) (usecase.UserListResponse, errors.DomainError) {
 	// 调用UserRepository.ListUsers方法获取所有用户
 	users, err := us.UserRepository.ListUsers(ctx)
 	if err != nil {
@@ -136,7 +136,7 @@ func (us *userService) ListUsers(ctx *context.Context, req usecase.UserListReque
 	return usecase.UserListResponse{Users: userItems}, errors.DomainError{}
 }
 
-func (us *userService) GetUserByID(ctx *context.Context, req usecase.UserGetRequest) (usecase.UserGetResponse, errors.DomainError) {
+func (us *userService) GetUserByID(ctx context.Context, req usecase.UserGetRequest) (usecase.UserGetResponse, errors.DomainError) {
 	user, err := us.UserRepository.FindUserByID(ctx, req.UserID)
 	if err != nil {
 		return usecase.UserGetResponse{}, errors.NewDomainWithError("401", "Get User Err", err)
@@ -144,7 +144,7 @@ func (us *userService) GetUserByID(ctx *context.Context, req usecase.UserGetRequ
 	return usecase.ConvertUserAggregateToUserGetResponse(user), errors.DomainError{}
 }
 
-func (us *userService) AssignRoleToUser(ctx *context.Context, user_id uuid.UUID, role_id uuid.UUID) (bool, errors.DomainError) {
+func (us *userService) AssignRoleToUser(ctx context.Context, user_id uuid.UUID, role_id uuid.UUID) (bool, errors.DomainError) {
 	// 检查用户是否存在
 	_, err := us.UserRepository.FindUserByID(ctx, user_id)
 	if err != nil {
@@ -160,7 +160,7 @@ func (us *userService) AssignRoleToUser(ctx *context.Context, user_id uuid.UUID,
 	return true, errors.DomainError{}
 }
 
-func (us *userService) RemoveRoleFromUser(ctx *context.Context, user_id uuid.UUID, role_id uuid.UUID) (bool, errors.DomainError) {
+func (us *userService) RemoveRoleFromUser(ctx context.Context, user_id uuid.UUID, role_id uuid.UUID) (bool, errors.DomainError) {
 	// 检查用户是否存在
 	_, err := us.UserRepository.FindUserByID(ctx, user_id)
 	if err != nil {
@@ -176,7 +176,7 @@ func (us *userService) RemoveRoleFromUser(ctx *context.Context, user_id uuid.UUI
 	return true, errors.DomainError{}
 }
 
-func (us *userService) GetUserRoles(ctx *context.Context, user_id uuid.UUID) ([]aggregate.Role, errors.DomainError) {
+func (us *userService) GetUserRoles(ctx context.Context, user_id uuid.UUID) ([]aggregate.Role, errors.DomainError) {
 	// 检查用户是否存在
 	_, err := us.UserRepository.FindUserByID(ctx, user_id)
 	if err != nil {
@@ -192,7 +192,7 @@ func (us *userService) GetUserRoles(ctx *context.Context, user_id uuid.UUID) ([]
 	return roles, errors.DomainError{}
 }
 
-func (us *userService) CheckUserHasRole(ctx *context.Context, user_id uuid.UUID, role_code string) (bool, errors.DomainError) {
+func (us *userService) CheckUserHasRole(ctx context.Context, user_id uuid.UUID, role_code string) (bool, errors.DomainError) {
 	// 检查用户是否存在
 	_, err := us.UserRepository.FindUserByID(ctx, user_id)
 	if err != nil {
@@ -215,7 +215,7 @@ func (us *userService) CheckUserHasRole(ctx *context.Context, user_id uuid.UUID,
 	return false, errors.DomainError{}
 }
 
-func (us *userService) CheckUserHasPermission(ctx *context.Context, user_id uuid.UUID, permission_code string) (bool, errors.DomainError) {
+func (us *userService) CheckUserHasPermission(ctx context.Context, user_id uuid.UUID, permission_code string) (bool, errors.DomainError) {
 	// 检查用户是否存在
 	_, err := us.UserRepository.FindUserByID(ctx, user_id)
 	if err != nil {
@@ -240,7 +240,7 @@ func (us *userService) CheckUserHasPermission(ctx *context.Context, user_id uuid
 	return false, errors.DomainError{}
 }
 
-func (us *userService) GetUsersByOrganizationID(ctx *context.Context, organization_id uuid.UUID) ([]usecase.UserListItem, errors.DomainError) {
+func (us *userService) GetUsersByOrganizationID(ctx context.Context, organization_id uuid.UUID) ([]usecase.UserListItem, errors.DomainError) {
 	// 获取组织的用户列表
 	users, err := us.UserRepository.FindUsersByOrganizationID(ctx, organization_id)
 	if err != nil {

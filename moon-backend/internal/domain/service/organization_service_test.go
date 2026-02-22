@@ -18,7 +18,7 @@ func TestCreateOrganization(t *testing.T) {
 	}
 
 	// 调用 CreateOrganization 方法
-	resp := organizationSvc.CreateOrganization(&testCtx, req)
+	resp := organizationSvc.CreateOrganization(testCtx, req)
 
 	// 验证响应
 	if resp.OrganizationID == uuid.Nil {
@@ -41,13 +41,13 @@ func TestGetOrganization(t *testing.T) {
 		OrganizationFlag:        "active",
 		SensitiveFlag:           false,
 	}
-	createResp := organizationSvc.CreateOrganization(&testCtx, createReq)
+	createResp := organizationSvc.CreateOrganization(testCtx, createReq)
 
 	// 然后获取这个组织
 	getReq := usecase.OrganizationGetRequest{
 		OrganizationID: createResp.OrganizationID,
 	}
-	getResp := organizationSvc.GetOrganization(&testCtx, getReq)
+	getResp := organizationSvc.GetOrganization(testCtx, getReq)
 
 	// 验证响应
 	if getResp.OrganizationID != createResp.OrganizationID {
@@ -70,7 +70,7 @@ func TestUpdateOrganization(t *testing.T) {
 		OrganizationFlag:        "active",
 		SensitiveFlag:           false,
 	}
-	createResp := organizationSvc.CreateOrganization(&testCtx, createReq)
+	createResp := organizationSvc.CreateOrganization(testCtx, createReq)
 
 	// 然后更新这个组织
 	updateReq := usecase.OrganizationUpdateRequest{
@@ -81,7 +81,7 @@ func TestUpdateOrganization(t *testing.T) {
 		OrganizationFlag:        "inactive",
 		SensitiveFlag:           true,
 	}
-	updateResp := organizationSvc.UpdateOrganization(&testCtx, updateReq)
+	updateResp := organizationSvc.UpdateOrganization(testCtx, updateReq)
 
 	// 验证响应
 	if updateResp.OrganizationID != createResp.OrganizationID {
@@ -104,13 +104,13 @@ func TestDeleteOrganization(t *testing.T) {
 		OrganizationFlag:        "active",
 		SensitiveFlag:           false,
 	}
-	createResp := organizationSvc.CreateOrganization(&testCtx, createReq)
+	createResp := organizationSvc.CreateOrganization(testCtx, createReq)
 
 	// 然后删除这个组织
 	deleteReq := usecase.OrganizationDeleteRequest{
 		OrganizationID: createResp.OrganizationID,
 	}
-	deleteResp := organizationSvc.DeleteOrganization(&testCtx, deleteReq)
+	deleteResp := organizationSvc.DeleteOrganization(testCtx, deleteReq)
 
 	// 验证响应
 	if !deleteResp.Success {
@@ -127,7 +127,7 @@ func TestGetOrganizationTree(t *testing.T) {
 		OrganizationFlag:        "active",
 		SensitiveFlag:           false,
 	}
-	rootResp := organizationSvc.CreateOrganization(&testCtx, rootReq)
+	rootResp := organizationSvc.CreateOrganization(testCtx, rootReq)
 
 	// 然后创建子组织
 	childReq := usecase.OrganizationCreateRequest{
@@ -137,13 +137,13 @@ func TestGetOrganizationTree(t *testing.T) {
 		OrganizationFlag:        "active",
 		SensitiveFlag:           false,
 	}
-	childResp := organizationSvc.CreateOrganization(&testCtx, childReq)
+	childResp := organizationSvc.CreateOrganization(testCtx, childReq)
 
 	// 然后获取组织树
 	treeReq := usecase.OrganizationTreeRequest{
 		RootOrganizationCode: "root",
 	}
-	treeResp := organizationSvc.GetOrganizationTree(&testCtx, treeReq)
+	treeResp := organizationSvc.GetOrganizationTree(testCtx, treeReq)
 
 	// 验证响应
 	if treeResp.OrganizationID != rootResp.OrganizationID {

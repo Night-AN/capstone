@@ -28,7 +28,7 @@ func (h *PermissionHandler) CreatePermission(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.permissionService.CreatePermission(&context, req)
+	resp := h.permissionService.CreatePermission(context, req)
 	c.JSON(http.StatusCreated, gin.H{
 		"code":    "201",
 		"message": "success",
@@ -52,7 +52,7 @@ func (h *PermissionHandler) GetPermission(c *gin.Context) {
 	req.PermissionID = permissionId
 
 	context := c.Request.Context()
-	resp := h.permissionService.GetPermission(&context, req)
+	resp := h.permissionService.GetPermission(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -70,7 +70,7 @@ func (h *PermissionHandler) UpdatePermission(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.permissionService.UpdatePermission(&context, req)
+	resp := h.permissionService.UpdatePermission(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -88,7 +88,7 @@ func (h *PermissionHandler) DeletePermission(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.permissionService.DeletePermission(&context, req)
+	resp := h.permissionService.DeletePermission(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -104,7 +104,7 @@ func (h *PermissionHandler) ListPermissions(c *gin.Context) {
 	req.Offset, _ = strconv.Atoi(c.DefaultQuery("offset", "0"))
 
 	context := c.Request.Context()
-	resp := h.permissionService.ListPermissions(&context, req)
+	resp := h.permissionService.ListPermissions(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",

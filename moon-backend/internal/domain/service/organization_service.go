@@ -10,14 +10,14 @@ import (
 )
 
 type OrganizationService interface {
-	CreateOrganization(ctx *context.Context, req usecase.OrganizationCreateRequest) usecase.OrganizationCreateResponse
-	GetOrganization(ctx *context.Context, req usecase.OrganizationGetRequest) usecase.OrganizationGetResponse
-	UpdateOrganization(ctx *context.Context, req usecase.OrganizationUpdateRequest) usecase.OrganizationUpdateResponse
-	DeleteOrganization(ctx *context.Context, req usecase.OrganizationDeleteRequest) usecase.OrganizationDeleteResponse
-	GetOrganizationTree(ctx *context.Context, req usecase.OrganizationTreeRequest) usecase.OrganizationTreeResponse
-	ListOrganizations(ctx *context.Context, req usecase.OrganizationListRequest) usecase.OrganizationListResponse
-	MoveOrganization(ctx *context.Context, req usecase.OrganizationMoveRequest) usecase.OrganizationMoveResponse
-	GetOrganizationUsers(ctx *context.Context, req usecase.OrganizationUsersRequest) usecase.OrganizationUsersResponse
+	CreateOrganization(ctx context.Context, req usecase.OrganizationCreateRequest) usecase.OrganizationCreateResponse
+	GetOrganization(ctx context.Context, req usecase.OrganizationGetRequest) usecase.OrganizationGetResponse
+	UpdateOrganization(ctx context.Context, req usecase.OrganizationUpdateRequest) usecase.OrganizationUpdateResponse
+	DeleteOrganization(ctx context.Context, req usecase.OrganizationDeleteRequest) usecase.OrganizationDeleteResponse
+	GetOrganizationTree(ctx context.Context, req usecase.OrganizationTreeRequest) usecase.OrganizationTreeResponse
+	ListOrganizations(ctx context.Context, req usecase.OrganizationListRequest) usecase.OrganizationListResponse
+	MoveOrganization(ctx context.Context, req usecase.OrganizationMoveRequest) usecase.OrganizationMoveResponse
+	GetOrganizationUsers(ctx context.Context, req usecase.OrganizationUsersRequest) usecase.OrganizationUsersResponse
 }
 
 type organizationService struct {
@@ -29,7 +29,7 @@ func NewOrganizationService(orgRepo repository.OrganizationRepository, userRepo 
 	return &organizationService{orgRepo: orgRepo, userRepo: userRepo}
 }
 
-func (os *organizationService) CreateOrganization(ctx *context.Context, req usecase.OrganizationCreateRequest) usecase.OrganizationCreateResponse {
+func (os *organizationService) CreateOrganization(ctx context.Context, req usecase.OrganizationCreateRequest) usecase.OrganizationCreateResponse {
 	// 实现 CreateOrganization 方法
 	org := usecase.ConvertOrganizationCreateRequestToOrganizationAggregate(req)
 	err := os.orgRepo.SaveOrganization(ctx, org)
@@ -44,7 +44,7 @@ func (os *organizationService) CreateOrganization(ctx *context.Context, req usec
 	}
 }
 
-func (os *organizationService) GetOrganization(ctx *context.Context, req usecase.OrganizationGetRequest) usecase.OrganizationGetResponse {
+func (os *organizationService) GetOrganization(ctx context.Context, req usecase.OrganizationGetRequest) usecase.OrganizationGetResponse {
 	// 实现 GetOrganization 方法
 	orgID := req.OrganizationID
 	org, err := os.orgRepo.FindOrganizationByID(ctx, orgID)
@@ -63,7 +63,7 @@ func (os *organizationService) GetOrganization(ctx *context.Context, req usecase
 	}
 }
 
-func (os *organizationService) UpdateOrganization(ctx *context.Context, req usecase.OrganizationUpdateRequest) usecase.OrganizationUpdateResponse {
+func (os *organizationService) UpdateOrganization(ctx context.Context, req usecase.OrganizationUpdateRequest) usecase.OrganizationUpdateResponse {
 	// 实现 UpdateOrganization 方法
 	orgID := req.OrganizationID
 	// 创建更新后的组织对象
@@ -91,7 +91,7 @@ func (os *organizationService) UpdateOrganization(ctx *context.Context, req usec
 	}
 }
 
-func (os *organizationService) DeleteOrganization(ctx *context.Context, req usecase.OrganizationDeleteRequest) usecase.OrganizationDeleteResponse {
+func (os *organizationService) DeleteOrganization(ctx context.Context, req usecase.OrganizationDeleteRequest) usecase.OrganizationDeleteResponse {
 	// 实现 DeleteOrganization 方法
 	// 注意：这里需要根据实际的 repository 接口来实现删除操作
 	// 由于当前的 OrganizationRepository 接口没有提供删除方法，我们暂时返回一个成功的响应
@@ -100,7 +100,7 @@ func (os *organizationService) DeleteOrganization(ctx *context.Context, req usec
 	}
 }
 
-func (os *organizationService) GetOrganizationTree(ctx *context.Context, req usecase.OrganizationTreeRequest) usecase.OrganizationTreeResponse {
+func (os *organizationService) GetOrganizationTree(ctx context.Context, req usecase.OrganizationTreeRequest) usecase.OrganizationTreeResponse {
 	// 首先获取根组织
 	rootOrgs, err := os.orgRepo.FindOrganizationByCode(ctx, req.RootOrganizationCode)
 	if err != nil || len(rootOrgs) == 0 {
@@ -113,7 +113,7 @@ func (os *organizationService) GetOrganizationTree(ctx *context.Context, req use
 	return os.buildOrganizationTree(ctx, rootOrg)
 }
 
-func (os *organizationService) buildOrganizationTree(ctx *context.Context, org aggregate.Organization) usecase.OrganizationTreeResponse {
+func (os *organizationService) buildOrganizationTree(ctx context.Context, org aggregate.Organization) usecase.OrganizationTreeResponse {
 	// 构建组织树节点
 	node := usecase.OrganizationTreeResponse{
 		OrganizationID:          org.OrganizationID,
@@ -148,7 +148,7 @@ func (os *organizationService) buildOrganizationTree(ctx *context.Context, org a
 	return node
 }
 
-func (os *organizationService) ListOrganizations(ctx *context.Context, req usecase.OrganizationListRequest) usecase.OrganizationListResponse {
+func (os *organizationService) ListOrganizations(ctx context.Context, req usecase.OrganizationListRequest) usecase.OrganizationListResponse {
 	// 获取所有组织
 	orgs, err := os.orgRepo.FindAllOrganizations(ctx)
 	if err != nil {
@@ -173,7 +173,7 @@ func (os *organizationService) ListOrganizations(ctx *context.Context, req useca
 	}
 }
 
-func (os *organizationService) MoveOrganization(ctx *context.Context, req usecase.OrganizationMoveRequest) usecase.OrganizationMoveResponse {
+func (os *organizationService) MoveOrganization(ctx context.Context, req usecase.OrganizationMoveRequest) usecase.OrganizationMoveResponse {
 	// 检查组织是否存在
 	_, err := os.orgRepo.FindOrganizationByID(ctx, req.OrganizationID)
 	if err != nil {
@@ -207,7 +207,7 @@ func (os *organizationService) MoveOrganization(ctx *context.Context, req usecas
 	return usecase.OrganizationMoveResponse{Success: true}
 }
 
-func (os *organizationService) GetOrganizationUsers(ctx *context.Context, req usecase.OrganizationUsersRequest) usecase.OrganizationUsersResponse {
+func (os *organizationService) GetOrganizationUsers(ctx context.Context, req usecase.OrganizationUsersRequest) usecase.OrganizationUsersResponse {
 	// 检查组织是否存在
 	_, err := os.orgRepo.FindOrganizationByID(ctx, req.OrganizationID)
 	if err != nil {

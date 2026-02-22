@@ -38,13 +38,13 @@ func (r *rolePermissionRepository) GetByRoleAndPermission(ctx context.Context, r
 // GetPermissionsByRoleID gets all permissions for a role
 func (r *rolePermissionRepository) GetPermissionsByRoleID(ctx context.Context, roleID uuid.UUID) ([]aggregate.Permission, error) {
 	var permissions []aggregate.Permission
-	err := r.db.WithContext(ctx).Table("systems.permissions").Select("systems.permissions.*").Joins("INNER JOIN systems.permission_role ON systems.permissions.id = systems.permission_role.permission_id").Where("systems.permission_role.role_id = ?", roleID).Find(&permissions).Error
+	err := r.db.WithContext(ctx).Table("systems.permission").Select("systems.permission.*").Joins("INNER JOIN systems.permission_role ON systems.permission.permission_id = systems.permission_role.permission_id").Where("systems.permission_role.role_id = ?", roleID).Find(&permissions).Error
 	return permissions, err
 }
 
 // GetRolesByPermissionID gets all roles for a permission
 func (r *rolePermissionRepository) GetRolesByPermissionID(ctx context.Context, permissionID uuid.UUID) ([]aggregate.Role, error) {
 	var roles []aggregate.Role
-	err := r.db.WithContext(ctx).Table("systems.roles").Select("systems.roles.*").Joins("INNER JOIN systems.permission_role ON systems.roles.id = systems.permission_role.role_id").Where("systems.permission_role.permission_id = ?", permissionID).Find(&roles).Error
+	err := r.db.WithContext(ctx).Table("systems.role").Select("systems.role.*").Joins("INNER JOIN systems.permission_role ON systems.role.role_id = systems.permission_role.role_id").Where("systems.permission_role.permission_id = ?", permissionID).Find(&roles).Error
 	return roles, err
 }

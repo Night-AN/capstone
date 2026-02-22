@@ -27,42 +27,42 @@ type RoleRepository interface {
 	// If the role already exists, it updates the existing record
 	// If the role does not exist, it creates a new record
 	// It returns an error if the operation fails
-	SaveRole(ctx *context.Context, role aggregate.Role) error
+	SaveRole(ctx context.Context, role aggregate.Role) error
 
 	// FindRoleByID retrieves a role by its ID
 	// It returns the role and an error if the operation fails
 	// If the role is not found, it returns an error
-	FindRoleByID(ctx *context.Context, roleID uuid.UUID) (aggregate.Role, error)
+	FindRoleByID(ctx context.Context, roleID uuid.UUID) (aggregate.Role, error)
 
 	// FindRoleByName retrieves roles by their name
 	// It returns a list of roles and an error if the operation fails
 	// If no roles are found, it returns an empty list and no error
-	FindRoleByName(ctx *context.Context, roleName string) ([]aggregate.Role, error)
+	FindRoleByName(ctx context.Context, roleName string) ([]aggregate.Role, error)
 
 	// FindRoleByCode retrieves roles by their code
 	// It returns a list of roles and an error if the operation fails
 	// If no roles are found, it returns an empty list and no error
-	FindRoleByCode(ctx *context.Context, roleCode string) ([]aggregate.Role, error)
+	FindRoleByCode(ctx context.Context, roleCode string) ([]aggregate.Role, error)
 
 	// FindAllRoles retrieves all roles
 	// It returns a list of roles and an error if the operation fails
 	// If no roles are found, it returns an empty list and no error
-	FindAllRoles(ctx *context.Context) ([]aggregate.Role, error)
+	FindAllRoles(ctx context.Context) ([]aggregate.Role, error)
 
 	// DeleteRole deletes a role by its ID
 	// It returns an error if the operation fails
-	DeleteRole(ctx *context.Context, roleID uuid.UUID) error
+	DeleteRole(ctx context.Context, roleID uuid.UUID) error
 
 	// AssignPermission assigns a permission to a role
 	// It returns an error if the operation fails
-	AssignPermission(ctx *context.Context, roleID uuid.UUID, permissionID uuid.UUID) error
+	AssignPermission(ctx context.Context, roleID uuid.UUID, permissionID uuid.UUID) error
 
 	// RemovePermission removes a permission from a role
 	// It returns an error if the operation fails
-	RemovePermission(ctx *context.Context, roleID uuid.UUID, permissionID uuid.UUID) error
+	RemovePermission(ctx context.Context, roleID uuid.UUID, permissionID uuid.UUID) error
 
 	// GetRolePermissions retrieves all permissions assigned to a role
 	// It returns a list of permissions and an error if the operation fails
 	// If no permissions are found, it returns an empty list and no error
-	GetRolePermissions(ctx *context.Context, roleID uuid.UUID) ([]aggregate.Permission, error)
+	GetRolePermissions(ctx context.Context, roleID uuid.UUID) ([]aggregate.Permission, error)
 }

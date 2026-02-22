@@ -1,97 +1,11 @@
 package service_test
 
 import (
-	"context"
-	"moon/internal/domain/service"
 	"moon/internal/domain/usecase"
-	"moon/internal/infrastructure/persistence/postgres"
 	"testing"
 
 	"github.com/google/uuid"
-	driver "gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
-
-var (
-	// db is the database connection used for testing
-	db *gorm.DB
-	// roleSvc is the RoleService instance used for testing
-	roleSvc service.RoleService
-	// permissionSvc is the PermissionService instance used for testing
-	permissionSvc service.PermissionService
-	// organizationSvc is the OrganizationService instance used for testing
-	organizationSvc service.OrganizationService
-	// testCtx is the context used for testing
-	testCtx = context.Background()
-)
-
-// TestMain initializes the test environment
-// It sets up the database connection, migrates the schema, and initializes the services
-// It runs the tests and cleans up the test data
-func TestMain(m *testing.M) {
-	// Initialize the database connection
-	var err error
-	db, err = gorm.Open(driver.Open("host=localhost user=capstone password=capstone dbname=capstone port=5432 sslmode=disable"))
-	if err != nil {
-		panic("Failed to connect to database: " + err.Error())
-	}
-
-	// Skip auto migration because tables are already created by setup.sql
-	// err = db.AutoMigrate(&aggregate.Role{})
-	// if err != nil {
-	// 	panic("Failed to migrate database: " + err.Error())
-	// }
-
-	// // Auto migrate the Permission schema
-	// err = db.AutoMigrate(&aggregate.Permission{})
-	// if err != nil {
-	// 	panic("Failed to migrate database: " + err.Error())
-	// }
-
-	// Create permission_role table if it doesn't exist
-	err = db.Exec(`CREATE TABLE IF NOT EXISTS systems.permission_role (
-		id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-		permission_id UUID NOT NULL,
-		role_id UUID NOT NULL,
-		PRIMARY KEY (id)
-	)`).Error
-	if err != nil {
-		panic("Failed to create permission_role table: " + err.Error())
-	}
-
-	// Clear test data
-	err = db.Exec("DELETE FROM systems.permission_role").Error
-	if err != nil {
-		panic("Failed to clear permission_role data: " + err.Error())
-	}
-	err = db.Exec("DELETE FROM systems.role").Error
-	if err != nil {
-		panic("Failed to clear role data: " + err.Error())
-	}
-	err = db.Exec("DELETE FROM systems.permission").Error
-	if err != nil {
-		panic("Failed to clear permission data: " + err.Error())
-	}
-	err = db.Exec("DELETE FROM systems.organization").Error
-	if err != nil {
-		panic("Failed to clear organization data: " + err.Error())
-	}
-
-	// Initialize the repositories and services
-	roleRepo := postgres.NewRoleRepository(db)
-	roleSvc = service.NewRoleService(roleRepo)
-
-	// Initialize permission service
-	permissionRepo := postgres.NewPermissionRepository(db)
-	permissionSvc = service.NewPermissionService(permissionRepo)
-
-	// Initialize organization service
-	organizationRepo := postgres.NewOrganizationRepository(db)
-	organizationSvc = service.NewOrganizationService(organizationRepo, nil)
-
-	// Run the tests
-	m.Run()
-}
 
 // TestCreateRole tests the CreateRole method
 // It creates a new role and verifies that it is created successfully
@@ -107,7 +21,7 @@ func TestCreateRole(t *testing.T) {
 	}
 
 	// Create the role
-	resp := roleSvc.CreateRole(&testCtx, req)
+	resp := roleSvc.CreateRole(testCtx, req)
 
 	// Verify the response
 	if resp.RoleID == uuid.Nil {
@@ -135,13 +49,13 @@ func TestGetRole(t *testing.T) {
 	}
 
 	// Create the role
-	createResp := roleSvc.CreateRole(&testCtx, createReq)
+	createResp := roleSvc.CreateRole(testCtx, createReq)
 
 	// Retrieve the role
 	getReq := usecase.RoleGetRequest{
 		RoleID: createResp.RoleID,
 	}
-	getResp := roleSvc.GetRole(&testCtx, getReq)
+	getResp := roleSvc.GetRole(testCtx, getReq)
 
 	// Verify the response
 	if getResp.RoleID != createResp.RoleID {
@@ -175,7 +89,7 @@ func TestUpdateRole(t *testing.T) {
 	}
 
 	// Create the role
-	createResp := roleSvc.CreateRole(&testCtx, createReq)
+	createResp := roleSvc.CreateRole(testCtx, createReq)
 
 	// Update the role
 	updatedDescription := "Updated test role description"
@@ -187,7 +101,7 @@ func TestUpdateRole(t *testing.T) {
 		RoleFlag:      "active",
 		SensitiveFlag: false,
 	}
-	updateResp := roleSvc.UpdateRole(&testCtx, updateReq)
+	updateResp := roleSvc.UpdateRole(testCtx, updateReq)
 
 	// Verify the response
 	if updateResp.RoleID != createResp.RoleID {
@@ -215,13 +129,13 @@ func TestDeleteRole(t *testing.T) {
 	}
 
 	// Create the role
-	createResp := roleSvc.CreateRole(&testCtx, createReq)
+	createResp := roleSvc.CreateRole(testCtx, createReq)
 
 	// Delete the role
 	deleteReq := usecase.RoleDeleteRequest{
 		RoleID: createResp.RoleID,
 	}
-	deleteResp := roleSvc.DeleteRole(&testCtx, deleteReq)
+	deleteResp := roleSvc.DeleteRole(testCtx, deleteReq)
 
 	// Verify the response
 	if !deleteResp.Success {
@@ -241,7 +155,7 @@ func TestAssignPermission(t *testing.T) {
 		RoleFlag:      "active",
 		SensitiveFlag: false,
 	}
-	createRoleResp := roleSvc.CreateRole(&testCtx, createRoleReq)
+	createRoleResp := roleSvc.CreateRole(testCtx, createRoleReq)
 
 	// Create a permission
 	description2 := "Test permission description"
@@ -255,14 +169,14 @@ func TestAssignPermission(t *testing.T) {
 	// Get the permission service (using the global permissionSvc variable)
 
 	// Create the permission
-	createPermissionResp := permissionSvc.CreatePermission(&testCtx, createPermissionReq)
+	createPermissionResp := permissionSvc.CreatePermission(testCtx, createPermissionReq)
 
 	// Assign the permission to the role
 	assignReq := usecase.RoleAssignPermissionRequest{
 		RoleID:       createRoleResp.RoleID,
 		PermissionID: createPermissionResp.PermissionID,
 	}
-	assignResp := roleSvc.AssignPermission(&testCtx, assignReq)
+	assignResp := roleSvc.AssignPermission(testCtx, assignReq)
 
 	// Verify the response
 	if !assignResp.Success {
@@ -282,7 +196,7 @@ func TestRemovePermission(t *testing.T) {
 		RoleFlag:      "active",
 		SensitiveFlag: false,
 	}
-	createRoleResp := roleSvc.CreateRole(&testCtx, createRoleReq)
+	createRoleResp := roleSvc.CreateRole(testCtx, createRoleReq)
 
 	// Create a permission
 	description2 := "Test permission description"
@@ -296,21 +210,21 @@ func TestRemovePermission(t *testing.T) {
 	// Get the permission service (using the global permissionSvc variable)
 
 	// Create the permission
-	createPermissionResp := permissionSvc.CreatePermission(&testCtx, createPermissionReq)
+	createPermissionResp := permissionSvc.CreatePermission(testCtx, createPermissionReq)
 
 	// Assign the permission to the role
 	assignReq := usecase.RoleAssignPermissionRequest{
 		RoleID:       createRoleResp.RoleID,
 		PermissionID: createPermissionResp.PermissionID,
 	}
-	roleSvc.AssignPermission(&testCtx, assignReq)
+	roleSvc.AssignPermission(testCtx, assignReq)
 
 	// Remove the permission from the role
 	removeReq := usecase.RoleRemovePermissionRequest{
 		RoleID:       createRoleResp.RoleID,
 		PermissionID: createPermissionResp.PermissionID,
 	}
-	removeResp := roleSvc.RemovePermission(&testCtx, removeReq)
+	removeResp := roleSvc.RemovePermission(testCtx, removeReq)
 
 	// Verify the response
 	if !removeResp.Success {
@@ -330,7 +244,7 @@ func TestGetRolePermissions(t *testing.T) {
 		RoleFlag:      "active",
 		SensitiveFlag: false,
 	}
-	createRoleResp := roleSvc.CreateRole(&testCtx, createRoleReq)
+	createRoleResp := roleSvc.CreateRole(testCtx, createRoleReq)
 
 	// Create a permission
 	description2 := "Test permission description"
@@ -344,20 +258,20 @@ func TestGetRolePermissions(t *testing.T) {
 	// Get the permission service (using the global permissionSvc variable)
 
 	// Create the permission
-	createPermissionResp := permissionSvc.CreatePermission(&testCtx, createPermissionReq)
+	createPermissionResp := permissionSvc.CreatePermission(testCtx, createPermissionReq)
 
 	// Assign the permission to the role
 	assignReq := usecase.RoleAssignPermissionRequest{
 		RoleID:       createRoleResp.RoleID,
 		PermissionID: createPermissionResp.PermissionID,
 	}
-	roleSvc.AssignPermission(&testCtx, assignReq)
+	roleSvc.AssignPermission(testCtx, assignReq)
 
 	// Get the role's permissions
 	getPermissionsReq := usecase.RolePermissionsRequest{
 		RoleID: createRoleResp.RoleID,
 	}
-	getPermissionsResp := roleSvc.GetRolePermissions(&testCtx, getPermissionsReq)
+	getPermissionsResp := roleSvc.GetRolePermissions(testCtx, getPermissionsReq)
 
 	// Verify the response
 	if getPermissionsResp.RoleID != createRoleResp.RoleID {

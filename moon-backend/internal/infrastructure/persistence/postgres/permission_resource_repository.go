@@ -38,13 +38,13 @@ func (r *permissionResourceRepository) GetByPermissionAndResource(ctx context.Co
 // GetPermissionsByResourceID gets all permissions for a resource
 func (r *permissionResourceRepository) GetPermissionsByResourceID(ctx context.Context, resourceID uuid.UUID) ([]aggregate.Permission, error) {
 	var permissions []aggregate.Permission
-	err := r.db.WithContext(ctx).Table("systems.permissions").Select("systems.permissions.*").Joins("INNER JOIN systems.permission_resource ON systems.permissions.id = systems.permission_resource.permission_id").Where("systems.permission_resource.resource_id = ?", resourceID).Find(&permissions).Error
+	err := r.db.WithContext(ctx).Table("systems.permission").Select("systems.permission.permission_id, systems.permission.permission_name, systems.permission.permission_description, systems.permission.permission_code, systems.permission.sensitive_flag, systems.permission.created_at, systems.permission.updated_at").Joins("INNER JOIN systems.permission_resource ON systems.permission.permission_id = systems.permission_resource.permission_id").Where("systems.permission_resource.resource_id = ?", resourceID).Find(&permissions).Error
 	return permissions, err
 }
 
 // GetResourcesByPermissionID gets all resources for a permission
 func (r *permissionResourceRepository) GetResourcesByPermissionID(ctx context.Context, permissionID uuid.UUID) ([]aggregate.Resource, error) {
 	var resources []aggregate.Resource
-	err := r.db.WithContext(ctx).Table("systems.resources").Select("systems.resources.*").Joins("INNER JOIN systems.permission_resource ON systems.resources.id = systems.permission_resource.resource_id").Where("systems.permission_resource.permission_id = ?", permissionID).Find(&resources).Error
+	err := r.db.WithContext(ctx).Table("systems.resource").Select("systems.resource.resource_id, systems.resource.resource_name, systems.resource.resource_code, systems.resource.resource_description, systems.resource.resource_flag, systems.resource.resource_type, systems.resource.resource_path, systems.resource.request_method, systems.resource.created_at, systems.resource.updated_at").Joins("INNER JOIN systems.permission_resource ON systems.resource.resource_id = systems.permission_resource.resource_id").Where("systems.permission_resource.permission_id = ?", permissionID).Find(&resources).Error
 	return resources, err
 }

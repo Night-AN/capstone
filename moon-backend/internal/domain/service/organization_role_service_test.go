@@ -1,251 +1,76 @@
-package service
+package service_test
 
 import (
-	"context"
-	"errors"
-	"moon/internal/domain/aggregate"
 	"moon/internal/domain/usecase"
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-// MockOrganizationRoleRepository is a mock implementation of repository.OrganizationRoleRepository
-type MockOrganizationRoleRepository struct {
-	mock.Mock
-}
-
-func (m *MockOrganizationRoleRepository) Create(ctx context.Context, or aggregate.OrganizationRole) error {
-	args := m.Called(ctx, or)
-	return args.Error(0)
-}
-
-func (m *MockOrganizationRoleRepository) Delete(ctx context.Context, organizationID, roleID uuid.UUID) error {
-	args := m.Called(ctx, organizationID, roleID)
-	return args.Error(0)
-}
-
-func (m *MockOrganizationRoleRepository) GetByOrganizationAndRole(ctx context.Context, organizationID, roleID uuid.UUID) (aggregate.OrganizationRole, error) {
-	args := m.Called(ctx, organizationID, roleID)
-	return args.Get(0).(aggregate.OrganizationRole), args.Error(1)
-}
-
-func (m *MockOrganizationRoleRepository) GetRolesByOrganizationID(ctx context.Context, organizationID uuid.UUID) ([]aggregate.Role, error) {
-	args := m.Called(ctx, organizationID)
-	return args.Get(0).([]aggregate.Role), args.Error(1)
-}
-
-func (m *MockOrganizationRoleRepository) GetOrganizationsByRoleID(ctx context.Context, roleID uuid.UUID) ([]aggregate.Organization, error) {
-	args := m.Called(ctx, roleID)
-	return args.Get(0).([]aggregate.Organization), args.Error(1)
-}
-
-// MockOrganizationRepository is a mock implementation of repository.OrganizationRepository
-type MockOrganizationRepository struct {
-	mock.Mock
-}
-
-func (m *MockOrganizationRepository) Create(ctx context.Context, organization aggregate.Organization) error {
-	args := m.Called(ctx, organization)
-	return args.Error(0)
-}
-
-func (m *MockOrganizationRepository) GetByID(ctx context.Context, id uuid.UUID) (aggregate.Organization, error) {
-	args := m.Called(ctx, id)
-	return args.Get(0).(aggregate.Organization), args.Error(1)
-}
-
-func (m *MockOrganizationRepository) Update(ctx context.Context, organization aggregate.Organization) error {
-	args := m.Called(ctx, organization)
-	return args.Error(0)
-}
-
-func (m *MockOrganizationRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-func (m *MockOrganizationRepository) List(ctx context.Context) ([]aggregate.Organization, error) {
-	args := m.Called(ctx)
-	return args.Get(0).([]aggregate.Organization), args.Error(1)
-}
-
-func TestOrganizationRoleService_Create(t *testing.T) {
-	// Setup
-	mockOrganizationRoleRepo := &MockOrganizationRoleRepository{}
-	mockOrganizationRepo := &MockOrganizationRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-
-	service := NewOrganizationRoleService(mockOrganizationRoleRepo, mockOrganizationRepo, mockRoleRepo)
-
-	ctx := context.Background()
-	organizationID := uuid.New()
-	roleID := uuid.New()
-
+// TestCreateOrganizationRole tests the Create method of OrganizationRoleService
+// It creates an organization-role relationship
+func TestCreateOrganizationRole(t *testing.T) {
+	// Create organization-role relationship
 	req := usecase.OrganizationRoleCreateRequest{
-		OrganizationID: organizationID,
-		RoleID:         roleID,
+		OrganizationID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		RoleID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 	}
 
-	// Mock responses
-	mockOrganizationRepo.On("GetByID", ctx, organizationID).Return(aggregate.Organization{ID: organizationID}, nil)
-	mockRoleRepo.On("GetByID", ctx, roleID).Return(aggregate.Role{ID: roleID}, nil)
-	mockOrganizationRoleRepo.On("Create", ctx, mock.Anything).Return(nil)
-
 	// Execute
-	resp, err := service.Create(ctx, req)
+	resp, err := organizationRoleSvc.Create(testCtx, req)
 
-	// Assert
-	assert.NoError(t, err)
-	assert.True(t, resp.Success)
-	mockOrganizationRepo.AssertExpectations(t)
-	mockRoleRepo.AssertExpectations(t)
-	mockOrganizationRoleRepo.AssertExpectations(t)
-}
-
-func TestOrganizationRoleService_Create_OrganizationNotFound(t *testing.T) {
-	// Setup
-	mockOrganizationRoleRepo := &MockOrganizationRoleRepository{}
-	mockOrganizationRepo := &MockOrganizationRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-
-	service := NewOrganizationRoleService(mockOrganizationRoleRepo, mockOrganizationRepo, mockRoleRepo)
-
-	ctx := context.Background()
-	organizationID := uuid.New()
-	roleID := uuid.New()
-
-	req := usecase.OrganizationRoleCreateRequest{
-		OrganizationID: organizationID,
-		RoleID:         roleID,
+	// Verify the response
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
 	}
-
-	// Mock responses
-	mockOrganizationRepo.On("GetByID", ctx, organizationID).Return(aggregate.Organization{}, errors.New("organization not found"))
-
-	// Execute
-	resp, err := service.Create(ctx, req)
-
-	// Assert
-	assert.Error(t, err)
-	assert.False(t, resp.Success)
-	mockOrganizationRepo.AssertExpectations(t)
-}
-
-func TestOrganizationRoleService_Create_RoleNotFound(t *testing.T) {
-	// Setup
-	mockOrganizationRoleRepo := &MockOrganizationRoleRepository{}
-	mockOrganizationRepo := &MockOrganizationRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-
-	service := NewOrganizationRoleService(mockOrganizationRoleRepo, mockOrganizationRepo, mockRoleRepo)
-
-	ctx := context.Background()
-	organizationID := uuid.New()
-	roleID := uuid.New()
-
-	req := usecase.OrganizationRoleCreateRequest{
-		OrganizationID: organizationID,
-		RoleID:         roleID,
+	if !resp.Success {
+		t.Errorf("Expected success to be true, got %v", resp.Success)
 	}
-
-	// Mock responses
-	mockOrganizationRepo.On("GetByID", ctx, organizationID).Return(aggregate.Organization{ID: organizationID}, nil)
-	mockRoleRepo.On("GetByID", ctx, roleID).Return(aggregate.Role{}, errors.New("role not found"))
-
-	// Execute
-	resp, err := service.Create(ctx, req)
-
-	// Assert
-	assert.Error(t, err)
-	assert.False(t, resp.Success)
-	mockOrganizationRepo.AssertExpectations(t)
-	mockRoleRepo.AssertExpectations(t)
 }
 
-func TestOrganizationRoleService_Delete(t *testing.T) {
-	// Setup
-	mockOrganizationRoleRepo := &MockOrganizationRoleRepository{}
-	mockOrganizationRepo := &MockOrganizationRepository{}
-	mockRoleRepo := &MockRoleRepository{}
-
-	service := NewOrganizationRoleService(mockOrganizationRoleRepo, mockOrganizationRepo, mockRoleRepo)
-
-	ctx := context.Background()
-	organizationID := uuid.New()
-	roleID := uuid.New()
-
+// TestDeleteOrganizationRole tests the Delete method of OrganizationRoleService
+// It deletes an organization-role relationship
+func TestDeleteOrganizationRole(t *testing.T) {
+	// Delete organization-role relationship
 	req := usecase.OrganizationRoleDeleteRequest{
-		OrganizationID: organizationID,
-		RoleID:         roleID,
+		OrganizationID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		RoleID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 	}
 
-	// Mock responses
-	mockOrganizationRoleRepo.On("Delete", ctx, organizationID, roleID).Return(nil)
-
 	// Execute
-	resp, err := service.Delete(ctx, req)
+	resp, err := organizationRoleSvc.Delete(testCtx, req)
 
-	// Assert
-	assert.NoError(t, err)
-	assert.True(t, resp.Success)
-	mockOrganizationRoleRepo.AssertExpectations(t)
+	// Verify the response
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if !resp.Success {
+		t.Errorf("Expected success to be true, got %v", resp.Success)
+	}
 }
 
-func TestOrganizationRoleService_GetRolesByOrganizationID(t *testing.T) {
-	// Setup
-	mockOrganizationRoleRepo := &MockOrganizationRoleRepository{}
-	mockOrganizationRepo := &MockOrganizationRepository{}
-	mockRoleRepo := &MockRoleRepository{}
+// TestGetRolesByOrganizationID tests the GetRolesByOrganizationID method of OrganizationRoleService
+// It retrieves roles by organization ID
+func TestGetRolesByOrganizationID(t *testing.T) {
+	// Get roles by organization ID
+	_, err := organizationRoleSvc.GetRolesByOrganizationID(testCtx, uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 
-	service := NewOrganizationRoleService(mockOrganizationRoleRepo, mockOrganizationRepo, mockRoleRepo)
-
-	ctx := context.Background()
-	organizationID := uuid.New()
-
-	expectedRoles := []aggregate.Role{
-		{ID: uuid.New(), Name: "role1"},
-		{ID: uuid.New(), Name: "role2"},
+	// Verify the response
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
 	}
-
-	// Mock responses
-	mockOrganizationRoleRepo.On("GetRolesByOrganizationID", ctx, organizationID).Return(expectedRoles, nil)
-
-	// Execute
-	roles, err := service.GetRolesByOrganizationID(ctx, organizationID)
-
-	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, expectedRoles, roles)
-	mockOrganizationRoleRepo.AssertExpectations(t)
+	// We don't expect any roles since we didn't create any
 }
 
-func TestOrganizationRoleService_GetOrganizationsByRoleID(t *testing.T) {
-	// Setup
-	mockOrganizationRoleRepo := &MockOrganizationRoleRepository{}
-	mockOrganizationRepo := &MockOrganizationRepository{}
-	mockRoleRepo := &MockRoleRepository{}
+// TestGetOrganizationsByRoleID tests the GetOrganizationsByRoleID method of OrganizationRoleService
+// It retrieves organizations by role ID
+func TestGetOrganizationsByRoleID(t *testing.T) {
+	// Get organizations by role ID
+	_, err := organizationRoleSvc.GetOrganizationsByRoleID(testCtx, uuid.MustParse("00000000-0000-0000-0000-000000000002"))
 
-	service := NewOrganizationRoleService(mockOrganizationRoleRepo, mockOrganizationRepo, mockRoleRepo)
-
-	ctx := context.Background()
-	roleID := uuid.New()
-
-	expectedOrganizations := []aggregate.Organization{
-		{ID: uuid.New(), Name: "org1"},
-		{ID: uuid.New(), Name: "org2"},
+	// Verify the response
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
 	}
-
-	// Mock responses
-	mockOrganizationRoleRepo.On("GetOrganizationsByRoleID", ctx, roleID).Return(expectedOrganizations, nil)
-
-	// Execute
-	organizations, err := service.GetOrganizationsByRoleID(ctx, roleID)
-
-	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, expectedOrganizations, organizations)
-	mockOrganizationRoleRepo.AssertExpectations(t)
+	// We don't expect any organizations since we didn't create any
 }

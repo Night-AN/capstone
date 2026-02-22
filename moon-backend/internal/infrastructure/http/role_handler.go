@@ -27,7 +27,7 @@ func (h *RoleHandler) CreateRole(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.roleService.CreateRole(&context, req)
+	resp := h.roleService.CreateRole(context, req)
 	c.JSON(http.StatusCreated, gin.H{
 		"code":    "201",
 		"message": "success",
@@ -48,7 +48,7 @@ func (h *RoleHandler) GetRole(c *gin.Context) {
 	}
 	req.RoleID = roleID
 	context := c.Request.Context()
-	resp := h.roleService.GetRole(&context, req)
+	resp := h.roleService.GetRole(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -66,7 +66,7 @@ func (h *RoleHandler) UpdateRole(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.roleService.UpdateRole(&context, req)
+	resp := h.roleService.UpdateRole(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -84,7 +84,7 @@ func (h *RoleHandler) DeleteRole(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.roleService.DeleteRole(&context, req)
+	resp := h.roleService.DeleteRole(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -102,7 +102,7 @@ func (h *RoleHandler) AssignPermission(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.roleService.AssignPermission(&context, req)
+	resp := h.roleService.AssignPermission(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -120,7 +120,7 @@ func (h *RoleHandler) RemovePermission(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.roleService.RemovePermission(&context, req)
+	resp := h.roleService.RemovePermission(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -138,7 +138,7 @@ func (h *RoleHandler) GetRolePermissions(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp := h.roleService.GetRolePermissions(&context, req)
+	resp := h.roleService.GetRolePermissions(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",
@@ -150,7 +150,7 @@ func (h *RoleHandler) ListRoles(c *gin.Context) {
 	var req usecase.RoleListRequest
 	// No need to bind JSON for empty request
 	context := c.Request.Context()
-	resp := h.roleService.ListRoles(&context, req)
+	resp := h.roleService.ListRoles(context, req)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    "200",
 		"message": "success",

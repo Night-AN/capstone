@@ -27,7 +27,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp, domainErr := h.userService.Login(&context, req.Email, req.Password)
+	resp, domainErr := h.userService.Login(context, req.Email, req.Password)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":    domainErr.Code,
@@ -53,7 +53,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp, domainErr := h.userService.Register(&context, req)
+	resp, domainErr := h.userService.Register(context, req)
 	if domainErr.Code != "" {
 		status := http.StatusInternalServerError
 		if domainErr.Code == "409" {
@@ -83,7 +83,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp, domainErr := h.userService.CreateUser(&context, req)
+	resp, domainErr := h.userService.CreateUser(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -109,7 +109,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp, domainErr := h.userService.UpdateUser(&context, req)
+	resp, domainErr := h.userService.UpdateUser(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -135,7 +135,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp, domainErr := h.userService.DeleteUser(&context, req)
+	resp, domainErr := h.userService.DeleteUser(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -154,7 +154,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	context := c.Request.Context()
 	req := usecase.UserListRequest{}
-	resp, domainErr := h.userService.ListUsers(&context, req)
+	resp, domainErr := h.userService.ListUsers(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -191,7 +191,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 
 	context := c.Request.Context()
 	req := usecase.UserGetRequest{UserID: userUUID}
-	resp, domainErr := h.userService.GetUserByID(&context, req)
+	resp, domainErr := h.userService.GetUserByID(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -222,7 +222,7 @@ func (h *UserHandler) AssignRoleToUser(c *gin.Context) {
 	}
 
 	context := c.Request.Context()
-	success, domainErr := h.userService.AssignRoleToUser(&context, req.UserID, req.RoleID)
+	success, domainErr := h.userService.AssignRoleToUser(context, req.UserID, req.RoleID)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -253,7 +253,7 @@ func (h *UserHandler) RemoveRoleFromUser(c *gin.Context) {
 	}
 
 	context := c.Request.Context()
-	success, domainErr := h.userService.RemoveRoleFromUser(&context, req.UserID, req.RoleID)
+	success, domainErr := h.userService.RemoveRoleFromUser(context, req.UserID, req.RoleID)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -289,7 +289,7 @@ func (h *UserHandler) GetUserRoles(c *gin.Context) {
 	}
 
 	context := c.Request.Context()
-	roles, domainErr := h.userService.GetUserRoles(&context, userID)
+	roles, domainErr := h.userService.GetUserRoles(context, userID)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,

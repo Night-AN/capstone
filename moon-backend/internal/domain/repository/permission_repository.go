@@ -26,29 +26,29 @@ type PermissionRepository interface {
 	// If the permission already exists, it updates the existing record
 	// If the permission does not exist, it creates a new record
 	// It returns an error if the operation fails
-	SavePermission(ctx *context.Context, permission aggregate.Permission) error
+	SavePermission(ctx context.Context, permission aggregate.Permission) error
 
 	// FindPermissionByID retrieves a permission by its ID
 	// It returns the permission and an error if the operation fails
 	// If the permission is not found, it returns an error
-	FindPermissionByID(ctx *context.Context, permissionID uuid.UUID) (aggregate.Permission, error)
+	FindPermissionByID(ctx context.Context, permissionID uuid.UUID) (aggregate.Permission, error)
 
 	// FindPermissionByName retrieves permissions by their name
 	// It returns a list of permissions and an error if the operation fails
 	// If no permissions are found, it returns an empty list and no error
-	FindPermissionByName(ctx *context.Context, permissionName string) ([]aggregate.Permission, error)
+	FindPermissionByName(ctx context.Context, permissionName string) ([]aggregate.Permission, error)
 
 	// FindPermissionByCode retrieves permissions by their code
 	// It returns a list of permissions and an error if the operation fails
 	// If no permissions are found, it returns an empty list and no error
-	FindPermissionByCode(ctx *context.Context, permissionCode string) ([]aggregate.Permission, error)
+	FindPermissionByCode(ctx context.Context, permissionCode string) ([]aggregate.Permission, error)
 
 	// DeletePermission deletes a permission by its ID
 	// It returns an error if the operation fails
-	DeletePermission(ctx *context.Context, permissionID uuid.UUID) error
+	DeletePermission(ctx context.Context, permissionID uuid.UUID) error
 
 	// ListPermissions retrieves all permissions matching the specified criteria
 	// It returns a list of permissions and an error if the operation fails
 	// If no permissions are found, it returns an empty list and no error
-	ListPermissions(ctx *context.Context, limit, offset int) ([]aggregate.Permission, error)
+	ListPermissions(ctx context.Context, limit, offset int) ([]aggregate.Permission, error)
 }

@@ -29,27 +29,27 @@ type PermissionService interface {
 	// CreatePermission creates a new permission with the specified details
 	// It returns a response containing the created permission's information
 	// If creation fails, it returns an error response
-	CreatePermission(ctx *context.Context, req usecase.PermissionCreateRequest) usecase.PermissionCreateResponse
+	CreatePermission(ctx context.Context, req usecase.PermissionCreateRequest) usecase.PermissionCreateResponse
 
 	// GetPermission retrieves a permission by its ID
 	// It returns a response containing the permission's information
 	// If the permission is not found, it returns an error response
-	GetPermission(ctx *context.Context, req usecase.PermissionGetRequest) usecase.PermissionGetResponse
+	GetPermission(ctx context.Context, req usecase.PermissionGetRequest) usecase.PermissionGetResponse
 
 	// UpdatePermission updates an existing permission with the specified details
 	// It returns a response containing the updated permission's information
 	// If update fails, it returns an error response
-	UpdatePermission(ctx *context.Context, req usecase.PermissionUpdateRequest) usecase.PermissionUpdateResponse
+	UpdatePermission(ctx context.Context, req usecase.PermissionUpdateRequest) usecase.PermissionUpdateResponse
 
 	// DeletePermission deletes a permission by its ID
 	// It returns a response indicating whether the deletion was successful
 	// If deletion fails, it returns an error response
-	DeletePermission(ctx *context.Context, req usecase.PermissionDeleteRequest) usecase.PermissionDeleteResponse
+	DeletePermission(ctx context.Context, req usecase.PermissionDeleteRequest) usecase.PermissionDeleteResponse
 
 	// ListPermissions retrieves all permissions matching the specified criteria
 	// It returns a response containing the list of permissions
 	// If retrieval fails, it returns an error response
-	ListPermissions(ctx *context.Context, req usecase.PermissionListRequest) usecase.PermissionListResponse
+	ListPermissions(ctx context.Context, req usecase.PermissionListRequest) usecase.PermissionListResponse
 }
 
 // permissionService implements the PermissionService interface
@@ -73,7 +73,7 @@ func NewPermissionService(permissionRepo repository.PermissionRepository) Permis
 // CreatePermission creates a new permission with the specified details
 // It returns a response containing the created permission's information
 // If creation fails, it returns an error response
-func (ps *permissionService) CreatePermission(ctx *context.Context, req usecase.PermissionCreateRequest) usecase.PermissionCreateResponse {
+func (ps *permissionService) CreatePermission(ctx context.Context, req usecase.PermissionCreateRequest) usecase.PermissionCreateResponse {
 	// Create a new permission aggregate
 	permission := aggregate.Permission{
 		PermissionID:   uuid.New(),
@@ -102,7 +102,7 @@ func (ps *permissionService) CreatePermission(ctx *context.Context, req usecase.
 // GetPermission retrieves a permission by its ID
 // It returns a response containing the permission's information
 // If the permission is not found, it returns an error response
-func (ps *permissionService) GetPermission(ctx *context.Context, req usecase.PermissionGetRequest) usecase.PermissionGetResponse {
+func (ps *permissionService) GetPermission(ctx context.Context, req usecase.PermissionGetRequest) usecase.PermissionGetResponse {
 	// Find the permission by ID
 	permission, err := ps.permissionRepo.FindPermissionByID(ctx, req.PermissionID)
 	if err != nil {
@@ -124,14 +124,14 @@ func (ps *permissionService) GetPermission(ctx *context.Context, req usecase.Per
 // UpdatePermission updates an existing permission with the specified details
 // It returns a response containing the updated permission's information
 // If update fails, it returns an error response
-func (ps *permissionService) UpdatePermission(ctx *context.Context, req usecase.PermissionUpdateRequest) usecase.PermissionUpdateResponse {
+func (ps *permissionService) UpdatePermission(ctx context.Context, req usecase.PermissionUpdateRequest) usecase.PermissionUpdateResponse {
 	// Check if the permission is sensitive
 	existingPermission, err := ps.permissionRepo.FindPermissionByID(ctx, req.PermissionID)
 	if err != nil {
 		// If permission is not found, return an empty response
 		return usecase.PermissionUpdateResponse{}
 	}
-	
+
 	// If permission is sensitive, reject the update
 	if existingPermission.SensitiveFlag {
 		// Return an empty response to indicate failure
@@ -166,14 +166,14 @@ func (ps *permissionService) UpdatePermission(ctx *context.Context, req usecase.
 // DeletePermission deletes a permission by its ID
 // It returns a response indicating whether the deletion was successful
 // If deletion fails, it returns an error response
-func (ps *permissionService) DeletePermission(ctx *context.Context, req usecase.PermissionDeleteRequest) usecase.PermissionDeleteResponse {
+func (ps *permissionService) DeletePermission(ctx context.Context, req usecase.PermissionDeleteRequest) usecase.PermissionDeleteResponse {
 	// Check if the permission is sensitive
 	existingPermission, err := ps.permissionRepo.FindPermissionByID(ctx, req.PermissionID)
 	if err != nil {
 		// If permission is not found, return an empty response
 		return usecase.PermissionDeleteResponse{}
 	}
-	
+
 	// If permission is sensitive, reject the deletion
 	if existingPermission.SensitiveFlag {
 		// Return an empty response to indicate failure
@@ -196,7 +196,7 @@ func (ps *permissionService) DeletePermission(ctx *context.Context, req usecase.
 // ListPermissions retrieves all permissions matching the specified criteria
 // It returns a response containing the list of permissions
 // If retrieval fails, it returns an error response
-func (ps *permissionService) ListPermissions(ctx *context.Context, req usecase.PermissionListRequest) usecase.PermissionListResponse {
+func (ps *permissionService) ListPermissions(ctx context.Context, req usecase.PermissionListRequest) usecase.PermissionListResponse {
 	// List permissions from the database
 	permissions, err := ps.permissionRepo.ListPermissions(ctx, req.Limit, req.Offset)
 	if err != nil {

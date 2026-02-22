@@ -30,42 +30,42 @@ type RoleService interface {
 	// CreateRole creates a new role with the specified details
 	// It returns a response containing the created role's information
 	// If creation fails, it returns an error response
-	CreateRole(ctx *context.Context, req usecase.RoleCreateRequest) usecase.RoleCreateResponse
+	CreateRole(ctx context.Context, req usecase.RoleCreateRequest) usecase.RoleCreateResponse
 
 	// GetRole retrieves a role by its ID
 	// It returns a response containing the role's information
 	// If the role is not found, it returns an error response
-	GetRole(ctx *context.Context, req usecase.RoleGetRequest) usecase.RoleGetResponse
+	GetRole(ctx context.Context, req usecase.RoleGetRequest) usecase.RoleGetResponse
 
 	// UpdateRole updates an existing role with the specified details
 	// It returns a response containing the updated role's information
 	// If update fails, it returns an error response
-	UpdateRole(ctx *context.Context, req usecase.RoleUpdateRequest) usecase.RoleUpdateResponse
+	UpdateRole(ctx context.Context, req usecase.RoleUpdateRequest) usecase.RoleUpdateResponse
 
 	// DeleteRole deletes a role by its ID
 	// It returns a response indicating whether the deletion was successful
 	// If deletion fails, it returns an error response
-	DeleteRole(ctx *context.Context, req usecase.RoleDeleteRequest) usecase.RoleDeleteResponse
+	DeleteRole(ctx context.Context, req usecase.RoleDeleteRequest) usecase.RoleDeleteResponse
 
 	// ListRoles retrieves all roles
 	// It returns a response containing the list of roles
 	// If retrieval fails, it returns an error response
-	ListRoles(ctx *context.Context, req usecase.RoleListRequest) usecase.RoleListResponse
+	ListRoles(ctx context.Context, req usecase.RoleListRequest) usecase.RoleListResponse
 
 	// AssignPermission assigns a permission to a role
 	// It returns a response indicating whether the assignment was successful
 	// If assignment fails, it returns an error response
-	AssignPermission(ctx *context.Context, req usecase.RoleAssignPermissionRequest) usecase.RoleAssignPermissionResponse
+	AssignPermission(ctx context.Context, req usecase.RoleAssignPermissionRequest) usecase.RoleAssignPermissionResponse
 
 	// RemovePermission removes a permission from a role
 	// It returns a response indicating whether the removal was successful
 	// If removal fails, it returns an error response
-	RemovePermission(ctx *context.Context, req usecase.RoleRemovePermissionRequest) usecase.RoleRemovePermissionResponse
+	RemovePermission(ctx context.Context, req usecase.RoleRemovePermissionRequest) usecase.RoleRemovePermissionResponse
 
 	// GetRolePermissions retrieves all permissions assigned to a role
 	// It returns a response containing the role's permissions
 	// If retrieval fails, it returns an error response
-	GetRolePermissions(ctx *context.Context, req usecase.RolePermissionsRequest) usecase.RolePermissionsResponse
+	GetRolePermissions(ctx context.Context, req usecase.RolePermissionsRequest) usecase.RolePermissionsResponse
 }
 
 // roleService implements the RoleService interface
@@ -90,7 +90,7 @@ func NewRoleService(roleRepo repository.RoleRepository) RoleService {
 // CreateRole creates a new role with the specified details
 // It returns a response containing the created role's information
 // If creation fails, it returns an error response
-func (rs *roleService) CreateRole(ctx *context.Context, req usecase.RoleCreateRequest) usecase.RoleCreateResponse {
+func (rs *roleService) CreateRole(ctx context.Context, req usecase.RoleCreateRequest) usecase.RoleCreateResponse {
 	// Create a new role aggregate
 	role := aggregate.Role{
 		RoleID:        uuid.New(),
@@ -121,7 +121,7 @@ func (rs *roleService) CreateRole(ctx *context.Context, req usecase.RoleCreateRe
 // GetRole retrieves a role by its ID
 // It returns a response containing the role's information
 // If the role is not found, it returns an error response
-func (rs *roleService) GetRole(ctx *context.Context, req usecase.RoleGetRequest) usecase.RoleGetResponse {
+func (rs *roleService) GetRole(ctx context.Context, req usecase.RoleGetRequest) usecase.RoleGetResponse {
 	// Find the role by ID
 	role, err := rs.roleRepo.FindRoleByID(ctx, req.RoleID)
 	if err != nil {
@@ -144,7 +144,7 @@ func (rs *roleService) GetRole(ctx *context.Context, req usecase.RoleGetRequest)
 // UpdateRole updates an existing role with the specified details
 // It returns a response containing the updated role's information
 // If update fails, it returns an error response
-func (rs *roleService) UpdateRole(ctx *context.Context, req usecase.RoleUpdateRequest) usecase.RoleUpdateResponse {
+func (rs *roleService) UpdateRole(ctx context.Context, req usecase.RoleUpdateRequest) usecase.RoleUpdateResponse {
 	// Create an updated role aggregate
 	role := aggregate.Role{
 		RoleID:        req.RoleID,
@@ -175,7 +175,7 @@ func (rs *roleService) UpdateRole(ctx *context.Context, req usecase.RoleUpdateRe
 // DeleteRole deletes a role by its ID
 // It returns a response indicating whether the deletion was successful
 // If deletion fails, it returns an error response
-func (rs *roleService) DeleteRole(ctx *context.Context, req usecase.RoleDeleteRequest) usecase.RoleDeleteResponse {
+func (rs *roleService) DeleteRole(ctx context.Context, req usecase.RoleDeleteRequest) usecase.RoleDeleteResponse {
 	// Delete the role from the database
 	err := rs.roleRepo.DeleteRole(ctx, req.RoleID)
 	if err != nil {
@@ -192,7 +192,7 @@ func (rs *roleService) DeleteRole(ctx *context.Context, req usecase.RoleDeleteRe
 // AssignPermission assigns a permission to a role
 // It returns a response indicating whether the assignment was successful
 // If assignment fails, it returns an error response
-func (rs *roleService) AssignPermission(ctx *context.Context, req usecase.RoleAssignPermissionRequest) usecase.RoleAssignPermissionResponse {
+func (rs *roleService) AssignPermission(ctx context.Context, req usecase.RoleAssignPermissionRequest) usecase.RoleAssignPermissionResponse {
 	// Assign the permission to the role
 	err := rs.roleRepo.AssignPermission(ctx, req.RoleID, req.PermissionID)
 	if err != nil {
@@ -209,7 +209,7 @@ func (rs *roleService) AssignPermission(ctx *context.Context, req usecase.RoleAs
 // RemovePermission removes a permission from a role
 // It returns a response indicating whether the removal was successful
 // If removal fails, it returns an error response
-func (rs *roleService) RemovePermission(ctx *context.Context, req usecase.RoleRemovePermissionRequest) usecase.RoleRemovePermissionResponse {
+func (rs *roleService) RemovePermission(ctx context.Context, req usecase.RoleRemovePermissionRequest) usecase.RoleRemovePermissionResponse {
 	// Remove the permission from the role
 	err := rs.roleRepo.RemovePermission(ctx, req.RoleID, req.PermissionID)
 	if err != nil {
@@ -226,7 +226,7 @@ func (rs *roleService) RemovePermission(ctx *context.Context, req usecase.RoleRe
 // GetRolePermissions retrieves all permissions assigned to a role
 // It returns a response containing the role's permissions
 // If retrieval fails, it returns an error response
-func (rs *roleService) GetRolePermissions(ctx *context.Context, req usecase.RolePermissionsRequest) usecase.RolePermissionsResponse {
+func (rs *roleService) GetRolePermissions(ctx context.Context, req usecase.RolePermissionsRequest) usecase.RolePermissionsResponse {
 	// Get the role's permissions
 	permissions, err := rs.roleRepo.GetRolePermissions(ctx, req.RoleID)
 	if err != nil {
@@ -255,7 +255,7 @@ func (rs *roleService) GetRolePermissions(ctx *context.Context, req usecase.Role
 // ListRoles retrieves all roles
 // It returns a response containing the list of roles
 // If retrieval fails, it returns an error response
-func (rs *roleService) ListRoles(ctx *context.Context, req usecase.RoleListRequest) usecase.RoleListResponse {
+func (rs *roleService) ListRoles(ctx context.Context, req usecase.RoleListRequest) usecase.RoleListResponse {
 	// Get all roles
 	roles, err := rs.roleRepo.FindAllRoles(ctx)
 	if err != nil {

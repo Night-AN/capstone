@@ -19,25 +19,25 @@ func NewUserRepository(db *gorm.DB) repository.UserRepository {
 	return &userRepository{db: db}
 }
 
-func (ur *userRepository) SaveUser(ctx *context.Context, user aggregate.User) error {
+func (ur *userRepository) SaveUser(ctx context.Context, user aggregate.User) error {
 	// 检查用户是否已存在
 	var existingUser aggregate.User
-	err := ur.db.WithContext(*ctx).Where("user_id = ?", user.UserID).First(&existingUser).Error
+	err := ur.db.WithContext(ctx).Where("user_id = ?", user.UserID).First(&existingUser).Error
 
 	if err == gorm.ErrRecordNotFound {
 		// 用户不存在，创建新记录
-		return ur.db.WithContext(*ctx).Create(&user).Error
+		return ur.db.WithContext(ctx).Create(&user).Error
 	} else if err != nil {
 		// 其他错误
 		return err
 	} else {
 		// 用户存在，更新记录
-		return ur.db.WithContext(*ctx).Model(&aggregate.User{}).Where("user_id = ?", user.UserID).Updates(&user).Error
+		return ur.db.WithContext(ctx).Model(&aggregate.User{}).Where("user_id = ?", user.UserID).Updates(&user).Error
 	}
 }
 
-func (ur *userRepository) DeleteUser(ctx *context.Context, user_id uuid.UUID) error {
-	result := ur.db.WithContext(*ctx).Where("user_id = ?", user_id).Delete(&aggregate.User{})
+func (ur *userRepository) DeleteUser(ctx context.Context, user_id uuid.UUID) error {
+	result := ur.db.WithContext(ctx).Where("user_id = ?", user_id).Delete(&aggregate.User{})
 
 	if result.Error != nil {
 		return result.Error
@@ -50,28 +50,28 @@ func (ur *userRepository) DeleteUser(ctx *context.Context, user_id uuid.UUID) er
 	return nil
 }
 
-func (ur *userRepository) FindUserByID(ctx *context.Context, user_id uuid.UUID) (aggregate.User, error) {
+func (ur *userRepository) FindUserByID(ctx context.Context, user_id uuid.UUID) (aggregate.User, error) {
 	var user = aggregate.User{}
-	err := ur.db.WithContext(*ctx).Model(&user).Where("user_id =?", user_id).First(&user).Error
+	err := ur.db.WithContext(ctx).Model(&user).Where("user_id =?", user_id).First(&user).Error
 	return user, err
 }
 
-func (ur *userRepository) FindUserByEmail(ctx *context.Context, email string) (aggregate.User, error) {
+func (ur *userRepository) FindUserByEmail(ctx context.Context, email string) (aggregate.User, error) {
 	var user = aggregate.User{}
-	err := ur.db.WithContext(*ctx).Model(&user).Where("email =?", email).First(&user).Error
+	err := ur.db.WithContext(ctx).Model(&user).Where("email =?", email).First(&user).Error
 	return user, err
 }
 
-func (ur *userRepository) ListUsers(ctx *context.Context) ([]aggregate.User, error) {
+func (ur *userRepository) ListUsers(ctx context.Context) ([]aggregate.User, error) {
 	var users []aggregate.User
-	err := ur.db.WithContext(*ctx).Model(&aggregate.User{}).Find(&users).Error
+	err := ur.db.WithContext(ctx).Model(&aggregate.User{}).Find(&users).Error
 	return users, err
 }
 
-func (ur *userRepository) AssignRoleToUser(ctx *context.Context, user_id uuid.UUID, role_id uuid.UUID) error {
+func (ur *userRepository) AssignRoleToUser(ctx context.Context, user_id uuid.UUID, role_id uuid.UUID) error {
 	// 检查关联是否已存在
 	var count int64
-	err := ur.db.WithContext(*ctx).Table("systems.user_role").Where("user_id = ? AND role_id = ?", user_id, role_id).Count(&count).Error
+	err := ur.db.WithContext(ctx).Table("systems.user_role").Where("user_id = ? AND role_id = ?", user_id, role_id).Count(&count).Error
 	if err != nil {
 		return err
 	}
@@ -82,29 +82,29 @@ func (ur *userRepository) AssignRoleToUser(ctx *context.Context, user_id uuid.UU
 			"user_id": user_id,
 			"role_id": role_id,
 		}
-		return ur.db.WithContext(*ctx).Table("systems.user_role").Create(userRole).Error
+		return ur.db.WithContext(ctx).Table("systems.user_role").Create(userRole).Error
 	}
 
 	return nil
 }
 
-func (ur *userRepository) RemoveRoleFromUser(ctx *context.Context, user_id uuid.UUID, role_id uuid.UUID) error {
-	return ur.db.WithContext(*ctx).Table("systems.user_role").Where("user_id = ? AND role_id = ?", user_id, role_id).Delete(nil).Error
+func (ur *userRepository) RemoveRoleFromUser(ctx context.Context, user_id uuid.UUID, role_id uuid.UUID) error {
+	return ur.db.WithContext(ctx).Table("systems.user_role").Where("user_id = ? AND role_id = ?", user_id, role_id).Delete(nil).Error
 }
 
-func (ur *userRepository) FindRolesByUserID(ctx *context.Context, user_id uuid.UUID) ([]aggregate.Role, error) {
+func (ur *userRepository) FindRolesByUserID(ctx context.Context, user_id uuid.UUID) ([]aggregate.Role, error) {
 	var roles = []aggregate.Role{}
-	err := ur.db.WithContext(*ctx).Table("systems.role").Joins("JOIN systems.user_role ON systems.role.role_id = systems.user_role.role_id").Where("systems.user_role.user_id = ?", user_id).Find(&roles).Error
+	err := ur.db.WithContext(ctx).Table("systems.role").Joins("JOIN systems.user_role ON systems.role.role_id = systems.user_role.role_id").Where("systems.user_role.user_id = ?", user_id).Find(&roles).Error
 	return roles, err
 }
 
-func (ur *userRepository) FindUsersByRoleID(ctx *context.Context, role_id uuid.UUID) ([]aggregate.User, error) {
+func (ur *userRepository) FindUsersByRoleID(ctx context.Context, role_id uuid.UUID) ([]aggregate.User, error) {
 	var users = []aggregate.User{}
-	err := ur.db.WithContext(*ctx).Table("systems.users").Joins("JOIN systems.user_role ON systems.users.user_id = systems.user_role.user_id").Where("systems.user_role.role_id = ?", role_id).Find(&users).Error
+	err := ur.db.WithContext(ctx).Table("systems.users").Joins("JOIN systems.user_role ON systems.users.user_id = systems.user_role.user_id").Where("systems.user_role.role_id = ?", role_id).Find(&users).Error
 	return users, err
 }
 
-func (ur *userRepository) FindUsersByOrganizationID(ctx *context.Context, organization_id uuid.UUID) ([]aggregate.User, error) {
+func (ur *userRepository) FindUsersByOrganizationID(ctx context.Context, organization_id uuid.UUID) ([]aggregate.User, error) {
 	// 由于数据库中的users表没有organization_id字段，而User结构体中有这个字段，
 	// 所以我们需要使用原生SQL查询，只选择数据库中存在的字段，然后手动构建User对象
 	var userRows []struct {
@@ -125,7 +125,7 @@ func (ur *userRepository) FindUsersByOrganizationID(ctx *context.Context, organi
 	WHERE uo.organization_id = ?
 	`
 
-	err := ur.db.WithContext(*ctx).Raw(query, organization_id).Scan(&userRows).Error
+	err := ur.db.WithContext(ctx).Raw(query, organization_id).Scan(&userRows).Error
 
 	// 如果出现错误，检查是否是表不存在或权限不够的错误
 	if err != nil {
