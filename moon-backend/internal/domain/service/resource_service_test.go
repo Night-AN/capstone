@@ -16,6 +16,7 @@ type MockResourceRepository struct {
 	deleteResourceErr   error
 	findResourceByIDErr error
 	listAllResourcesErr error
+	moveResourceErr     error
 	mockResource        aggregate.Resource
 	mockResources       []aggregate.Resource
 }
@@ -44,6 +45,10 @@ func (m *MockResourceRepository) FindResourceByID(ctx *context.Context, resource
 
 func (m *MockResourceRepository) ListAllResources(ctx *context.Context) ([]aggregate.Resource, error) {
 	return m.mockResources, m.listAllResourcesErr
+}
+
+func (m *MockResourceRepository) MoveResource(ctx *context.Context, resourceID uuid.UUID, newParentResourceID *uuid.UUID, newOrganizationID *uuid.UUID) error {
+	return m.moveResourceErr
 }
 
 func TestResourceService_CreateResource(t *testing.T) {

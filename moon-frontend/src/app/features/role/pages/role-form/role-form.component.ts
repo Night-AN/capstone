@@ -68,14 +68,17 @@ export class RoleFormComponent implements OnInit {
 
     this.roleService.getRoleById(this.roleId).subscribe({
       next: (role) => {
-        this.roleForm.patchValue({
-          role_name: role.role_name,
-          description: role.description,
-          sensitive_flag: role.sensitive_flag
-        });
+        if (role) {
+          this.roleForm.patchValue({
+            role_name: role.role_name,
+            description: role.description,
+            sensitive_flag: role.sensitive_flag
+          });
+        }
         this.loading.set(false);
       },
       error: (err) => {
+        console.error('Error loading role data:', err);
         this.error.set('Failed to load role data');
         this.loading.set(false);
         this.notificationService.error('Failed to load role data');

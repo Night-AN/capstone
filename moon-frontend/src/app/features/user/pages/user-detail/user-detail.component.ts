@@ -3,6 +3,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '@core/services/user.service';
 import { User } from '@models/user.model';
@@ -14,7 +16,9 @@ import { NotificationService } from '@shared/service/notification/notification.s
     CommonModule,
     MatButtonModule,
     MatCardModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTableModule,
+    MatIconModule
   ],
   templateUrl: './user-detail.component.html',
   styleUrl: './user-detail.component.scss'
@@ -22,6 +26,7 @@ import { NotificationService } from '@shared/service/notification/notification.s
 export class UserDetailComponent implements OnInit {
   userId: string = '';
   user = signal<User | null>(null);
+  userRoles = signal<any[]>([]);
   loading = signal<boolean>(true);
   isLoading = signal<boolean>(false);
 
@@ -81,6 +86,9 @@ export class UserDetailComponent implements OnInit {
           this.notificationService.error('加载用户详情失败');
         }
         
+        // 加载用户角色
+        this.loadUserRoles();
+        
         // 无论响应如何，只要请求成功，就停止加载状态
         this.loading.set(false);
         this.isLoading.set(false);
@@ -110,6 +118,22 @@ export class UserDetailComponent implements OnInit {
         }
       });
     }
+  }
+
+  loadUserRoles(): void {
+    this.userService.getUserRoles(this.userId).subscribe({
+      next: (response) => {
+        if (response.code === '200' || response.message === 'success') {
+          this.userRoles.set(response.data || []);
+        } else {
+          this.notificationService.error('加载用户角色失败');
+        }
+      },
+      error: (error) => {
+        console.error('Error loading user roles:', error);
+        this.notificationService.error('加载用户角色失败');
+      }
+    });
   }
 
   backToList(): void {

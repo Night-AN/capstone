@@ -1,0 +1,72 @@
+<div class="tree-select">
+  <mat-form-field class="w-full">
+    <mat-label>{{ label }}</mat-label>
+    <input
+      matInput
+      [value]="displayValue"
+      [placeholder]="placeholder"
+      readonly
+      (click)="toggleDropdown()"
+      class="cursor-pointer"
+    />
+    <mat-icon matSuffix (click)="toggleDropdown()">arrow_drop_down</mat-icon>
+    </mat-form-field>
+    @if (isOpen()) {
+      <div class="tree-select-dropdown">
+      <div class="tree-select-search">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="搜索..."
+          class="w-full p-2 border rounded"
+        />
+      </div>
+      <div class="tree-select-content">
+        <ul class="tree-select-list">
+          <li *ngFor="let item of filteredItems" class="tree-select-item">
+            <div
+              class="tree-select-item-content"
+              (click)="toggleItem(item)"
+            >
+              <mat-icon
+                class="tree-select-item-icon"
+                [class.expanded]="item.expanded"
+              >
+                {{ item.children && item.children.length > 0 ? (item.expanded ? 'expand_less' : 'expand_more') : 'chevron_right' }}
+              </mat-icon>
+              <span class="tree-select-item-label">{{ item.label }}</span>
+              <mat-checkbox
+                class="tree-select-item-checkbox"
+                [(ngModel)]="item.checked"
+                (change)="onItemCheck(item)"
+                [disabled]="!!item.disabled"
+              ></mat-checkbox>
+            </div>
+            <ul *ngIf="item.children && item.children.length > 0 && item.expanded" class="tree-select-children">
+              <li *ngFor="let child of item.children" class="tree-select-item">
+                <div
+                  class="tree-select-item-content"
+                  (click)="toggleItem(child)"
+                >
+                  <mat-icon
+                    class="tree-select-item-icon"
+                    [class.expanded]="child.expanded"
+                  >
+                    {{ child.children && child.children.length > 0 ? (child.expanded ? 'expand_less' : 'expand_more') : 'chevron_right' }}
+                  </mat-icon>
+                  <span class="tree-select-item-label">{{ child.label }}</span>
+                  <mat-checkbox
+                    class="tree-select-item-checkbox"
+                    [(ngModel)]="child.checked"
+                    (change)="onItemCheck(child)"
+                    [disabled]="!!child.disabled"
+                  ></mat-checkbox>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  }
+</div>

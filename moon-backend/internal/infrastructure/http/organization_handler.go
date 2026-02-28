@@ -98,17 +98,24 @@ func (h *OrganizationHandler) GetOrganizationTree(c *gin.Context) {
 	var req usecase.OrganizationTreeRequest
 	// 从URL查询参数中获取root_organization_code
 	req.RootOrganizationCode = c.Query("root_organization_code")
-	// 如果没有提供root_organization_code，使用默认值"ROOT"
-	if req.RootOrganizationCode == "" {
-		req.RootOrganizationCode = "ROOT"
-	}
+	// 不再设置默认值，允许root_organization_code为空
 	context := c.Request.Context()
 	resp := h.organizationService.GetOrganizationTree(context, req)
-	c.JSON(http.StatusOK, gin.H{
-		"code":    "200",
-		"message": "success",
-		"data":    resp,
-	})
+
+	// 如果root_organization_code为空，返回所有组织作为数组
+	if req.RootOrganizationCode == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "200",
+			"message": "success",
+			"data":    resp.Children,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "200",
+			"message": "success",
+			"data":    resp,
+		})
+	}
 }
 
 func (h *OrganizationHandler) ListOrganizations(c *gin.Context) {

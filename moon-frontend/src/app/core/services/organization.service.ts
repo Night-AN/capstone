@@ -80,11 +80,11 @@ export class OrganizationService {
   createOrganization(organizationData: any): Observable<Organization> {
     // 转换请求数据格式为后端期望的格式
     const requestData = {
-      organization_name: organizationData.organization_name,
-      organization_code: organizationData.organization_code,
-      organization_description: organizationData.organization_description,
-      organization_flag: organizationData.organization_flag,
-      parent_id: organizationData.parent_id
+      OrganizationName: organizationData.organization_name,
+      OrganizationCode: organizationData.organization_code,
+      OrganizationDescription: organizationData.organization_description,
+      OrganizationFlag: organizationData.organization_flag,
+      ParentID: organizationData.parent_id
     };
 
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/organizations`, requestData, {
@@ -111,12 +111,12 @@ export class OrganizationService {
   updateOrganization(organizationData: any): Observable<Organization> {
     // 转换请求数据格式为后端期望的格式
     const requestData = {
-      organization_id: organizationData.organization_id,
-      organization_name: organizationData.organization_name,
-      organization_code: organizationData.organization_code,
-      organization_description: organizationData.organization_description,
-      organization_flag: organizationData.organization_flag,
-      parent_id: organizationData.parent_id
+      OrganizationID: organizationData.organization_id,
+      OrganizationName: organizationData.organization_name,
+      OrganizationCode: organizationData.organization_code,
+      OrganizationDescription: organizationData.organization_description,
+      OrganizationFlag: organizationData.organization_flag,
+      ParentID: organizationData.parent_id
     };
 
     return this.http.put<ApiResponse<any>>(`${this.apiUrl}/organizations`, requestData, {
@@ -143,7 +143,7 @@ export class OrganizationService {
   deleteOrganization(organizationData: any): Observable<boolean> {
     // 转换请求数据格式为后端期望的格式
     const requestData = {
-      organization_id: organizationData.organization_id
+      OrganizationID: organizationData.organization_id
     };
 
     return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/organizations`, {
@@ -167,8 +167,8 @@ export class OrganizationService {
   assignRoleToOrganization(organizationId: string, roleId: string): Observable<any> {
     // 转换请求数据格式为后端期望的格式
     const requestData = {
-      organization_id: organizationId,
-      role_id: roleId
+      OrganizationID: organizationId,
+      RoleID: roleId
     };
 
     return this.http.post(`${this.apiUrl}/organizations/assign-role`, requestData, {
@@ -187,8 +187,8 @@ export class OrganizationService {
   removeRoleFromOrganization(organizationId: string, roleId: string): Observable<any> {
     // 转换请求数据格式为后端期望的格式
     const requestData = {
-      organization_id: organizationId,
-      role_id: roleId
+      OrganizationID: organizationId,
+      RoleID: roleId
     };
 
     return this.http.post(`${this.apiUrl}/organizations/remove-role`, requestData, {
@@ -221,8 +221,8 @@ export class OrganizationService {
   moveOrganization(organizationId: string, newParentId?: string): Observable<any> {
     // 转换请求数据格式为后端期望的格式
     const request = {
-      organization_id: organizationId,
-      new_parent_id: newParentId || null
+      OrganizationID: organizationId,
+      NewParentID: newParentId || null
     };
     return this.http.post(`${this.apiUrl}/organizations/move`, request, {
       timeout: 5000 // 设置5秒超时
@@ -264,10 +264,9 @@ export class OrganizationService {
    * @param rootOrganizationCode 根组织代码
    * @returns 组织树
    */
-  getOrganizationTree(rootOrganizationCode: string = 'ROOT'): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/organizations/tree`, {
-      root_organization_code: rootOrganizationCode
-    }, {
+  getOrganizationTree(rootOrganizationCode: string = ''): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/organizations/tree`, {
+      params: { root_organization_code: rootOrganizationCode },
       timeout: 5000 // 设置5秒超时
     }).pipe(
       catchError(this.handleError),

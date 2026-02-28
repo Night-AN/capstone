@@ -416,6 +416,192 @@ GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA biz TO capstone;
 -- 提交事务
 COMMIT;
 
+-- 创建 AI 相关表
+BEGIN;
+
+SET LOCAL statement_timeout = '5s';
+SET LOCAL lock_timeout = '1s';
+
+-- 创建 AI schema 触发器函数
+CREATE OR REPLACE FUNCTION ai.set_updated_at() RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 表 4: ai.model_config 模型配置表
+CREATE TABLE IF NOT EXISTS ai.model_config (
+    config_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    provider_name TEXT NOT NULL,
+    model_name TEXT NOT NULL,
+    api_key TEXT NOT NULL,
+    api_endpoint TEXT,
+    api_version TEXT,
+    max_tokens INTEGER NOT NULL DEFAULT 4096,
+    temperature FLOAT NOT NULL DEFAULT 0.7,
+    timeout_seconds INTEGER NOT NULL DEFAULT 30,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    priority INTEGER NOT NULL DEFAULT 1,
+    config_metadata JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 表 5: ai.api_call_log AI调用日志
+CREATE TABLE IF NOT EXISTS ai.api_call_log (
+    log_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    config_id UUID,
+    call_type TEXT NOT NULL,
+    prompt_tokens INTEGER,
+    completion_tokens INTEGER,
+    total_tokens INTEGER,
+    request_payload JSONB,
+    response_payload JSONB,
+    status_code INTEGER,
+    error_message TEXT,
+    latency_ms INTEGER,
+    success BOOLEAN NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 表 6: ai.asset_classification 资产分类表
+CREATE TABLE IF NOT EXISTS ai.asset_classification (
+    classification_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    asset_id UUID NOT NULL,
+    log_id UUID NOT NULL,
+    predicted_category TEXT NOT NULL,
+    confidence FLOAT,
+    reasoning TEXT,
+    manual_category TEXT,
+    is_approved BOOLEAN NOT NULL DEFAULT FALSE,
+    approved_by UUID,
+    approved_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 表 7: ai.risk_assessment AI风险评估表
+CREATE TABLE IF NOT EXISTS ai.risk_assessment (
+    assessment_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    vulnerability_id UUID NOT NULL,
+    asset_id UUID,
+    log_id UUID NOT NULL,
+    risk_score FLOAT NOT NULL,
+    risk_level TEXT NOT NULL,
+    analysis TEXT,
+    factor_weights JSONB,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 表 8: ai.security_recommendation AI安全建议表
+CREATE TABLE IF NOT EXISTS ai.security_recommendation (
+    recommendation_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    vulnerability_id UUID NOT NULL,
+    log_id UUID NOT NULL,
+    summary TEXT NOT NULL,
+    vulnerability_analysis TEXT,
+    remediation_steps JSONB,
+    recommended_patches JSONB,
+    mitigation_measures JSONB,
+    prevention_tips JSONB,
+    references JSONB,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    is_useful BOOLEAN,
+    feedback TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 表 9: ai.prompt_template AI提示词模板表
+CREATE TABLE IF NOT EXISTS ai.prompt_template (
+    template_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
+    template_name TEXT NOT NULL UNIQUE,
+    template_type TEXT NOT NULL,
+    template_content TEXT NOT NULL,
+    variables JSONB,
+    description TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    version INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_model_config_id ON ai.model_config (config_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_model_config_active ON ai.model_config (is_active) WHERE is_active = TRUE;
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_api_call_log_id ON ai.api_call_log (log_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_api_call_log_type ON ai.api_call_log (call_type);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_api_call_log_created ON ai.api_call_log (created_at DESC);
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_asset_classification_id ON ai.asset_classification (classification_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_asset_classification_asset_id ON ai.asset_classification (asset_id);
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_risk_assessment_id ON ai.risk_assessment (assessment_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_risk_assessment_vuln_id ON ai.risk_assessment (vulnerability_id);
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_security_recommendation_id ON ai.security_recommendation (recommendation_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_security_recommendation_vuln_id ON ai.security_recommendation (vulnerability_id);
+
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_prompt_template_id ON ai.prompt_template (template_id);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_prompt_template_type ON ai.prompt_template (template_type);
+
+-- 添加触发器
+DROP TRIGGER IF EXISTS tr_ai_model_config_set_updated_at ON ai.model_config;
+CREATE TRIGGER tr_ai_model_config_set_updated_at
+    BEFORE UPDATE ON ai.model_config
+    FOR EACH ROW EXECUTE FUNCTION ai.set_updated_at();
+
+DROP TRIGGER IF EXISTS tr_ai_asset_classification_set_updated_at ON ai.asset_classification;
+CREATE TRIGGER tr_ai_asset_classification_set_updated_at
+    BEFORE UPDATE ON ai.asset_classification
+    FOR EACH ROW EXECUTE FUNCTION ai.set_updated_at();
+
+DROP TRIGGER IF EXISTS tr_ai_prompt_template_set_updated_at ON ai.prompt_template;
+CREATE TRIGGER tr_ai_prompt_template_set_updated_at
+    BEFORE UPDATE ON ai.prompt_template
+    FOR EACH ROW EXECUTE FUNCTION ai.set_updated_at();
+
+-- 添加主键和外键约束
+ALTER TABLE ai.model_config
+    ADD CONSTRAINT pk_ai_model_config_id PRIMARY KEY USING INDEX idx_ai_model_config_id;
+
+ALTER TABLE ai.api_call_log
+    ADD CONSTRAINT pk_ai_api_call_log_id PRIMARY KEY USING INDEX idx_ai_api_call_log_id,
+    ADD CONSTRAINT fk_ai_api_call_log_config_id FOREIGN KEY (config_id) REFERENCES ai.model_config(config_id);
+
+ALTER TABLE ai.asset_classification
+    ADD CONSTRAINT pk_ai_asset_classification_id PRIMARY KEY USING INDEX idx_ai_asset_classification_id,
+    ADD CONSTRAINT fk_ai_asset_classification_asset_id FOREIGN KEY (asset_id) REFERENCES biz.asset(asset_id),
+    ADD CONSTRAINT fk_ai_asset_classification_log_id FOREIGN KEY (log_id) REFERENCES ai.api_call_log(log_id),
+    ADD CONSTRAINT fk_ai_asset_classification_approved_by FOREIGN KEY (approved_by) REFERENCES systems.users(user_id);
+
+ALTER TABLE ai.risk_assessment
+    ADD CONSTRAINT pk_ai_risk_assessment_id PRIMARY KEY USING INDEX idx_ai_risk_assessment_id,
+    ADD CONSTRAINT fk_ai_risk_assessment_vuln_id FOREIGN KEY (vulnerability_id) REFERENCES biz.vulnerability(vulnerability_id),
+    ADD CONSTRAINT fk_ai_risk_assessment_asset_id FOREIGN KEY (asset_id) REFERENCES biz.asset(asset_id),
+    ADD CONSTRAINT fk_ai_risk_assessment_log_id FOREIGN KEY (log_id) REFERENCES ai.api_call_log(log_id);
+
+ALTER TABLE ai.security_recommendation
+    ADD CONSTRAINT pk_ai_security_recommendation_id PRIMARY KEY USING INDEX idx_ai_security_recommendation_id,
+    ADD CONSTRAINT fk_ai_security_recommendation_vuln_id FOREIGN KEY (vulnerability_id) REFERENCES biz.vulnerability(vulnerability_id),
+    ADD CONSTRAINT fk_ai_security_recommendation_log_id FOREIGN KEY (log_id) REFERENCES ai.api_call_log(log_id);
+
+ALTER TABLE ai.prompt_template
+    ADD CONSTRAINT pk_ai_prompt_template_id PRIMARY KEY USING INDEX idx_ai_prompt_template_id;
+
+-- 为 capstone 用户授予权限
+GRANT ALL PRIVILEGES ON SCHEMA ai TO capstone;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ai TO capstone;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA ai TO capstone;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA ai TO capstone;
+
+-- 提交事务
+COMMIT;
+
 -- 插入系统初始数据
 BEGIN;
 

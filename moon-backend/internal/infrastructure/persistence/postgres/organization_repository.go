@@ -121,3 +121,14 @@ func (or *organizationRepository) FindRolesByOrganizationID(ctx context.Context,
 	err := or.db.WithContext(ctx).Table("systems.role").Select("role_id, role_name, role_code, role_description, role_flag, sensitive_flag, created_at, updated_at").Joins("JOIN systems.organization_role ON systems.role.role_id = systems.organization_role.role_id").Where("systems.organization_role.organization_id = ?", org_id).Find(&roles).Error
 	return roles, err
 }
+
+func (or *organizationRepository) DeleteOrganization(ctx context.Context, org_id uuid.UUID) error {
+	// First, delete any organization-role associations
+	err := or.db.WithContext(ctx).Table("systems.organization_role").Where("organization_id = ?", org_id).Delete(nil).Error
+	if err != nil {
+		return err
+	}
+	
+	// Then, delete the organization itself
+	return or.db.WithContext(ctx).Table("systems.organization").Where("organization_id = ?", org_id).Delete(nil).Error
+}

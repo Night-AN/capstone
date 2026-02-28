@@ -45,9 +45,7 @@ type userService struct {
 func (us *userService) Login(ctx context.Context, email string, password string) (usecase.LoginResponse, errors.DomainError) {
 	user, err := us.UserRepository.FindUserByEmail(ctx, email)
 	if err != nil {
-		delete(us.UserSession, user.UserID)
 		return usecase.LoginResponse{}, errors.NewDomainWithError("401", "Login Err", err)
-
 	}
 	us.UserSession[user.UserID] = user
 	return usecase.ConvertUserAggregateToLoginResponse(user), errors.DomainError{}
@@ -72,8 +70,7 @@ func (us *userService) QueryUserProfile(ctx context.Context, user_id uuid.UUID) 
 	if err != nil {
 		return usecase.UserProfileResponse{}, errors.NewDomainWithError("401", "Query Profile Err", err)
 	}
-	usecase.ConvertUserAggregateToUserProfileResponse(user)
-	return usecase.UserProfileResponse{}, errors.DomainError{}
+	return usecase.ConvertUserAggregateToUserProfileResponse(user), errors.DomainError{}
 }
 
 func (us *userService) UpdateUserProfile(ctx context.Context, user aggregate.User) (bool, errors.DomainError) {

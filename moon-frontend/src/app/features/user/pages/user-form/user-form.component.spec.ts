@@ -8,9 +8,12 @@ import { User, UserCreateRequest } from '@models/user.model';
 
 // Mock services
 class MockUserService {
-  getUserById = vi.fn();
-  createUser = vi.fn();
-  updateUser = vi.fn();
+  getUserById = vi.fn().mockReturnValue(of({}));
+  createUser = vi.fn().mockReturnValue(of({}));
+  updateUser = vi.fn().mockReturnValue(of({}));
+  getUserRoles = vi.fn().mockReturnValue(of([]));
+  assignRoleToUser = vi.fn().mockReturnValue(of({}));
+  removeRoleFromUser = vi.fn().mockReturnValue(of({}));
 }
 
 class MockNotificationService {

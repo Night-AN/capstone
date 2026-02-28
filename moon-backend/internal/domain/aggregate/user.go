@@ -36,7 +36,7 @@ type User struct {
 
 	// OrganizationID is the unique identifier for the organization that the user belongs to.
 	// This establishes a relationship between users and organizations.
-	OrganizationID *uuid.UUID `gorm:"column:organization_id;type:uuid"`
+	OrganizationID *uuid.UUID `gorm:"-"`
 
 	// CreatedAt records the timestamp when the user account was created.
 	// Usage: Auditing, account lifecycle analysis, compliance reporting.

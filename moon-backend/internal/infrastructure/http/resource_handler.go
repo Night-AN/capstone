@@ -143,3 +143,29 @@ func (h *ResourceHandler) ListResources(c *gin.Context) {
 		"data":    resp,
 	})
 }
+
+func (h *ResourceHandler) MoveResource(c *gin.Context) {
+	var req usecase.ResourceMoveRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    "400",
+			"message": "invalid request: " + err.Error(),
+		})
+		return
+	}
+	context := c.Request.Context()
+	resp, domainErr := h.resourceService.MoveResource(&context, req)
+	if domainErr.Code != "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    domainErr.Code,
+			"message": domainErr.Message + domainErr.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    "200",
+		"message": "success",
+		"data":    resp,
+	})
+}

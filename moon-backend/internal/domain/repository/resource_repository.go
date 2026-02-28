@@ -13,4 +13,5 @@ type ResourceRepository interface {
 	DeleteResource(ctx *context.Context, resource_id uuid.UUID) error
 	FindResourceByID(ctx *context.Context, resource_id uuid.UUID) (aggregate.Resource, error)
 	ListAllResources(ctx *context.Context) ([]aggregate.Resource, error)
+	MoveResource(ctx *context.Context, resourceID uuid.UUID, newParentResourceID *uuid.UUID, newOrganizationID *uuid.UUID) error
 }

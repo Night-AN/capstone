@@ -1,4 +1,4 @@
-<div class="container mx-auto px-4 py-8">
+<div class="h-full flex flex-col">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-800">用户管理</h1>
     <div class="flex space-x-4">
@@ -22,8 +22,8 @@
     </div>
   </div>
 
-  <div class="bg-white rounded-lg shadow overflow-hidden">
-    <table mat-table [dataSource]="dataSource" matSort class="w-full">
+  <div class="bg-white rounded-lg shadow overflow-hidden flex-1">
+    <table mat-table [dataSource]="dataSource" matSort class="w-full h-full">
       <!-- Nickname Column -->
       <ng-container matColumnDef="nickname">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>昵称</th>
@@ -68,22 +68,6 @@
               aria-label="编辑"
             >
               <mat-icon>edit</mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              color="primary"
-              (click)="assignRoleToUser(element.user_id)"
-              aria-label="分配角色"
-            >
-              <mat-icon>assignment_ind</mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              color="primary"
-              (click)="viewUserRoles(element.user_id)"
-              aria-label="查看角色"
-            >
-              <mat-icon>assignment</mat-icon>
             </button>
             <button
               mat-icon-button

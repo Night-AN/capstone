@@ -113,4 +113,41 @@ export class RoleService {
       map(response => response.code === '200')
     );
   }
+
+  getRoleUsers(roleId: string): Observable<any[]> {
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/users`, {
+      params: { role_id: roleId }
+    }).pipe(
+      map(response => {
+        const users = response.data?.Users || response.data?.users || [];
+        return users.map((user: any) => ({
+          user_id: user.UserID || user.user_id,
+          nickname: user.Nickname || user.nickname,
+          email: user.Email || user.email
+        }));
+      })
+    );
+  }
+
+  assignUserToRole(roleId: string, userId: string): Observable<boolean> {
+    const requestData = {
+      user_id: userId,
+      role_id: roleId
+    };
+
+    return this.http.post<ApiResponse<any>>(`/api/v1/users/assign-role`, requestData).pipe(
+      map(response => response.code === '200')
+    );
+  }
+
+  removeUserFromRole(roleId: string, userId: string): Observable<boolean> {
+    const requestData = {
+      user_id: userId,
+      role_id: roleId
+    };
+
+    return this.http.post<ApiResponse<any>>(`/api/v1/users/remove-role`, requestData).pipe(
+      map(response => response.code === '200')
+    );
+  }
 }

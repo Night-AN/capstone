@@ -13,6 +13,7 @@ func SetupRouter(
 	assetHandler *AssetHandler,
 	vulnerabilityHandler *VulnerabilityHandler,
 	assetVulnerabilityHandler *AssetVulnerabilityHandler,
+	aiHandler *AIHandler,
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(CORSMiddleware())
@@ -44,7 +45,7 @@ func SetupRouter(
 		v1.GET("/organizations/roles", organizationHandler.GetOrganizationRoles)
 		v1.GET("/organizations/users", organizationHandler.GetOrganizationUsers)
 
-		// Role routes
+		// 角色管理
 		v1.POST("/roles", roleHandler.CreateRole)
 		v1.GET("/roles", roleHandler.GetRole)
 		v1.PUT("/roles", roleHandler.UpdateRole)
@@ -53,6 +54,7 @@ func SetupRouter(
 		v1.POST("/roles/remove-permission", roleHandler.RemovePermission)
 		v1.GET("/roles/permissions", roleHandler.GetRolePermissions)
 		v1.GET("/roles/list", roleHandler.ListRoles)
+		v1.GET("/roles/users", roleHandler.GetRoleUsers)
 
 		// Permission routes
 		v1.POST("/permissions", permissionHandler.CreatePermission)
@@ -67,6 +69,7 @@ func SetupRouter(
 		v1.PUT("/resources", resourceHandler.UpdateResource)
 		v1.DELETE("/resources", resourceHandler.DeleteResource)
 		v1.GET("/resources/list", resourceHandler.ListResources)
+		v1.POST("/resources/move", resourceHandler.MoveResource)
 
 		// Asset routes
 		v1.POST("/assets", assetHandler.CreateAsset)
@@ -92,6 +95,35 @@ func SetupRouter(
 		v1.PUT("/asset-vulnerabilities", assetVulnerabilityHandler.UpdateAssetVulnerability)
 		v1.DELETE("/asset-vulnerabilities", assetVulnerabilityHandler.DeleteAssetVulnerability)
 		v1.GET("/asset-vulnerabilities/list", assetVulnerabilityHandler.ListAssetVulnerabilities)
+
+		// AI routes
+		v1.POST("/ai/model-config", aiHandler.CreateModelConfig)
+		v1.GET("/ai/model-config", aiHandler.GetModelConfig)
+		v1.GET("/ai/model-config/active", aiHandler.GetActiveModelConfig)
+		v1.PUT("/ai/model-config", aiHandler.UpdateModelConfig)
+		v1.DELETE("/ai/model-config", aiHandler.DeleteModelConfig)
+		v1.GET("/ai/model-config/list", aiHandler.ListModelConfigs)
+
+		v1.POST("/ai/prompt-template", aiHandler.CreatePromptTemplate)
+		v1.GET("/ai/prompt-template", aiHandler.GetPromptTemplate)
+		v1.GET("/ai/prompt-template/type", aiHandler.GetPromptTemplateByType)
+		v1.PUT("/ai/prompt-template", aiHandler.UpdatePromptTemplate)
+		v1.DELETE("/ai/prompt-template", aiHandler.DeletePromptTemplate)
+		v1.GET("/ai/prompt-template/list", aiHandler.ListPromptTemplates)
+
+		v1.POST("/ai/classify-asset", aiHandler.ClassifyAsset)
+		v1.GET("/ai/classify-asset", aiHandler.GetClassificationByAssetID)
+		v1.PUT("/ai/classify-asset/approve", aiHandler.ApproveClassification)
+
+		v1.POST("/ai/assess-risk", aiHandler.AssessRisk)
+		v1.GET("/ai/assess-risk", aiHandler.GetAssessmentByVulnerabilityID)
+
+		v1.POST("/ai/generate-recommendation", aiHandler.GenerateRecommendation)
+		v1.GET("/ai/generate-recommendation", aiHandler.GetRecommendationByVulnerabilityID)
+		v1.PUT("/ai/generate-recommendation/feedback", aiHandler.SubmitFeedback)
+
+		v1.GET("/ai/logs", aiHandler.ListAPICallLogs)
+		v1.GET("/ai/logs/:id", aiHandler.GetAPICallLog)
 	}
 
 	return r

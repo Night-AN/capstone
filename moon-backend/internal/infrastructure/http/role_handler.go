@@ -157,3 +157,24 @@ func (h *RoleHandler) ListRoles(c *gin.Context) {
 		"data":    resp,
 	})
 }
+
+func (h *RoleHandler) GetRoleUsers(c *gin.Context) {
+	var req usecase.RoleUsersRequest
+	roleIDStr := c.Query("role_id")
+	roleID, err := uuid.Parse(roleIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    "400",
+			"message": "invalid role_id: " + err.Error(),
+		})
+		return
+	}
+	req.RoleID = roleID
+	context := c.Request.Context()
+	resp := h.roleService.GetRoleUsers(context, req)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    "200",
+		"message": "success",
+		"data":    resp,
+	})
+}

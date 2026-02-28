@@ -13,6 +13,7 @@ type ResourceService interface {
 	DeleteResource(ctx *context.Context, req usecase.ResourceDeleteRequest) (usecase.ResourceDeleteResponse, errors.DomainError)
 	GetResourceByID(ctx *context.Context, req usecase.ResourceGetRequest) (usecase.ResourceGetResponse, errors.DomainError)
 	ListAllResources(ctx *context.Context, req usecase.ResourceListRequest) (usecase.ResourceListResponse, errors.DomainError)
+	MoveResource(ctx *context.Context, req usecase.ResourceMoveRequest) (usecase.ResourceMoveResponse, errors.DomainError)
 }
 
 func NewResourceService(resource_repo repository.ResourceRepository) ResourceService {
@@ -93,4 +94,30 @@ func (rs *resourceService) ListAllResources(ctx *context.Context, req usecase.Re
 		return usecase.ResourceListResponse{}, errors.NewDomainWithError("401", "List Resources Err", err)
 	}
 	return usecase.ConvertResourceAggregatesToResourceListResponse(resources), errors.DomainError{}
+}
+
+func (rs *resourceService) MoveResource(ctx *context.Context, req usecase.ResourceMoveRequest) (usecase.ResourceMoveResponse, errors.DomainError) {
+	// Check if the resource is sensitive
+	existingResource, err := rs.ResourceRepository.FindResourceByID(ctx, req.ResourceID)
+	if err != nil {
+		return usecase.ResourceMoveResponse{Success: false}, errors.NewDomainWithError("401", "Get Resource Err", err)
+	}
+
+	// If resource is sensitive, reject the move
+	if bool(existingResource.ResourceFlag) {
+		return usecase.ResourceMoveResponse{Success: false}, errors.NewDomainError("403", "Sensitive resource cannot be moved")
+	}
+
+	// Execute the move operation
+	err = rs.ResourceRepository.MoveResource(ctx, req.ResourceID, req.NewParentResourceID, req.NewOrganizationID)
+	if err != nil {
+		return usecase.ResourceMoveResponse{Success: false}, errors.NewDomainWithError("401", "Move Resource Err", err)
+	}
+
+	return usecase.ResourceMoveResponse{
+		Success:             true,
+		ResourceID:          req.ResourceID,
+		NewParentResourceID: req.NewParentResourceID,
+		NewOrganizationID:   req.NewOrganizationID,
+	}, errors.DomainError{}
 }

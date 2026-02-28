@@ -29,6 +29,30 @@ class MockOrganizationService {
       organization_flag: 'active'
     });
   }
+
+  getOrganizationTree() {
+    return of([]);
+  }
+
+  getOrganizationRoles() {
+    return of([]);
+  }
+
+  assignRoleToOrganization() {
+    return of({});
+  }
+
+  removeRoleFromOrganization() {
+    return of({});
+  }
+
+  getOrganizationUsers() {
+    return of([]);
+  }
+
+  moveOrganization() {
+    return of({});
+  }
 }
 
 class MockNotificationService {

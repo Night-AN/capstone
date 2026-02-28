@@ -31,7 +31,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	if domainErr.Code != "" {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":    domainErr.Code,
-			"message": domainErr.Message + domainErr.Error(),
+			"message": domainErr.Message,
 		})
 		return
 	}
@@ -87,7 +87,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
-			"message": domainErr.Message + domainErr.Error(),
+			"message": domainErr.Message,
 		})
 		return
 	}
@@ -113,7 +113,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
-			"message": domainErr.Message + domainErr.Error(),
+			"message": domainErr.Message,
 		})
 		return
 	}
@@ -139,7 +139,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
-			"message": domainErr.Message + domainErr.Error(),
+			"message": domainErr.Message,
 		})
 		return
 	}
@@ -158,7 +158,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
-			"message": domainErr.Message + domainErr.Error(),
+			"message": domainErr.Message,
 		})
 		return
 	}
@@ -195,7 +195,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
-			"message": domainErr.Message + domainErr.Error(),
+			"message": domainErr.Message,
 		})
 		return
 	}
@@ -226,7 +226,7 @@ func (h *UserHandler) AssignRoleToUser(c *gin.Context) {
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
-			"message": domainErr.Message + domainErr.Error(),
+			"message": domainErr.Message,
 		})
 		return
 	}
@@ -257,7 +257,7 @@ func (h *UserHandler) RemoveRoleFromUser(c *gin.Context) {
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
-			"message": domainErr.Message + domainErr.Error(),
+			"message": domainErr.Message,
 		})
 		return
 	}
@@ -293,7 +293,7 @@ func (h *UserHandler) GetUserRoles(c *gin.Context) {
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
-			"message": domainErr.Message + domainErr.Error(),
+			"message": domainErr.Message,
 		})
 		return
 	}

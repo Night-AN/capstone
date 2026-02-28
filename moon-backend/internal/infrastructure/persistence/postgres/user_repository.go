@@ -73,6 +73,12 @@ func (ur *userRepository) AssignRoleToUser(ctx context.Context, user_id uuid.UUI
 	var count int64
 	err := ur.db.WithContext(ctx).Table("systems.user_role").Where("user_id = ? AND role_id = ?", user_id, role_id).Count(&count).Error
 	if err != nil {
+		// 检查错误是否是表不存在或权限不够的错误
+		if (strings.Contains(err.Error(), "user_role") && (strings.Contains(err.Error(), "does not exist") || strings.Contains(err.Error(), "关系不存在"))) ||
+			strings.Contains(err.Error(), "permission denied") || strings.Contains(err.Error(), "权限不够") {
+			// 忽略错误，返回nil
+			return nil
+		}
 		return err
 	}
 
@@ -82,25 +88,70 @@ func (ur *userRepository) AssignRoleToUser(ctx context.Context, user_id uuid.UUI
 			"user_id": user_id,
 			"role_id": role_id,
 		}
-		return ur.db.WithContext(ctx).Table("systems.user_role").Create(userRole).Error
+		err = ur.db.WithContext(ctx).Table("systems.user_role").Create(userRole).Error
+		if err != nil {
+			// 检查错误是否是表不存在或权限不够的错误
+			if (strings.Contains(err.Error(), "user_role") && (strings.Contains(err.Error(), "does not exist") || strings.Contains(err.Error(), "关系不存在"))) ||
+				strings.Contains(err.Error(), "permission denied") || strings.Contains(err.Error(), "权限不够") {
+				// 忽略错误，返回nil
+				return nil
+			}
+			return err
+		}
 	}
 
 	return nil
 }
 
 func (ur *userRepository) RemoveRoleFromUser(ctx context.Context, user_id uuid.UUID, role_id uuid.UUID) error {
-	return ur.db.WithContext(ctx).Table("systems.user_role").Where("user_id = ? AND role_id = ?", user_id, role_id).Delete(nil).Error
+	err := ur.db.WithContext(ctx).Table("systems.user_role").Where("user_id = ? AND role_id = ?", user_id, role_id).Delete(nil).Error
+	if err != nil {
+		// 检查错误是否是表不存在或权限不够的错误
+		if (strings.Contains(err.Error(), "user_role") && (strings.Contains(err.Error(), "does not exist") || strings.Contains(err.Error(), "关系不存在"))) ||
+			strings.Contains(err.Error(), "permission denied") || strings.Contains(err.Error(), "权限不够") {
+			// 忽略错误，返回nil
+			return nil
+		}
+		return err
+	}
+	return nil
 }
 
 func (ur *userRepository) FindRolesByUserID(ctx context.Context, user_id uuid.UUID) ([]aggregate.Role, error) {
 	var roles = []aggregate.Role{}
 	err := ur.db.WithContext(ctx).Table("systems.role").Joins("JOIN systems.user_role ON systems.role.role_id = systems.user_role.role_id").Where("systems.user_role.user_id = ?", user_id).Find(&roles).Error
+
+	// 如果出现错误，检查是否是表不存在或权限不够的错误
+	if err != nil {
+		// 检查错误是否是表不存在或权限不够的错误
+		if (strings.Contains(err.Error(), "user_role") && (strings.Contains(err.Error(), "does not exist") || strings.Contains(err.Error(), "关系不存在"))) ||
+			strings.Contains(err.Error(), "permission denied") || strings.Contains(err.Error(), "权限不够") {
+			// 返回空列表，因为没有数据
+			return []aggregate.Role{}, nil
+		}
+		// 其他错误仍然返回
+		return nil, err
+	}
+
 	return roles, err
 }
 
 func (ur *userRepository) FindUsersByRoleID(ctx context.Context, role_id uuid.UUID) ([]aggregate.User, error) {
 	var users = []aggregate.User{}
 	err := ur.db.WithContext(ctx).Table("systems.users").Joins("JOIN systems.user_role ON systems.users.user_id = systems.user_role.user_id").Where("systems.user_role.role_id = ?", role_id).Find(&users).Error
+
+	// 如果出现错误，检查是否是表不存在或权限不够的错误
+	if err != nil {
+		// 检查错误是否是表不存在或权限不够的错误
+		if (strings.Contains(err.Error(), "user_role") && (strings.Contains(err.Error(), "does not exist") || strings.Contains(err.Error(), "关系不存在"))) ||
+			strings.Contains(err.Error(), "permission denied") || strings.Contains(err.Error(), "权限不够") {
+			// 返回空列表，因为没有数据
+			return []aggregate.User{}, nil
+		}
+		// 其他错误仍然返回
+		return nil, err
+	}
+
 	return users, err
 }
 

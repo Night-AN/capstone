@@ -30,7 +30,7 @@ func (h *AssetHandler) CreateAsset(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp, domainErr := h.assetService.CreateAsset(&context, req)
+	resp, domainErr := h.assetService.CreateAsset(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -59,7 +59,7 @@ func (h *AssetHandler) GetAsset(c *gin.Context) {
 	}
 	context := c.Request.Context()
 	req := usecase.AssetGetRequest{AssetID: assetID}
-	resp, domainErr := h.assetService.GetAssetByID(&context, req)
+	resp, domainErr := h.assetService.GetAssetByID(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -86,7 +86,7 @@ func (h *AssetHandler) UpdateAsset(c *gin.Context) {
 		return
 	}
 	context := c.Request.Context()
-	resp, domainErr := h.assetService.UpdateAsset(&context, req)
+	resp, domainErr := h.assetService.UpdateAsset(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -115,7 +115,7 @@ func (h *AssetHandler) DeleteAsset(c *gin.Context) {
 	}
 	context := c.Request.Context()
 	req := usecase.AssetDeleteRequest{AssetID: assetID}
-	resp, domainErr := h.assetService.DeleteAsset(&context, req)
+	resp, domainErr := h.assetService.DeleteAsset(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,
@@ -135,7 +135,7 @@ func (h *AssetHandler) DeleteAsset(c *gin.Context) {
 func (h *AssetHandler) ListAssets(c *gin.Context) {
 	context := c.Request.Context()
 	req := usecase.AssetListRequest{}
-	resp, domainErr := h.assetService.ListAllAssets(&context, req)
+	resp, domainErr := h.assetService.ListAllAssets(context, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    domainErr.Code,

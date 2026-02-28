@@ -21,6 +21,18 @@ class MockRoleService {
       created_at: '2026-02-17T15:31:36.464358+08:00'
     });
   }
+
+  getRoleUsers() {
+    return of([]);
+  }
+
+  assignUserToRole() {
+    return of(true);
+  }
+
+  removeUserFromRole() {
+    return of(true);
+  }
 }
 
 class MockNotificationService {

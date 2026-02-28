@@ -18,4 +18,5 @@ type OrganizationRepository interface {
 	AssignRoleToOrganization(ctx context.Context, org_id uuid.UUID, role_id uuid.UUID) error
 	RemoveRoleFromOrganization(ctx context.Context, org_id uuid.UUID, role_id uuid.UUID) error
 	FindRolesByOrganizationID(ctx context.Context, org_id uuid.UUID) ([]aggregate.Role, error)
+	DeleteOrganization(ctx context.Context, org_id uuid.UUID) error
 }

@@ -1,4 +1,4 @@
-<div class="asset-management-container">
+<div class="h-full flex flex-col">
   <div class="header">
     <h1>资产管理</h1>
     <div class="header-actions">
@@ -25,7 +25,7 @@
     </div>
   </div>
 
-  <div class="table-container">
+  <div class="table-container flex-1">
     <mat-table [dataSource]="dataSource" matSort class="asset-table">
       <!-- 资产名称 -->
       <ng-container matColumnDef="asset_name">

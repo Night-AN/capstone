@@ -27,6 +27,8 @@ var (
 	permissionSvc service.PermissionService
 	// organizationSvc is the OrganizationService instance used for testing
 	organizationSvc service.OrganizationService
+	// userSvc is the UserService instance used for testing
+	userSvc service.UserService
 	// testCtx is the context used for testing
 	testCtx = context.Background()
 )
@@ -106,6 +108,9 @@ func clearTestData() {
 	if err := db.Exec("DELETE FROM systems.organization").Error; err != nil {
 		panic("Failed to clear organization data: " + err.Error())
 	}
+	if err := db.Exec("DELETE FROM systems.users").Error; err != nil {
+		panic("Failed to clear user data: " + err.Error())
+	}
 }
 
 // initializeServices initializes all the repositories and services
@@ -118,14 +123,16 @@ func initializeServices() {
 	permissionRepo := postgres.NewPermissionRepository(db)
 	organizationRepo := postgres.NewOrganizationRepository(db)
 	resourceRepo := postgres.NewResourceRepository(db)
+	userRepo := postgres.NewUserRepository(db)
 
 	// Initialize services
 	rolePermissionSvc = service.NewRolePermissionService(rolePermissionRepo, roleRepo, permissionRepo)
 	organizationRoleSvc = service.NewOrganizationRoleService(organizationRoleRepo, organizationRepo, roleRepo)
 	permissionResourceSvc = service.NewPermissionResourceService(permissionResourceRepo, permissionRepo, resourceRepo)
-	roleSvc = service.NewRoleService(roleRepo)
+	roleSvc = service.NewRoleService(roleRepo, nil)
 	permissionSvc = service.NewPermissionService(permissionRepo)
 	organizationSvc = service.NewOrganizationService(organizationRepo, nil)
+	userSvc = service.NewUserService(userRepo)
 }
 
 // TestCreateRolePermission tests the Create method of RolePermissionService

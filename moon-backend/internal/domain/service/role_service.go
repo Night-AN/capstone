@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"time"
+
 	"moon/internal/domain/aggregate"
 	"moon/internal/domain/repository"
 	"moon/internal/domain/usecase"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -66,6 +68,11 @@ type RoleService interface {
 	// It returns a response containing the role's permissions
 	// If retrieval fails, it returns an error response
 	GetRolePermissions(ctx context.Context, req usecase.RolePermissionsRequest) usecase.RolePermissionsResponse
+
+	// GetRoleUsers retrieves all users assigned to a role
+	// It returns a response containing the role's users
+	// If retrieval fails, it returns an error response
+	GetRoleUsers(ctx context.Context, req usecase.RoleUsersRequest) usecase.RoleUsersResponse
 }
 
 // roleService implements the RoleService interface
@@ -78,13 +85,15 @@ type RoleService interface {
 type roleService struct {
 	// roleRepo is the repository used for role data access
 	roleRepo repository.RoleRepository
+	// userRepo is the repository used for user data access
+	userRepo repository.UserRepository
 }
 
 // NewRoleService creates a new instance of roleService
-// It takes a RoleRepository instance as a parameter
+// It takes a RoleRepository instance and a UserRepository instance as parameters
 // It returns a RoleService
-func NewRoleService(roleRepo repository.RoleRepository) RoleService {
-	return &roleService{roleRepo}
+func NewRoleService(roleRepo repository.RoleRepository, userRepo repository.UserRepository) RoleService {
+	return &roleService{roleRepo, userRepo}
 }
 
 // CreateRole creates a new role with the specified details
@@ -279,5 +288,38 @@ func (rs *roleService) ListRoles(ctx context.Context, req usecase.RoleListReques
 	// Return the list of roles
 	return usecase.RoleListResponse{
 		Roles: roleItems,
+	}
+}
+
+// GetRoleUsers retrieves all users assigned to a role
+// It returns a response containing the role's users
+// If retrieval fails, it returns an error response
+func (rs *roleService) GetRoleUsers(ctx context.Context, req usecase.RoleUsersRequest) usecase.RoleUsersResponse {
+	// Get the role's users
+	users, err := rs.userRepo.FindUsersByRoleID(ctx, req.RoleID)
+	if err != nil {
+		// If retrieval fails, log the error and return an empty response
+		fmt.Printf("Error retrieving role users: %v\n", err)
+		return usecase.RoleUsersResponse{
+			RoleID: req.RoleID,
+			Users:  []usecase.UserGetResponse{},
+		}
+	}
+
+	// Convert users to response format
+	userResponses := make([]usecase.UserGetResponse, len(users))
+	for i, user := range users {
+		userResponses[i] = usecase.UserGetResponse{
+			UserID:   user.UserID,
+			Nickname: user.Nickname,
+			FullName: user.FullName,
+			Email:    user.Email,
+		}
+	}
+
+	// Return the role's users
+	return usecase.RoleUsersResponse{
+		RoleID: req.RoleID,
+		Users:  userResponses,
 	}
 }

@@ -312,16 +312,28 @@ func main() {
 	assetRepository := postgres.NewAssetRepository(db)
 	vulnerabilityRepository := postgres.NewVulnerabilityRepository(db)
 	assetVulnerabilityRepository := postgres.NewAssetVulnerabilityRepository(db)
+	modelConfigRepository := postgres.NewModelConfigRepository(db)
+	apiCallLogRepository := postgres.NewAPICallLogRepository(db)
+	assetClassificationRepository := postgres.NewAssetClassificationRepository(db)
+	riskAssessmentRepository := postgres.NewRiskAssessmentRepository(db)
+	securityRecommendationRepository := postgres.NewSecurityRecommendationRepository(db)
+	promptTemplateRepository := postgres.NewPromptTemplateRepository(db)
 
 	// Initialize services
 	userService := service.NewUserService(userRepository)
 	organizationService := service.NewOrganizationService(organizationRepository, userRepository)
-	roleService := service.NewRoleService(roleRepository)
+	roleService := service.NewRoleService(roleRepository, userRepository)
 	permissionService := service.NewPermissionService(permissionRepository)
 	resourceService := service.NewResourceService(resourceRepository)
 	assetService := service.NewAssetService(assetRepository)
 	vulnerabilityService := service.NewVulnerabilityService(vulnerabilityRepository)
 	assetVulnerabilityService := service.NewAssetVulnerabilityService(assetVulnerabilityRepository)
+	modelConfigService := service.NewModelConfigService(modelConfigRepository)
+	promptTemplateService := service.NewPromptTemplateService(promptTemplateRepository)
+	apiCallLogService := service.NewAPICallLogService(apiCallLogRepository)
+	assetClassificationService := service.NewAssetClassificationService(assetClassificationRepository, apiCallLogRepository, modelConfigRepository, assetRepository, promptTemplateRepository)
+	riskAssessmentService := service.NewRiskAssessmentService(riskAssessmentRepository, apiCallLogRepository, modelConfigRepository, vulnerabilityRepository, assetRepository, promptTemplateRepository)
+	recommendationService := service.NewSecurityRecommendationService(securityRecommendationRepository, apiCallLogRepository, modelConfigRepository, vulnerabilityRepository, promptTemplateRepository)
 
 	// Initialize handlers
 	userHandler := http.NewUserHandler(userService)
@@ -332,6 +344,7 @@ func main() {
 	assetHandler := http.NewAssetHandler(assetService)
 	vulnerabilityHandler := http.NewVulnerabilityHandler(vulnerabilityService)
 	assetVulnerabilityHandler := http.NewAssetVulnerabilityHandler(assetVulnerabilityService)
+	aiHandler := http.NewAIHandler(modelConfigService, promptTemplateService, assetClassificationService, riskAssessmentService, recommendationService, apiCallLogService)
 
 	// Setup router
 	r := http.SetupRouter(
@@ -343,6 +356,7 @@ func main() {
 		assetHandler,
 		vulnerabilityHandler,
 		assetVulnerabilityHandler,
+		aiHandler,
 	)
 
 	r.Run(":8080")
