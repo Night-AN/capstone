@@ -425,11 +425,24 @@ func (s *assetClassificationService) ClassifyAsset(ctx context.Context, req usec
 		return usecase.AssetClassifyResponse{}, errors.NewDomainWithError("401", "No Active Model Config", err)
 	}
 
-	promptTemplates, err := s.promptTemplateRepo.FindPromptTemplateByType(ctx, "asset_classification")
-	if err != nil || len(promptTemplates) == 0 {
-		promptTemplates = []aggregate.PromptTemplate{{
-			TemplateContent: "Classify the following asset into one of these categories: server, workstation, network_device, database, web_application, mobile_device, iot_device, other. Asset Name: {{.AssetName}}, Description: {{.AssetDescription}}, Type: {{.AssetType}}. Respond with JSON: {\"category\": \"...\", \"confidence\": 0.0, \"reasoning\": \"...\"}",
-		}}
+	var promptTemplates []aggregate.PromptTemplate
+	if req.PromptTemplateID != nil && *req.PromptTemplateID != "" {
+		templateID, parseErr := uuid.Parse(*req.PromptTemplateID)
+		if parseErr == nil {
+			template, templateErr := s.promptTemplateRepo.FindPromptTemplateByID(ctx, templateID)
+			if templateErr == nil {
+				promptTemplates = []aggregate.PromptTemplate{template}
+			}
+		}
+	}
+
+	if len(promptTemplates) == 0 {
+		promptTemplates, err = s.promptTemplateRepo.FindPromptTemplateByType(ctx, "asset_classification")
+		if err != nil || len(promptTemplates) == 0 {
+			promptTemplates = []aggregate.PromptTemplate{{
+				TemplateContent: "Classify the following asset into one of these categories: server, workstation, network_device, database, web_application, mobile_device, iot_device, other. Asset Name: {{.AssetName}}, Description: {{.AssetDescription}}, Type: {{.AssetType}}. Respond with JSON: {\"category\": \"...\", \"confidence\": 0.0, \"reasoning\": \"...\"}",
+			}}
+		}
 	}
 
 	apiLog := aggregate.APICallLog{
@@ -769,4 +782,215 @@ func (s *securityRecommendationService) SubmitFeedback(ctx context.Context, req 
 		RecommendationID: recommendation.RecommendationID,
 		Success:          true,
 	}, errors.DomainError{}
+}
+
+type ChatService interface {
+	Chat(ctx context.Context, req usecase.ChatRequest) (usecase.ChatResponse, errors.DomainError)
+	GetConversation(ctx context.Context, req usecase.GetConversationRequest) (usecase.ChatResponse, errors.DomainError)
+	ListConversations(ctx context.Context, req usecase.ConversationListRequest) (usecase.ConversationListResponse, errors.DomainError)
+	DeleteConversation(ctx context.Context, req usecase.DeleteConversationRequest) (usecase.ConversationListResponse, errors.DomainError)
+}
+
+func NewChatService(
+	modelConfigRepo repository.ModelConfigRepository,
+	promptTemplateRepo repository.PromptTemplateRepository,
+	apiLogRepo repository.APICallLogRepository,
+) ChatService {
+	return &chatService{
+		modelConfigRepo:    modelConfigRepo,
+		promptTemplateRepo: promptTemplateRepo,
+		apiLogRepo:         apiLogRepo,
+	}
+}
+
+type chatService struct {
+	modelConfigRepo    repository.ModelConfigRepository
+	promptTemplateRepo repository.PromptTemplateRepository
+	apiLogRepo         repository.APICallLogRepository
+	conversations      map[uuid.UUID][]aggregate.ChatMessage
+}
+
+func (s *chatService) Chat(ctx context.Context, req usecase.ChatRequest) (usecase.ChatResponse, errors.DomainError) {
+	var conversationID uuid.UUID
+	if req.ConversationID != nil && *req.ConversationID != "" {
+		conversationID, _ = uuid.Parse(*req.ConversationID)
+	} else {
+		conversationID = uuid.New()
+	}
+
+	if s.conversations == nil {
+		s.conversations = make(map[uuid.UUID][]aggregate.ChatMessage)
+	}
+
+	userMessage := aggregate.ChatMessage{
+		MessageID:      uuid.New(),
+		ConversationID: conversationID,
+		Role:           "user",
+		Content:        req.Message,
+		CreatedAt:      time.Now(),
+	}
+	s.conversations[conversationID] = append(s.conversations[conversationID], userMessage)
+
+	modelConfig, err := s.modelConfigRepo.FindActiveModelConfig(ctx)
+	if err != nil {
+		return usecase.ChatResponse{}, errors.NewDomainWithError("401", "No Active Model Config", err)
+	}
+
+	apiLog := aggregate.APICallLog{
+		LogID:     uuid.New(),
+		ConfigID:  modelConfig.ConfigID,
+		CallType:  "chat",
+		Success:   true,
+		CreatedAt: time.Now(),
+	}
+	_ = s.apiLogRepo.SaveAPICallLog(ctx, apiLog)
+
+	var promptTemplate string
+	if req.PromptTemplateID != nil && *req.PromptTemplateID != "" {
+		templateID, _ := uuid.Parse(*req.PromptTemplateID)
+		template, templateErr := s.promptTemplateRepo.FindPromptTemplateByID(ctx, templateID)
+		if templateErr == nil {
+			promptTemplate = template.TemplateContent
+		}
+	}
+
+	if promptTemplate == "" {
+		promptTemplate = "You are a helpful AI assistant specialized in cybersecurity and asset management. Please respond to the user's question."
+	}
+
+	responseContent := "This is a simulated AI response. In production, this would call the configured LLM (e.g., OpenAI, Claude, or Tongyi Qianwen) with the following prompt:\n\n" +
+		"System: " + promptTemplate + "\n\n" +
+		"User: " + req.Message + "\n\n" +
+		"AI: "
+	if modelConfig.ProviderName == "openai" {
+		responseContent += "Based on the context, I can help you with cybersecurity and asset management questions."
+	} else if modelConfig.ProviderName == "tongyi" {
+		responseContent += "您好！我是您的智能安全助手，可以回答关于网络安全和资产管理的问题。"
+	} else {
+		responseContent += "I understand you're asking about: " + req.Message
+	}
+
+	assistantMessage := aggregate.ChatMessage{
+		MessageID:      uuid.New(),
+		ConversationID: conversationID,
+		Role:           "assistant",
+		Content:        responseContent,
+		CreatedAt:      time.Now(),
+	}
+	s.conversations[conversationID] = append(s.conversations[conversationID], assistantMessage)
+
+	messages := make([]usecase.ChatMessage, len(s.conversations[conversationID]))
+	for i, msg := range s.conversations[conversationID] {
+		messages[i] = usecase.ChatMessage{
+			MessageID:      msg.MessageID,
+			ConversationID: msg.ConversationID,
+			Role:           msg.Role,
+			Content:        msg.Content,
+			CreatedAt:      msg.CreatedAt,
+		}
+	}
+
+	title := req.Message
+	if len(title) > 50 {
+		title = title[:50] + "..."
+	}
+
+	return usecase.ChatResponse{
+		ConversationID: conversationID,
+		Message:        req.Message,
+		Response:       responseContent,
+		ModelUsed:      modelConfig.ProviderName + "/" + modelConfig.ModelName,
+		TokensUsed:     len(req.Message) + len(responseContent),
+		CreatedAt:      time.Now(),
+		Messages:       messages,
+	}, errors.DomainError{}
+}
+
+func (s *chatService) GetConversation(ctx context.Context, req usecase.GetConversationRequest) (usecase.ChatResponse, errors.DomainError) {
+	conversationID, err := uuid.Parse(req.ConversationID)
+	if err != nil {
+		return usecase.ChatResponse{}, errors.NewDomainWithError("400", "Invalid Conversation ID", err)
+	}
+
+	if s.conversations == nil {
+		return usecase.ChatResponse{}, errors.NewDomainWithError("404", "Conversation Not Found", nil)
+	}
+
+	messages, exists := s.conversations[conversationID]
+	if !exists || len(messages) == 0 {
+		return usecase.ChatResponse{}, errors.NewDomainWithError("404", "Conversation Not Found", nil)
+	}
+
+	modelConfig, err := s.modelConfigRepo.FindActiveModelConfig(ctx)
+	modelUsed := ""
+	if err == nil {
+		modelUsed = modelConfig.ProviderName + "/" + modelConfig.ModelName
+	}
+
+	chatMessages := make([]usecase.ChatMessage, len(messages))
+	for i, msg := range messages {
+		chatMessages[i] = usecase.ChatMessage{
+			MessageID:      msg.MessageID,
+			ConversationID: msg.ConversationID,
+			Role:           msg.Role,
+			Content:        msg.Content,
+			CreatedAt:      msg.CreatedAt,
+		}
+	}
+
+	return usecase.ChatResponse{
+		ConversationID: conversationID,
+		Response:       "",
+		ModelUsed:      modelUsed,
+		CreatedAt:      messages[0].CreatedAt,
+		Messages:       chatMessages,
+	}, errors.DomainError{}
+}
+
+func (s *chatService) ListConversations(ctx context.Context, req usecase.ConversationListRequest) (usecase.ConversationListResponse, errors.DomainError) {
+	if s.conversations == nil {
+		return usecase.ConversationListResponse{
+			Conversations: []usecase.ConversationSummary{},
+			Total:         0,
+		}, errors.DomainError{}
+	}
+
+	conversations := make([]usecase.ConversationSummary, 0)
+	for convID, messages := range s.conversations {
+		if len(messages) == 0 {
+			continue
+		}
+
+		title := messages[0].Content
+		if len(title) > 50 {
+			title = title[:50] + "..."
+		}
+
+		conversations = append(conversations, usecase.ConversationSummary{
+			ConversationID: convID,
+			Title:          title,
+			ModelUsed:      "configured-model",
+			MessageCount:   len(messages),
+			CreatedAt:      messages[0].CreatedAt,
+			UpdatedAt:      messages[len(messages)-1].CreatedAt,
+		})
+	}
+
+	return usecase.ConversationListResponse{
+		Conversations: conversations,
+		Total:         len(conversations),
+	}, errors.DomainError{}
+}
+
+func (s *chatService) DeleteConversation(ctx context.Context, req usecase.DeleteConversationRequest) (usecase.ConversationListResponse, errors.DomainError) {
+	conversationID, err := uuid.Parse(req.ConversationID)
+	if err != nil {
+		return usecase.ConversationListResponse{}, errors.NewDomainWithError("400", "Invalid Conversation ID", err)
+	}
+
+	if s.conversations != nil {
+		delete(s.conversations, conversationID)
+	}
+
+	return s.ListConversations(ctx, usecase.ConversationListRequest{})
 }

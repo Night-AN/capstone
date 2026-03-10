@@ -10,12 +10,13 @@ import (
 )
 
 type AIHandler struct {
-	modelConfigService        service.ModelConfigService
-	promptTemplateService     service.PromptTemplateService
+	modelConfigService         service.ModelConfigService
+	promptTemplateService      service.PromptTemplateService
 	assetClassificationService service.AssetClassificationService
-	riskAssessmentService     service.RiskAssessmentService
-	recommendationService     service.SecurityRecommendationService
-	apiCallLogService         service.APICallLogService
+	riskAssessmentService      service.RiskAssessmentService
+	recommendationService      service.SecurityRecommendationService
+	apiCallLogService          service.APICallLogService
+	chatService                service.ChatService
 }
 
 func NewAIHandler(
@@ -25,14 +26,16 @@ func NewAIHandler(
 	riskAssessmentService service.RiskAssessmentService,
 	recommendationService service.SecurityRecommendationService,
 	apiCallLogService service.APICallLogService,
+	chatService service.ChatService,
 ) *AIHandler {
 	return &AIHandler{
-		modelConfigService:        modelConfigService,
-		promptTemplateService:     promptTemplateService,
+		modelConfigService:         modelConfigService,
+		promptTemplateService:      promptTemplateService,
 		assetClassificationService: assetClassificationService,
-		riskAssessmentService:     riskAssessmentService,
-		recommendationService:     recommendationService,
-		apiCallLogService:         apiCallLogService,
+		riskAssessmentService:      riskAssessmentService,
+		recommendationService:      recommendationService,
+		apiCallLogService:          apiCallLogService,
+		chatService:                chatService,
 	}
 }
 
@@ -345,6 +348,72 @@ func (h *AIHandler) GetAPICallLog(c *gin.Context) {
 	}
 	ctx := c.Request.Context()
 	resp, domainErr := h.apiCallLogService.GetAPICallLog(ctx, usecase.APICallLogGetRequest{LogID: logID})
+	if domainErr.Code != "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": domainErr.Code, "message": domainErr.Message})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": "200", "message": "success", "data": resp})
+}
+
+func (h *AIHandler) Chat(c *gin.Context) {
+	var req usecase.ChatRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": "400", "message": "invalid request: " + err.Error()})
+		return
+	}
+	if req.Message == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"code": "400", "message": "message is required"})
+		return
+	}
+	ctx := c.Request.Context()
+	resp, domainErr := h.chatService.Chat(ctx, req)
+	if domainErr.Code != "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": domainErr.Code, "message": domainErr.Message})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": "200", "message": "success", "data": resp})
+}
+
+func (h *AIHandler) GetConversation(c *gin.Context) {
+	conversationID := c.Query("conversation_id")
+	if conversationID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"code": "400", "message": "conversation_id is required"})
+		return
+	}
+	ctx := c.Request.Context()
+	resp, domainErr := h.chatService.GetConversation(ctx, usecase.GetConversationRequest{ConversationID: conversationID})
+	if domainErr.Code != "" {
+		c.JSON(http.StatusNotFound, gin.H{"code": domainErr.Code, "message": domainErr.Message})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": "200", "message": "success", "data": resp})
+}
+
+func (h *AIHandler) ListConversations(c *gin.Context) {
+	ctx := c.Request.Context()
+	resp, domainErr := h.chatService.ListConversations(ctx, usecase.ConversationListRequest{
+		Limit:  50,
+		Offset: 0,
+	})
+	if domainErr.Code != "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": domainErr.Code, "message": domainErr.Message})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": "200", "message": "success", "data": resp})
+}
+
+func (h *AIHandler) DeleteConversation(c *gin.Context) {
+	var req usecase.DeleteConversationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": "400", "message": "invalid request: " + err.Error()})
+		return
+	}
+	if req.ConversationID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"code": "400", "message": "conversation_id is required"})
+		return
+	}
+	ctx := c.Request.Context()
+	resp, domainErr := h.chatService.DeleteConversation(ctx, req)
 	if domainErr.Code != "" {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": domainErr.Code, "message": domainErr.Message})
 		return

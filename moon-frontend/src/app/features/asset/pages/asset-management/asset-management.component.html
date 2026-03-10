@@ -19,7 +19,10 @@
       <button mat-raised-button color="primary" (click)="createAsset()">
         <mat-icon>add</mat-icon> 新增资产
       </button>
-      <button mat-raised-button color="accent" (click)="loadAssets()">
+      <button mat-raised-button color="accent" (click)="openBatchImportDialog()">
+        <mat-icon>upload_file</mat-icon> 批量导入
+      </button>
+      <button mat-raised-button color="warn" (click)="loadAssets()">
         <mat-icon>refresh</mat-icon> 全部资产
       </button>
     </div>

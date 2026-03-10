@@ -1,0 +1,87 @@
+<div class="h-full flex flex-col">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">
+      {{ isEditMode ? '编辑提示模板' : '创建提示模板' }}
+    </h1>
+    <button
+      mat-raised-button
+      (click)="onCancel()"
+      class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+    >
+      取消
+    </button>
+  </div>
+
+  <div class="bg-white rounded-lg shadow overflow-hidden flex-1">
+    <div *ngIf="loading()" class="p-8 text-center">
+      <mat-spinner></mat-spinner>
+      <p class="mt-4">加载中...</p>
+    </div>
+    <form *ngIf="!loading()" [formGroup]="templateForm" (ngSubmit)="onSubmit()" class="p-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <mat-form-field class="w-full">
+            <mat-label>模板名称</mat-label>
+            <input matInput formControlName="template_name" placeholder="请输入模板名称">
+            <mat-error *ngIf="templateForm.get('template_name')?.hasError('required')">
+              模板名称是必填项
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field class="w-full">
+            <mat-label>模板类型</mat-label>
+            <mat-select formControlName="template_type">
+              <mat-option *ngFor="let option of templateTypeOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="templateForm.get('template_type')?.hasError('required')">
+              模板类型是必填项
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div>
+          <mat-form-field class="w-full">
+            <mat-label>描述</mat-label>
+            <input matInput formControlName="description" placeholder="请输入描述">
+          </mat-form-field>
+
+          <div class="mt-6">
+            <mat-slide-toggle formControlName="is_active" color="primary">
+              启用此模板
+            </mat-slide-toggle>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <mat-form-field class="w-full">
+          <mat-label>模板内容</mat-label>
+          <textarea
+            matInput
+            formControlName="template_content"
+            placeholder="请输入提示模板内容"
+            rows="10"
+          ></textarea>
+          <mat-hint>使用 {{ '{' }}{{ '{' }}变量名{{ '}' }}{{ '}' }} 语法定义变量</mat-hint>
+          <mat-error *ngIf="templateForm.get('template_content')?.hasError('required')">
+            模板内容是必填项
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="mt-8 flex justify-end space-x-4">
+        <button
+          mat-raised-button
+          type="submit"
+          color="primary"
+          [disabled]="templateForm.invalid || isLoading()"
+          class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-50"
+        >
+          {{ isEditMode ? '更新' : '创建' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

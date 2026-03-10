@@ -179,3 +179,48 @@ func (h *AssetHandler) ListAssetsByOrganization(c *gin.Context) {
 		"data":    []interface{}{},
 	})
 }
+
+// BatchCreateAsset handles POST /assets/batch requests
+func (h *AssetHandler) BatchCreateAsset(c *gin.Context) {
+	var req struct {
+		Assets                 []usecase.AssetCreateRequest `json:"assets"`
+		EnableAIClassification bool                         `json:"enable_ai_classification"`
+		PromptTemplateID       *string                      `json:"prompt_template_id,omitempty"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    "400",
+			"message": "invalid request: " + err.Error(),
+		})
+		return
+	}
+
+	if len(req.Assets) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    "400",
+			"message": "invalid request: assets array is empty",
+		})
+		return
+	}
+
+	context := c.Request.Context()
+	batchReq := usecase.BatchAssetCreateRequest{
+		Assets:                 req.Assets,
+		EnableAIClassification: req.EnableAIClassification,
+		PromptTemplateID:       req.PromptTemplateID,
+	}
+	resp, domainErr := h.assetService.BatchCreateAsset(context, batchReq, req.EnableAIClassification)
+	if domainErr.Code != "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    domainErr.Code,
+			"message": domainErr.Message + domainErr.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"code":    "201",
+		"message": "success",
+		"data":    resp,
+	})
+}

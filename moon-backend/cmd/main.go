@@ -325,7 +325,6 @@ func main() {
 	roleService := service.NewRoleService(roleRepository, userRepository)
 	permissionService := service.NewPermissionService(permissionRepository)
 	resourceService := service.NewResourceService(resourceRepository)
-	assetService := service.NewAssetService(assetRepository)
 	vulnerabilityService := service.NewVulnerabilityService(vulnerabilityRepository)
 	assetVulnerabilityService := service.NewAssetVulnerabilityService(assetVulnerabilityRepository)
 	modelConfigService := service.NewModelConfigService(modelConfigRepository)
@@ -334,6 +333,8 @@ func main() {
 	assetClassificationService := service.NewAssetClassificationService(assetClassificationRepository, apiCallLogRepository, modelConfigRepository, assetRepository, promptTemplateRepository)
 	riskAssessmentService := service.NewRiskAssessmentService(riskAssessmentRepository, apiCallLogRepository, modelConfigRepository, vulnerabilityRepository, assetRepository, promptTemplateRepository)
 	recommendationService := service.NewSecurityRecommendationService(securityRecommendationRepository, apiCallLogRepository, modelConfigRepository, vulnerabilityRepository, promptTemplateRepository)
+	assetService := service.NewAssetService(assetRepository, assetClassificationService)
+	chatService := service.NewChatService(modelConfigRepository, promptTemplateRepository, apiCallLogRepository)
 
 	// Initialize handlers
 	userHandler := http.NewUserHandler(userService)
@@ -344,7 +345,7 @@ func main() {
 	assetHandler := http.NewAssetHandler(assetService)
 	vulnerabilityHandler := http.NewVulnerabilityHandler(vulnerabilityService)
 	assetVulnerabilityHandler := http.NewAssetVulnerabilityHandler(assetVulnerabilityService)
-	aiHandler := http.NewAIHandler(modelConfigService, promptTemplateService, assetClassificationService, riskAssessmentService, recommendationService, apiCallLogService)
+	aiHandler := http.NewAIHandler(modelConfigService, promptTemplateService, assetClassificationService, riskAssessmentService, recommendationService, apiCallLogService, chatService)
 
 	// Setup router
 	r := http.SetupRouter(

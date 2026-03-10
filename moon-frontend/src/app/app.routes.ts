@@ -8,6 +8,7 @@ import { ResourceModule } from './features/resource/resource.module';
 import { AssetModule } from './features/asset/asset.module';
 import { VulnerabilityModule } from './features/vulnerability/vulnerability.module';
 import { AssetVulnerabilityModule } from './features/asset-vulnerability/asset-vulnerability.module';
+import { AIModule } from './features/ai/ai.module';
 
 
 export const routes: Routes = [
@@ -58,6 +59,10 @@ export const routes: Routes = [
         {
             path:'asset-vulnerabilities',
             loadChildren:()=>AssetVulnerabilityModule
+        },
+        {
+            path:'ai',
+            loadChildren:()=>AIModule
         },
         {
             path:'',

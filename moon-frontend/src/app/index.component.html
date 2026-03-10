@@ -3,18 +3,41 @@
     <mat-toolbar color="primary">
       <h1 class="text-xl font-bold">Moon Admin</h1>
     </mat-toolbar>
-    <mat-list>
+    <mat-nav-list>
       <mat-list-item [routerLink]="['/test']" routerLinkActive="bg-gray-100">
         <mat-icon matListItemIcon>folder_open</mat-icon>
         <span matListItemTitle>Test Directory View</span>
       </mat-list-item>
       <mat-divider></mat-divider>
-      <mat-list-item *ngFor="let item of navItems" [routerLink]="item.path" routerLinkActive="bg-gray-100">
-        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-        <span matListItemTitle>{{ item.name }}</span>
-      </mat-list-item>
-    </mat-list>
+      
+      @for (item of navItems; track item.name) {
+        @if (!item.children) {
+          <mat-list-item [routerLink]="[item.path]" routerLinkActive="bg-gray-100">
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.name }}</span>
+          </mat-list-item>
+        } @else {
+          <mat-expansion-panel class="nav-expansion-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>{{ item.icon }}</mat-icon>
+                <span>{{ item.name }}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <mat-nav-list>
+              @for (child of item.children; track child.path) {
+                <mat-list-item [routerLink]="[child.path]" routerLinkActive="bg-gray-100">
+                  <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+                  <span matListItemTitle>{{ child.name }}</span>
+                </mat-list-item>
+              }
+            </mat-nav-list>
+          </mat-expansion-panel>
+        }
+      }
+    </mat-nav-list>
   </mat-sidenav>
+  
   <mat-sidenav-content class="flex flex-col">
     <mat-toolbar color="primary">
       <button mat-icon-button (click)="sidenav.toggle()">

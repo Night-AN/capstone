@@ -5,7 +5,8 @@ import (
 )
 
 type AssetClassifyRequest struct {
-	AssetID string `json:"asset_id"`
+	AssetID         string  `json:"asset_id"`
+	PromptTemplateID *string `json:"prompt_template_id,omitempty"`
 }
 
 type AssetClassifyResponse struct {

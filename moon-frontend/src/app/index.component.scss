@@ -27,3 +27,28 @@
 .bg-gray-100 {
   background-color: #f3f4f6;
 }
+
+.nav-expansion-panel {
+  box-shadow: none !important;
+  background: transparent !important;
+  
+  ::ng-deep .mat-expansion-panel-header {
+    padding: 0 16px;
+    height: 48px;
+  }
+  
+  ::ng-deep .mat-expansion-panel-header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: inherit;
+  }
+  
+  ::ng-deep .mat-expansion-panel-body {
+    padding: 0;
+  }
+  
+  mat-nav-list {
+    padding: 0;
+  }
+}

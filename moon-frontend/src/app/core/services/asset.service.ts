@@ -220,4 +220,27 @@ export class AssetService {
       })
     );
   }
+
+  /**
+   * 批量导入资产
+   * @param assets 资产数据数组
+   * @param enableAIClassification 是否启用AI分类
+   * @param promptTemplateID 可选的提示模板ID
+   * @returns 批量导入结果
+   */
+  batchImportAssets(assets: any[], enableAIClassification: boolean = false, promptTemplateID?: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/assets/batch`, {
+      assets: assets,
+      enable_ai_classification: enableAIClassification,
+      prompt_template_id: promptTemplateID || null
+    }, {
+      timeout: 120000
+    }).pipe(
+      catchError(this.handleError),
+      map((response: any) => {
+        console.log('Batch Import API Response:', response);
+        return response.data || {};
+      })
+    );
+  }
 }

@@ -104,6 +104,76 @@
     </mat-card>
   </div>
 
+  <div *ngIf="asset()" class="ai-classification-section">
+    <mat-card class="ai-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>psychology</mat-icon>
+          AI 资产分类
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="classificationLoading()" class="loading">
+          <mat-spinner diameter="24"></mat-spinner>
+          <span>加载分类结果...</span>
+        </div>
+
+        <div *ngIf="!classificationLoading() && classification()" class="classification-result">
+          <div class="classification-header">
+            <div class="classification-category">
+              <span class="label">预测分类:</span>
+              <span class="value category-value">{{ classification()?.classification_type }}</span>
+            </div>
+            <mat-chip [color]="classification()?.is_approved ? 'primary' : 'warn'" highlighted>
+              {{ classification()?.is_approved ? '已批准' : '待审核' }}
+            </mat-chip>
+          </div>
+
+          <div class="classification-detail">
+            <div class="detail-row">
+              <span class="label">置信度:</span>
+              <span class="value">{{ (classification()?.confidence! * 100).toFixed(1) }}%</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">分类理由:</span>
+              <span class="value">{{ classification()?.classification_reason }}</span>
+            </div>
+            <div *ngIf="classification()?.approved_at" class="detail-row">
+              <span class="label">审批时间:</span>
+              <span class="value">{{ classification()?.approved_at | date: 'yyyy-MM-dd HH:mm:ss' }}</span>
+            </div>
+          </div>
+
+          <div class="classification-actions" *ngIf="!classification()?.is_approved">
+            <button mat-raised-button color="primary" (click)="approveClassification(true)">
+              <mat-icon>check</mat-icon> 批准
+            </button>
+            <button mat-raised-button color="warn" (click)="approveClassification(false)">
+              <mat-icon>close</mat-icon> 拒绝
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="!classificationLoading() && !classification()" class="no-classification">
+          <p>暂无 AI 分类结果</p>
+          <button mat-raised-button color="primary" (click)="classifyAsset()" [disabled]="classifying()">
+            <mat-icon *ngIf="!classifying()">auto_awesome</mat-icon>
+            <mat-icon *ngIf="classifying()" class="spin">sync</mat-icon>
+            {{ classifying() ? '分类中...' : '开始 AI 分类' }}
+          </button>
+        </div>
+
+        <div *ngIf="classification()" class="classify-again">
+          <button mat-stroked-button color="primary" (click)="classifyAsset()" [disabled]="classifying()">
+            <mat-icon *ngIf="!classifying()">refresh</mat-icon>
+            <mat-icon *ngIf="classifying()" class="spin">sync</mat-icon>
+            {{ classifying() ? '重新分类中...' : '重新分类' }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
   <div *ngIf="!loading() && !asset()" class="error-container">
     <p>资产不存在</p>
     <button mat-raised-button (click)="backToList()">返回列表</button>

@@ -78,6 +78,7 @@ func SetupRouter(
 		v1.DELETE("/assets", assetHandler.DeleteAsset)
 		v1.GET("/assets/list", assetHandler.ListAssets)
 		v1.GET("/assets/organization", assetHandler.ListAssetsByOrganization)
+		v1.POST("/assets/batch", assetHandler.BatchCreateAsset)
 
 		// Vulnerability routes
 		v1.POST("/vulnerabilities", vulnerabilityHandler.CreateVulnerability)
@@ -124,6 +125,10 @@ func SetupRouter(
 
 		v1.GET("/ai/logs", aiHandler.ListAPICallLogs)
 		v1.GET("/ai/logs/:id", aiHandler.GetAPICallLog)
+		v1.POST("/ai/chat", aiHandler.Chat)
+		v1.GET("/ai/chat", aiHandler.GetConversation)
+		v1.GET("/ai/chat/list", aiHandler.ListConversations)
+		v1.DELETE("/ai/chat", aiHandler.DeleteConversation)
 	}
 
 	return r

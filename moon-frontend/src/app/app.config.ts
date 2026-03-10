@@ -10,11 +10,11 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes,withViewTransitions()), 
+    provideRouter(routes, withViewTransitions()), 
     provideClientHydration(withEventReplay()),
     provideHttpClient(
       withNoXsrfProtection(),
       withInterceptors([authInterceptor])),
     provideAnimations()
-  ] 
+  ]
 };
