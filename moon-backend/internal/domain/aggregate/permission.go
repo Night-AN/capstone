@@ -18,11 +18,6 @@ type Permission struct {
 	// Examples: "Create User", "Export Sensitive Data", "View System Menu"
 	PermissionName string `gorm:"column:permission_name"`
 
-	// Description provides detailed explanation of what this permission grants and its security implications.
-	// Can be nil if no detailed description is needed.
-	// Usage: Shown in permission management UI, audit reports, and access review workflows
-	Description *string `gorm:"column:permission_description"`
-
 	// Key is the programmatic identifier used in code for permission checks, following the standard format.
 	// Standard Format: {resource}:{type}:{action}:{subaction?}:{scope?}
 	//   - resource: Resource name (e.g., user, role, data, menu)
@@ -45,16 +40,16 @@ type Permission struct {
 	//   - Wildcard support: user:*:view matches all user-related view
 	PermissionCode string `gorm:"column:permission_code"`
 
-	// ParentID is the ID of the parent permission, forming a hierarchical structure
-	// This allows permissions to be organized into parent-child relationships
-	// For example, "user:read" could be a parent of "user:read:own" and "user:read:all"
-	ParentID *uuid.UUID `gorm:"column:parent_id"`
+	// Description provides detailed explanation of what this permission grants and its security implications.
+	// Can be nil if no detailed description is needed.
+	// Usage: Shown in permission management UI, audit reports, and access review workflows
+	Description *string `gorm:"column:permission_description"`
 
-	// SensitiveFlag marks permissions that grant access to sensitive data or critical operations.
+	// PermissionFlag marks permissions that grant access to sensitive data or critical operations.
 	// When true, additional audit logging and approval workflows may be triggered.
 	// Examples: Permissions accessing PII, financial data, or administrative actions should have this flag set to true
 	// Usage: Drives enhanced logging, requires additional approval, and flags in compliance reports
-	SensitiveFlag bool `gorm:"column:sensitive_flag"`
+	PermissionFlag string `gorm:"column:permission_flag"`
 
 	// CreatedAt records the timestamp when the permission was first defined in the system.
 	// Used for auditing, permission lifecycle management, and compliance reporting.
@@ -62,7 +57,7 @@ type Permission struct {
 
 	// UpdatedAt records the timestamp when the permission was last modified.
 	// Used for auditing, permission lifecycle management, and compliance reporting.
-	UpdatedAt time.Time `gorm:"column:updated_at"`
+	UpdatedAt *time.Time `gorm:"column:updated_at"`
 }
 
 // TableName specifies the table name for the Permission struct

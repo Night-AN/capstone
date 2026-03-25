@@ -2,36 +2,30 @@ package errors
 
 import "fmt"
 
-var ()
+var (
+	WRONG_PASSWORD Error = Error{
+		Code:    "401",
+		Message: "WRONG_PASSWORD",
+	}
+	USER_NOT_FOUND = Error{
+		Code:    "404",
+		Message: "USER_NOT_FOUND",
+	}
+)
 
-type DomainError struct {
-	Code    string
-	Message string
-	Cause   error
+type Error struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Cause   error  `json:"cause"`
 }
 
-func (e *DomainError) Error() string {
+func (e *Error) Error() string {
 	if e.Cause != nil {
 		return fmt.Sprintf("%s: %s (cause: %v)", e.Code, e.Message, e.Cause)
 	}
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
-func (e *DomainError) Unwrap() error {
+func (e *Error) Unwrap() error {
 	return e.Cause
-}
-
-func NewDomainWithError(code, message string, cause error) DomainError {
-	return DomainError{
-		Code:    code,
-		Message: message,
-		Cause:   cause,
-	}
-}
-
-func NewDomainError(code, message string) DomainError {
-	return DomainError{
-		Code:    code,
-		Message: message,
-	}
 }

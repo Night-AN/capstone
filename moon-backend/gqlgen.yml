@@ -1,0 +1,30 @@
+schema:
+  - ./graph/ent.graphqls
+  - ./graph/moon.graphqls
+exec:
+  layout: follow-schema
+  dir: graph
+  filename_template: "{name}.generated.go"
+resolver:
+  layout: follow-schema
+  dir: graph
+  filename_template: "{name}.resolver.go"
+omit_getters: true
+call_argument_directives_with_null: true
+autobind:
+  - "moon/ent"
+  - "moon/ent/user"
+models:
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.UUID
+  UUID:
+    model:
+      - github.com/99designs/gqlgen/graphql.UUID
+  Int:
+    model:
+      - github.com/99designs/gqlgen/graphql.Int
+  Int64:
+    model:
+      - github.com/99designs/gqlgen/graphql.Int
+      - github.com/99designs/gqlgen/graphql.Int64

@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"moon/internal/domain/aggregate"
-
 	"github.com/google/uuid"
 )
 
@@ -15,17 +13,15 @@ type UserUpdateRequest struct {
 }
 
 type UserUpdateResponse struct {
-	UserID   uuid.UUID `json:"user_id"`
-	Nickname string    `json:"nickname"`
-	Email    string    `json:"email"`
+	Success bool `json:"success"`
 }
 
-func ConvertUserUpdateRequestToUserAggregate(req UserUpdateRequest) aggregate.User {
-	return aggregate.User{
-		UserID:         req.UserID,
-		Nickname:       req.Nickname,
-		FullName:       req.FullName,
-		Email:          req.Email,
-		OrganizationID: req.OrganizationID,
-	}
+type UserChangePasswordRequest struct {
+	UserID      uuid.UUID `json:"user_id"`
+	OldPassword string    `json:"old_password"`
+	Password    string    `json:"password"`
+}
+
+type UserChangePasswordResponse struct {
+	Success bool `json:"success"`
 }

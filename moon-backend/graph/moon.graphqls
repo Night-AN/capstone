@@ -1,0 +1,113 @@
+directive @hasPermission(required: [String!]!) on FIELD_DEFINITION
+
+type Mutation{
+    login(email:String!,password:String!): String!
+    register(email:String!,password:String!): String!
+    updateProfile(id:UUID!,input: UpdateUserInput!): User!
+
+    # 机构
+    createOrganization(input: CreateOrganizationInput!): Organization!
+    updateOrganization(id:UUID!,input: UpdateOrganizationInput!): Organization!
+    deleteOrganization(id:UUID!): Organization!
+
+    # 角色
+    createRole(input: CreateRoleInput!): Role!
+    updateRole(id:UUID!,input: UpdateRoleInput!): Role!  
+    deleteRole(id:UUID!): Role!
+
+    # 权限
+    createPermission(input: CreatePermissionInput!): Permission!
+    updatePermission(id:UUID!,input: UpdatePermissionInput!): Permission!
+    deletePermission(id:UUID!): Permission!
+
+    # 用户
+    createUser(input: CreateUserInput!): User!
+    updateUser(id:UUID!,input: UpdateUserInput!): User!
+    deleteUser(id:UUID!): User!
+
+    # 采购计划类型
+    createProcurementPlanType(input: CreateProcurementPlanTypeInput!): ProcurementPlanType!
+    updateProcurementPlanType(id:UUID!,input: UpdateProcurementPlanTypeInput!): ProcurementPlanType!
+    deleteProcurementPlanType(id:UUID!): ProcurementPlanType!
+
+    # 采购计划
+    createProcurementPlan(input: CreateProcurementPlanInput!): ProcurementPlan!
+    updateProcurementPlan(id:UUID!,input: UpdateProcurementPlanInput!): ProcurementPlan!
+    deleteProcurementPlan(id:UUID!): ProcurementPlan!
+
+    # 采购评审
+    createProcurementReview(input: CreateProcurementReviewInput!): ProcurementReview!
+    updateProcurementReview(id:UUID!,input: UpdateProcurementReviewInput!): ProcurementReview!
+    deleteProcurementReview(id:UUID!): ProcurementReview!
+
+    # 采购实施
+    createProcurementImplementation(input: CreateProcurementImplementationInput!): ProcurementImplementation!
+    updateProcurementImplementation(id:UUID!,input: UpdateProcurementImplementationInput!): ProcurementImplementation!
+    deleteProcurementImplementation(id:UUID!): ProcurementImplementation!
+
+    # 采购验收
+    createProcurementAcceptance(input: CreateProcurementAcceptanceInput!): ProcurementAcceptance!
+    updateProcurementAcceptance(id:UUID!,input: UpdateProcurementAcceptanceInput!): ProcurementAcceptance!
+    deleteProcurementAcceptance(id:UUID!): ProcurementAcceptance!
+
+    # 采购专家
+    createProcurementExpert(input: CreateProcurementExpertInput!): ProcurementExpert!
+    updateProcurementExpert(id:UUID!,input: UpdateProcurementExpertInput!): ProcurementExpert!
+    deleteProcurementExpert(id:UUID!): ProcurementExpert!
+
+    # 资产管理
+    createAsset(input: CreateAssetsInput!): Assets!
+    updateAsset(id:UUID!,input: UpdateAssetsInput!): Assets!
+    deleteAsset(id:UUID!): Assets!
+    createAssetCategory(input: CreateAssetCategoryInput!): AssetCategory!
+    updateAssetCategory(id:UUID!,input: UpdateAssetCategoryInput!): AssetCategory!
+    deleteAssetCategory(id:UUID!): AssetCategory!
+    createAssetType(input: CreateAssetTypeInput!): AssetType!
+    updateAssetType(id:UUID!,input: UpdateAssetTypeInput!): AssetType!
+    deleteAssetType(id:UUID!): AssetType!
+
+    # AI管理
+    createLlmModel(input: CreateLlmModelInput!): LlmModel!
+    updateLlmModel(id:UUID!,input: UpdateLlmModelInput!): LlmModel!
+    deleteLlmModel(id:UUID!): LlmModel!
+    createLlmTokenUsage(input: CreateLlmTokenUsageInput!): LlmTokenUsage!
+    updateLlmTokenUsage(id:UUID!,input: UpdateLlmTokenUsageInput!): LlmTokenUsage!
+    deleteLlmTokenUsage(id:UUID!): LlmTokenUsage!
+    createProcurementFraudRisk(input: CreateProcurementFraudRiskInput!): ProcurementFraudRisk!
+    updateProcurementFraudRisk(id:UUID!,input: UpdateProcurementFraudRiskInput!): ProcurementFraudRisk!
+    deleteProcurementFraudRisk(id:UUID!): ProcurementFraudRisk!
+    createLlmProcurementAnalysis(input: CreateLlmProcurementAnalysisInput!): LlmProcurementAnalysis!
+    updateLlmProcurementAnalysis(id:UUID!,input: UpdateLlmProcurementAnalysisInput!): LlmProcurementAnalysis!
+    deleteLlmProcurementAnalysis(id:UUID!): LlmProcurementAnalysis!
+
+}
+
+extend type Query {
+    profile(id:UUID!): User! @hasPermission(required: ["user::view","user::edit"])
+
+    # 系统管理
+    organizations(after: Cursor,before: Cursor,first: Int,last: Int,where: OrganizationWhereInput): [OrganizationConnection!]! @hasPermission(required: ["organization::view"])
+    users(after: Cursor,before: Cursor,first: Int,last: Int,where: UserWhereInput): [UserConnection!]! @hasPermission(required: ["user::view"])
+    roles(after: Cursor,before: Cursor,first: Int,last: Int,where: RoleWhereInput): [RoleConnection!]! @hasPermission(required: ["role::view"])
+    permissions(after: Cursor,before: Cursor,first: Int,last: Int,where: PermissionWhereInput): [PermissionConnection!]! @hasPermission(required: ["permission::view"])
+
+    # 采购管理
+    procurementPlanTypes(after: Cursor,before: Cursor,first: Int,last: Int,where: ProcurementPlanTypeWhereInput): [ProcurementPlanTypeConnection!]! @hasPermission(required: ["procurement-plan-type::view"])
+    procurementPlans(after: Cursor,before: Cursor,first: Int,last: Int,where: ProcurementPlanWhereInput): [ProcurementPlanConnection!]! @hasPermission(required: ["procurement-plan::view"])
+    procurementImplementations(after: Cursor,before: Cursor,first: Int,last: Int,where: ProcurementImplementationWhereInput): [ProcurementImplementationConnection!]! @hasPermission(required: ["procurement-implementation::view"])
+    procurementExperts(after: Cursor,before: Cursor,first: Int,last: Int,where: ProcurementExpertWhereInput): [ProcurementExpertConnection!]! @hasPermission(required: ["procurement-expert::view"])
+    procurementAcceptances(after: Cursor,before: Cursor,first: Int,last: Int,where: ProcurementAcceptanceWhereInput): [ProcurementAcceptanceConnection!]! @hasPermission(required: ["procurement-acceptance::view"])
+    procurementReviews(after: Cursor,before: Cursor,first: Int,last: Int,where: ProcurementReviewWhereInput): [ProcurementReviewConnection!]! @hasPermission(required: ["procurement-review::view"])
+
+    # 资产管理
+    assets(after: Cursor,before: Cursor,first: Int,last: Int,where: AssetsWhereInput): [AssetsConnection!]!
+    assetCategories(after: Cursor,before: Cursor,first: Int,last: Int,where: AssetCategoryWhereInput): [AssetCategoryConnection!]!
+    assetTypes(after: Cursor,before: Cursor,first: Int,last: Int,where: AssetTypeWhereInput): [AssetTypeConnection!]!
+
+    # AI管理
+    llmModels(after: Cursor,before: Cursor,first: Int,last: Int,where: LlmModelWhereInput): [LlmModelConnection!]!
+    llmTokenUsages(after: Cursor,before: Cursor,first: Int,last: Int,where: LlmTokenUsageWhereInput): [LlmTokenUsageConnection!]!
+    procurementFraudRisks(after: Cursor,before: Cursor,first: Int,last: Int,where: ProcurementFraudRiskWhereInput): [ProcurementFraudRiskConnection!]!
+    llmProcurementAnalyses(after: Cursor,before: Cursor,first: Int,last: Int,where: LlmProcurementAnalysisWhereInput): [LlmProcurementAnalysisConnection!]!
+   }
+    

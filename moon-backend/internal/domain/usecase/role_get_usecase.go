@@ -6,36 +6,50 @@ import (
 	"github.com/google/uuid"
 )
 
-// RoleGetRequest represents the request for retrieving a role
-// It contains the ID of the role to retrieve
+type RoleItem struct {
+	RoleID          uuid.UUID `json:"role_id"`
+	RoleName        string    `json:"role_name"`
+	RoleDescription *string   `json:"role_description"`
+	RoleCode        string    `json:"role_code"`
+	RoleFlag        string    `json:"role_flag"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
+
+type RoleTreeNode struct {
+	RoleID       uuid.UUID `json:"role_id"`
+	RoleName     string    `json:"role_name"`
+	RoleCode     string    `json:"role_code"`
+	RoleCodePart string    `json:"role_code_part"`
+
+	PermissionTree []*PermissionTreeNode    `json:"permission_tree"`
+	Children       map[string]*RoleTreeNode `json:"children"`
+}
+
 type RoleGetRequest struct {
-	// RoleID is the unique identifier of the role to retrieve
 	RoleID uuid.UUID `json:"role_id"`
 }
 
-// RoleGetResponse represents the response for retrieving a role
-// It contains all the information of the retrieved role
-// The response format follows the LoginResponse pattern, directly containing entity information
-// without Status and Message fields
-type RoleGetResponse struct {
-	// RoleID is the unique identifier of the retrieved role
-	RoleID uuid.UUID `json:"role_id"`
+type RoleGetResponse = RoleItem
 
-	// RoleName is the human-readable display name of the retrieved role
-	RoleName string `json:"role_name"`
+type RoleGetPermissionResponse struct {
+	RoleID      uuid.UUID             `json:"role_id"`
+	Permissions []*PermissionTreeNode `json:"permissions"`
+}
 
-	// Description provides detailed explanation of what this role is intended for and the permissions it grants
-	Description *string `json:"description"`
+type RoleListRequest struct {
+	Page     int   `json:"page"`
+	PageSize int   `json:"page_size"`
+	Count    int64 `json:"count"`
+	Total    int64 `json:"total"`
+}
 
-	// RoleCode is the programmatic identifier of the retrieved role
-	RoleCode string `json:"role_code"`
+type RoleListResponse = []*RoleItem
 
-	// RoleFlag indicates the status or type of the role
-	RoleFlag string `json:"role_flag"`
+type RoleListTreeRequest struct {
+	RoleID *uuid.UUID `json:"role_id"`
+}
 
-	// SensitiveFlag marks roles that grant access to sensitive data or critical operations
-	SensitiveFlag bool `json:"sensitive_flag"`
-
-	// CreatedAt records the timestamp when the role was first defined in the system
-	CreatedAt time.Time `json:"created_at"`
+type RoleListTreeResponse struct {
+	RoleTree *RoleTreeNode `json:"role_tree"`
 }

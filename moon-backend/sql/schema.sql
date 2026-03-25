@@ -1,722 +1,825 @@
--- 数据库整合文件
--- 包含所有schema、表、索引、触发器、约束和示例数据
-
--- 开始事务
-BEGIN;
-
--- 设置超时
-SET LOCAL statement_timeout = '5s';
-SET LOCAL lock_timeout = '1s';
-
--- 创建schema
-CREATE SCHEMA IF NOT EXISTS systems;
-CREATE SCHEMA IF NOT EXISTS biz;
-CREATE SCHEMA IF NOT EXISTS logs;
-
--- 创建触发器函数
-CREATE OR REPLACE FUNCTION systems.set_updated_at() RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION biz.set_updated_at() RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- 提交事务
-COMMIT;
-
--- 创建系统相关表
-BEGIN;
-
-SET LOCAL statement_timeout = '5s';
-SET LOCAL lock_timeout = '1s';
-
--- 用户表
-CREATE TABLE IF NOT EXISTS systems.users (
-    user_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    nickname TEXT NOT NULL DEFAULT '',
-    full_name TEXT NOT NULL DEFAULT '',
-    email TEXT NOT NULL DEFAULT '',
-    password_hash TEXT NOT NULL DEFAULT '',
-    organization_id UUID REFERENCES systems.organization(organization_id),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 组织表
 CREATE TABLE IF NOT EXISTS systems.organization (
-    organization_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    organization_name TEXT NOT NULL DEFAULT '',
-    organization_code TEXT NOT NULL DEFAULT '',
-    organization_description TEXT NOT NULL DEFAULT '',
-    parent_id UUID NULL REFERENCES systems.organization(organization_id),
-    organization_flag TEXT NOT NULL DEFAULT '',
-    sensitive_flag BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    organization_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_name text NOT NULL,
+    organization_code text NOT NULL,
+    organization_description text NOT NULL,
+    organization_flag text NOT NULL,
+    parent_id uuid DEFAULT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT NULL
+);
+INSERT INTO systems.organization (
+    organization_name,
+    organization_code,
+    organization_description,
+    organization_flag,
+    parent_id,
+    created_at,
+    updated_at
+) VALUES
+-- 1️⃣ 顶级：学校（parent_id = NULL）
+('岭南师范学院','岭南师范学院','广东省湛江市赤坎区跃进路3号','ACTIVE', NULL, NOW(), NOW()),
+
+-- 2️⃣ 二级：校本部 → 父级=学校
+('校本部', '岭南师范学院::校本部', '主校区，位于市中心', 'ACTIVE',
+ (SELECT organization_id FROM systems.organization WHERE organization_name = '岭南师范学院'),
+ NOW(), NOW()),
+
+-- 3️⃣ 二级：湖光校区 → 父级=学校
+('湖光校区','岭南师范学院::湖光校区','湖光校区', 'ACTIVE',
+ (SELECT organization_id FROM systems.organization WHERE organization_name = '岭南师范学院'),
+ NOW(), NOW()),
+
+-- 4️⃣ 三级：计算机学院 → 父级=校本部
+('计算机与智能教育学院','岭南师范学院::校本部::计算机与智能教育学院','计算机与智能教育学院', 'ACTIVE',
+ (SELECT organization_id FROM systems.organization WHERE organization_name = '校本部'),
+ NOW(), NOW()),
+
+-- 5️⃣ 三级：音乐与舞蹈学院 → 父级=校本部
+('音乐与舞蹈学院','岭南师范学院::校本部::音乐与舞蹈学院','音乐与舞蹈学院', 'ACTIVE',
+ (SELECT organization_id FROM systems.organization WHERE organization_name = '校本部'),
+ NOW(), NOW()),
+
+-- 6️⃣ 三级：教室管理科 → 父级=校本部
+('校本部第五教学楼教室管理科','岭南师范学院::校本部::第五教学楼教室管理科','第五教学楼教室管理科', 'ACTIVE',
+ (SELECT organization_id FROM systems.organization WHERE organization_name = '校本部'),
+ NOW(), NOW()),
+
+-- 7️⃣ 三级：法政学院 → 父级=湖光校区
+('法政学院','岭南师范学院::校光校区::法政学院','法政学院', 'ACTIVE',
+ (SELECT organization_id FROM systems.organization WHERE organization_name = '湖光校区'),
+ NOW(), NOW()),
+
+-- 8️⃣ 三级：信息工程学院 → 父级=湖光校区
+('信息工程学院','岭南师范学院::校光校区::信息工程学院','信息工程工程学院', 'DEPRECATED',
+ (SELECT organization_id FROM systems.organization WHERE organization_name = '湖光校区'),
+ NOW(), NOW());
+
+CREATE TABLE IF NOT EXISTS systems.user (
+    user_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    nickname text NOT NULL,
+    full_name text NOT NULL,
+    email text NOT NULL,
+    password_hash text NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT NULL,
+    organization_id uuid NOT NULL REFERENCES systems.organization(organization_id)
 );
 
--- 权限表
+INSERT INTO systems.user (
+    nickname,
+    full_name,
+    email,
+    password_hash,
+    organization_id,
+    created_at,
+    updated_at
+) VALUES
+('admin', '管理员', 'admin@example.com', '123456', (select organization_id from systems.organization where organization_name = '岭南师范学院'), NOW(), NOW()),
+('user1', '用户1', 'user1@example.com', 'user1', (select organization_id from systems.organization where organization_name = '校本部'), NOW(), NOW()),
+('user3', '用户3', 'user3@example.com', 'user3', (select organization_id from systems.organization where organization_name = '计算机与智能教育学院'), NOW(), NOW()),
+('user2', '用户2', 'user2@example.com', 'user2', (select organization_id from systems.organization where organization_name = '音乐与舞蹈学院'), NOW(), NOW()),
+('user4', '用户4', 'user4@example.com', 'user4', (select organization_id from systems.organization where organization_name = '湖光校区'), NOW(), NOW()),
+('user5', '用户5', 'user5@example.com', 'user5', (select organization_id from systems.organization where organization_name = '法政学院'), NOW(), NOW()),
+('user6', '用户6', 'user6@example.com', 'user6', (select organization_id from systems.organization where organization_name = '信息工程学院'), NOW(), NOW());
+
+CREATE TABLE IF NOT EXISTS systems.role(
+    role_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    role_name text NOT NULL,
+    role_code text NOT NULL,
+    role_description text NOT NULL,
+    role_flag text NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT NULL
+);
+
+INSERT INTO systems.role (
+    role_name,
+    role_code,
+    role_description,
+    role_flag,
+    created_at,
+    updated_at
+) VALUES
+-- 资产管理系统是一个覆盖资产全生命周期（包括采购、入库、出库、验收、维护和报废等环节）的系统。
+-- 系统管理员，负责管理系统的所有功能
+('System Administrator', 'system::admin', '系统管理员', 'ACTIVE', NOW(), NOW()),
+-- 资产管理员，负责管理学校内所有资产
+('Asset', 'biz::asset-manager', '资产管理员', 'ACTIVE', NOW(), NOW()),
+-- 仓库管理员，负责管理学校内所有仓库的资产
+('Warehouse', 'biz::warehouse-manager', '仓库管理员', 'ACTIVE', NOW(), NOW()),
+-- 采购为什么做采购，因为学校每年大约有200项10万以上的采购计划需要通过国资委审议，其余10万以下并不是不需要申报，只是合并统一上会处理
+('Procure', 'biz::procure-manager', '采购管理员', 'ACTIVE', NOW(), NOW()),
+-- 验收验收管理员，负责管理验收人员和验收流程
+('Acceptance Manager', 'biz::acceptance-manager', '验收管理员', 'ACTIVE', NOW(), NOW()),
+-- 采购人员，负责采购计划
+('Procure Personnel', 'biz::procure-personnel', '采购人员', 'ACTIVE', NOW(), NOW()),
+-- 采购专家，负责采购计划的评定
+('Procure Expert', 'biz::procure-expert', '采购专家', 'ACTIVE', NOW(), NOW()),
+-- 验收目前还是使用的纸质化，从资产的入场，安装到最终验收都需要手写签名并且打印水印相机照片留痕，会收集大量的纸质材料，如果丢失不好找
+('Acceptance', 'biz::acceptance-personnel', '验收人员', 'ACTIVE', NOW(), NOW()),
+-- 验收专家，负验收计划的评定
+('Acceptance Expert', 'biz::acceptance-expert', '验收专家', 'ACTIVE', NOW(), NOW()),
+-- 第三方服务供应商，包括但不限于：
+-- 1. 维护供应商
+-- 2. 服务供应商
+-- 3. 其他供应商
+('Provider', 'biz::provider', '供应商', 'ACTIVE', NOW(), NOW()),
+-- 做资产维护，学校总计有五千多台电脑，数百个打印机，还有不计其数的小设备，物件需要维护更换，提交工单给负责人由他分配维护人员会方便很多
+('Maintenance Manager', 'biz::maintenance-manager', '维护管理员', 'ACTIVE', NOW(), NOW()),
+-- 维护人员，负责维护资产，如安装、维修、保养等
+('Maintenance Personnel', 'biz::maintenance-personnel', '维护人员', 'ACTIVE', NOW(), NOW()),
+-- 部门领导，负责协调部门内的资产维护和使用
+('Leader', 'biz::leader', '负责人', 'ACTIVE', NOW(), NOW()),
+-- 普通用户，负责使用资产，如学生、教师、员工等
+('User', 'biz::user', '普通用户', 'ACTIVE', NOW(), NOW()),
+-- 会计，负责资产的会计核算和管理
+('Accountant', 'biz::accountant', '会计', 'ACTIVE', NOW(), NOW()),
+-- 审计，负责资产的审计和管理
+('Audit', 'biz::audit', '审计', 'ACTIVE', NOW(), NOW()),
+-- 出纳，负责处理资产的现金交易
+('Cashier', 'biz::cashier', '出纳', 'ACTIVE', NOW(), NOW());
+
+
 CREATE TABLE IF NOT EXISTS systems.permission (
-    permission_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    permission_name TEXT NOT NULL DEFAULT '',
-    permission_code TEXT NOT NULL DEFAULT '',
-    permission_description TEXT NOT NULL DEFAULT '',
-    parent_id UUID NULL REFERENCES systems.permission(permission_id),
-    sensitive_flag BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    permission_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    permission_name text NOT NULL,
+    permission_code text NOT NULL,
+    permission_description text NOT NULL,
+    permission_flag text NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz NULL
 );
 
--- 角色表
-CREATE TABLE IF NOT EXISTS systems.role (
-    role_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    role_name TEXT NOT NULL DEFAULT '',
-    role_code TEXT NOT NULL DEFAULT '',
-    role_description TEXT NOT NULL DEFAULT '',
-    role_flag TEXT NOT NULL DEFAULT '',
-    sensitive_flag BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+INSERT INTO systems.permission (
+    permission_name,
+    permission_code,
+    permission_description,
+    permission_flag,
+    created_at,
+    updated_at 
+) VALUES
+('Any Permission', 'any::any', '任意权限', 'ACTIVE', NOW(), NOW()),
+-- 组织机构相关权限
+('查看组织机构', 'organization::view', '查看组织机构信息', 'ACTIVE', NOW(), NOW()),
+('新增组织机构', 'organization::add', '新增组织机构', 'ACTIVE', NOW(), NOW()),
+('修改组织机构', 'organization::edit', '修改组织机构信息', 'ACTIVE', NOW(), NOW()),
+('删除组织机构', 'organization::delete', '删除组织机构', 'ACTIVE', NOW(), NOW()),
+
+-- 用户相关权限
+('查看用户', 'user::view', '查看用户信息', 'ACTIVE', NOW(), NOW()),
+('新增用户', 'user::add', '新增用户', 'ACTIVE', NOW(), NOW()),
+('修改用户', 'user::edit', '修改用户信息', 'ACTIVE', NOW(), NOW()),
+('删除用户', 'user::delete', '删除用户', 'ACTIVE', NOW(), NOW()),
+
+-- 角色相关权限
+('查看角色', 'role::view', '查看角色信息', 'ACTIVE', NOW(), NOW()),
+('新增角色', 'role::add', '新增角色', 'ACTIVE', NOW(), NOW()),
+('修改角色', 'role::edit', '修改角色信息', 'ACTIVE', NOW(), NOW()),
+('删除角色', 'role::delete', '删除角色', 'ACTIVE', NOW(), NOW()),
+
+-- 权限相关权限
+('查看权限', 'permission::view', '查看权限信息', 'ACTIVE', NOW(), NOW()),
+('新增权限', 'permission::add', '新增权限', 'ACTIVE', NOW(), NOW()),
+('修改权限', 'permission::edit', '修改权限信息', 'ACTIVE', NOW(), NOW()),
+('删除权限', 'permission::delete', '删除权限', 'ACTIVE', NOW(), NOW()),
+
+-- 资产类别权限
+('查看资产类别', 'asset-category::view', '查看资产类别信息', 'ACTIVE', NOW(), NOW()),
+('新增资产类别', 'asset-category::add', '新增资产类别', 'ACTIVE', NOW(), NOW()),
+('修改资产类别', 'asset-category::edit', '修改资产类别信息', 'ACTIVE', NOW(), NOW()),
+('删除资产类别', 'asset-category::delete', '删除资产类别', 'ACTIVE', NOW(), NOW()),
+
+-- 资产类型权限
+('查看资产类型', 'asset-type::view', '查看资产类型信息', 'ACTIVE', NOW(), NOW()),
+('新增资产类型', 'asset-type::add', '新增资产类型', 'ACTIVE', NOW(), NOW()),
+('修改资产类型', 'asset-type::edit', '修改资产类型信息', 'ACTIVE', NOW(), NOW()),
+('删除资产类型', 'asset-type::delete', '删除资产类型', 'ACTIVE', NOW(), NOW()),
+
+-- 资产明细权限
+('查看资产明细', 'assets::view', '查看资产明细信息', 'ACTIVE', NOW(), NOW()),
+('新增资产明细', 'assets::add', '新增资产明细', 'ACTIVE', NOW(), NOW()),
+('修改资产明细', 'assets::edit', '修改资产明细信息', 'ACTIVE', NOW(), NOW()),
+('删除资产明细', 'assets::delete', '删除资产明细', 'ACTIVE', NOW(), NOW()),
+
+-- 采购相关权限
+('查看采购计划类型', 'procurement-plan-type::view', '查看采购计划类型', 'ACTIVE', NOW(), NOW()),
+('新增采购计划类型', 'procurement-plan-type::add', '新增采购计划类型', 'ACTIVE', NOW(), NOW()),
+('修改采购计划类型', 'procurement-plan-type::edit', '修改采购计划类型', 'ACTIVE', NOW(), NOW()),
+('删除采购计划类型', 'procurement-plan-type::delete', '删除采购计划类型', 'ACTIVE', NOW(), NOW()),
+('查看采购计划', 'procurement-plan::view', '查看采购计划', 'ACTIVE', NOW(), NOW()),
+('新增采购计划', 'procurement-plan::add', '新增采购计划', 'ACTIVE', NOW(), NOW()),
+('修改采购计划', 'procurement-plan::edit', '修改采购计划', 'ACTIVE', NOW(), NOW()),
+('删除采购计划', 'procurement-plan::delete', '删除采购计划', 'ACTIVE', NOW(), NOW()),
+('查看采购实施', 'procurement-implementation::view', '查看采购实施', 'ACTIVE', NOW(), NOW()),
+('新增采购实施', 'procurement-implementation::add', '新增采购实施', 'ACTIVE', NOW(), NOW()),
+('修改采购实施', 'procurement-implementation::edit', '修改采购实施', 'ACTIVE', NOW(), NOW()),
+('删除采购实施', 'procurement-implementation::delete', '删除采购实施', 'ACTIVE', NOW(), NOW()),
+('查看采购专家', 'procurement-expert::view', '查看采购专家', 'ACTIVE', NOW(), NOW()),
+('新增采购专家', 'procurement-expert::add', '新增采购专家', 'ACTIVE', NOW(), NOW()),
+('修改采购专家', 'procurement-expert::edit', '修改采购专家', 'ACTIVE', NOW(), NOW()),
+('删除采购专家', 'procurement-expert::delete', '删除采购专家', 'ACTIVE', NOW(), NOW()),
+
+-- 漏洞相关权限
+('查看漏洞', 'vulnerability::view', '查看漏洞信息', 'ACTIVE', NOW(), NOW()),
+('新增漏洞', 'vulnerability::add', '新增漏洞', 'ACTIVE', NOW(), NOW()),
+('修改漏洞', 'vulnerability::edit', '修改漏洞信息', 'ACTIVE', NOW(), NOW()),
+('删除漏洞', 'vulnerability::delete', '删除漏洞', 'ACTIVE', NOW(), NOW()),
+('查看漏洞软件', 'vulnerability-software::view', '查看漏洞软件', 'ACTIVE', NOW(), NOW()),
+('新增漏洞软件', 'vulnerability-software::add', '新增漏洞软件', 'ACTIVE', NOW(), NOW()),
+('修改漏洞软件', 'vulnerability-software::edit', '修改漏洞软件', 'ACTIVE', NOW(), NOW()),
+('删除漏洞软件', 'vulnerability-software::delete', '删除漏洞软件', 'ACTIVE', NOW(), NOW()),
+
+-- 会计、出纳、审计角色专用权限
+('查看资产台账', 'asset-ledger::view', '查看资产台账', 'ACTIVE', NOW(), NOW()),
+('导出资产台账', 'asset-ledger::export', '导出资产台账', 'ACTIVE', NOW(), NOW()),
+('资产折旧', 'asset::depreciate', '执行资产折旧', 'ACTIVE', NOW(), NOW()),
+('资产盘点', 'asset::inventory', '执行资产盘点', 'ACTIVE', NOW(), NOW()),
+('资产报废', 'asset::retire', '资产报废处理', 'ACTIVE', NOW(), NOW()),
+('查看财务报表', 'financial-report::view', '查看财务报表', 'ACTIVE', NOW(), NOW()),
+('生成财务报表', 'financial-report::generate', '生成财务报表', 'ACTIVE', NOW(), NOW()),
+('审核采购付款', 'procurement-payment::audit', '审核采购付款申请', 'ACTIVE', NOW(), NOW()),
+('确认采购付款', 'procurement-payment::confirm', '确认采购付款', 'ACTIVE', NOW(), NOW()),
+('查看付款记录', 'payment-record::view', '查看付款记录', 'ACTIVE', NOW(), NOW()),
+('导出付款记录', 'payment-record::export', '导出付款记录', 'ACTIVE', NOW(), NOW()),
+
+-- 菜单相关权限('采购管理菜单', 'menu::procurement', '查看采购管理菜单项', 'ACTIVE', NOW(), NOW()),
+('组织机构菜单', 'menu::organization', '查看组织机构菜单项', 'ACTIVE', NOW(), NOW()),
+('用户菜单', 'menu::user', '查看用户菜单项', 'ACTIVE', NOW(), NOW()),
+('角色菜单', 'menu::role', '查看角色菜单项', 'ACTIVE', NOW(), NOW()),
+
+('资产类别菜单', 'menu::asset-category', '查看资产类别菜单项', 'ACTIVE', NOW(), NOW()),
+('资产类型菜单', 'menu::asset-type', '查看资产类型菜单项', 'ACTIVE', NOW(), NOW()),
+('资产明细菜单', 'menu::assets', '查看资产明细菜单项', 'ACTIVE', NOW(), NOW()),
+
+('漏洞管理菜单', 'menu::vulnerability', '查看漏洞管理菜单项', 'ACTIVE', NOW(), NOW()),
+('财务资产菜单', 'menu::financial-asset', '查看财务资产菜单项', 'ACTIVE', NOW(), NOW()),
+('会计出纳菜单', 'menu::accounting-cashier', '查看会计出纳菜单项', 'ACTIVE', NOW(), NOW()),
+('审计菜单', 'menu::audit', '查看审计菜单项', 'ACTIVE', NOW(), NOW());
+
+CREATE TABLE IF NOT EXISTS systems.role_permission (
+    role_id UUID NOT NULL REFERENCES systems.role(role_id) ON DELETE CASCADE,
+    permission_id UUID NOT NULL REFERENCES systems.permission(permission_id) ON DELETE CASCADE,
+    PRIMARY KEY (role_id, permission_id)
 );
 
--- 菜单表
-CREATE TABLE IF NOT EXISTS systems.menu (
-    menu_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    menu_name TEXT NOT NULL DEFAULT '',
-    menu_code TEXT NOT NULL DEFAULT '',
-    menu_description TEXT NOT NULL DEFAULT '',
-    menu_flag TEXT NOT NULL DEFAULT '',
-    menu_type TEXT NOT NULL DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+INSERT INTO systems.role_permission (role_id, permission_id)
+SELECT
+    r.role_id,
+    p.permission_id
+FROM systems.role r
+CROSS JOIN systems.permission p
+WHERE r.role_code = 'system::admin';
+
+-- 资产主类型表：区分 固定资产/无形资产
+CREATE TABLE IF NOT EXISTS biz.asset_category (
+    asset_category_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    category_name text NOT NULL UNIQUE, -- 固定资产、无形资产
+    category_code text NOT NULL UNIQUE, -- FIXED、INTANGIBLE
+    category_flag text NOT NULL DEFAULT 'ACTIVE',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz NULL
 );
 
--- 资源表
-CREATE TABLE IF NOT EXISTS systems.resource (
-    resource_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    resource_name TEXT NOT NULL DEFAULT '',
-    resource_code TEXT NOT NULL DEFAULT '',
-    resource_description TEXT NOT NULL DEFAULT '',
-    resource_flag TEXT NOT NULL DEFAULT '',
-    resource_type TEXT NOT NULL DEFAULT '',
-    resource_path TEXT NOT NULL DEFAULT '',
-    request_method TEXT NOT NULL DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- 资产子类型表（原固定资产类型、无形资产类型合并）
+CREATE TABLE IF NOT EXISTS biz.asset_type (
+    asset_type_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    asset_type_name text NOT NULL,
+    asset_type_code text NOT NULL,
+    asset_type_flag text NOT NULL DEFAULT 'ACTIVE',
+    asset_category_id uuid NOT NULL REFERENCES biz.asset_category(asset_category_id),
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz NULL,
+    UNIQUE(asset_type_name, asset_category_id)
 );
 
--- 用户-组织关联表
-CREATE TABLE IF NOT EXISTS systems.user_organization (
-    id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    user_id UUID NOT NULL REFERENCES systems.users(user_id),
-    organization_id UUID NOT NULL REFERENCES systems.organization(organization_id),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS biz.assets (
+    asset_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    -- 基础信息
+    asset_name text NOT NULL,
+    asset_code text NOT NULL UNIQUE, -- 资产编码唯一
+    asset_description text NOT NULL DEFAULT '',
+    asset_flag text NOT NULL, -- 库存状态 IN-STOCK/PENDING-STOCK
+    -- 通用资产属性
+    quantity integer NOT NULL DEFAULT 1, -- 数量（无形资产默认1）
+    location text NOT NULL DEFAULT '', -- 存放位置（无形资产可为空）
+    purchase_price decimal NOT NULL, -- 原值
+    depreciation_price decimal NOT NULL, -- 折旧/摊销值
+    purchase_date date NULL, -- 购置日期
+    manufacturer text NOT NULL DEFAULT '', -- 生产商（无形资产可为空）
+    model text NOT NULL DEFAULT '', -- 型号（无形资产可为空）
+    -- 扩展信息
+    other_metadata jsonb NOT NULL DEFAULT '{}',
+    -- 关联关系
+    asset_type_id uuid NULL REFERENCES biz.asset_type(asset_type_id),
+    asset_category_id uuid NOT NULL REFERENCES biz.asset_category(asset_category_id),
+    organization_id uuid NULL REFERENCES systems.organization(organization_id),
+    -- 审计字段
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz NULL,
+    -- 索引优化
+    CONSTRAINT uk_asset_code UNIQUE (asset_code)
 );
 
--- 用户-角色关联表
-CREATE TABLE IF NOT EXISTS systems.user_role (
-    id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    user_id UUID NOT NULL REFERENCES systems.users(user_id),
-    role_id UUID NOT NULL REFERENCES systems.role(role_id)
-);
-
--- 组织-角色关联表
-CREATE TABLE IF NOT EXISTS systems.organization_role (
-    id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    organization_id UUID NOT NULL REFERENCES systems.organization(organization_id),
-    role_id UUID NOT NULL REFERENCES systems.role(role_id)
-);
-
--- 角色-权限关联表
-CREATE TABLE IF NOT EXISTS systems.permission_role (
-    id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    permission_id UUID NOT NULL REFERENCES systems.permission(permission_id),
-    role_id UUID NOT NULL REFERENCES systems.role(role_id)
-);
-
--- 角色-菜单关联表
-CREATE TABLE IF NOT EXISTS systems.role_menu (
-    id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    user_id UUID NOT NULL,
-    menu_id UUID NOT NULL
-);
-
--- 权限-资源关联表
-CREATE TABLE IF NOT EXISTS systems.permission_resource (
-    id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    permission_id UUID NOT NULL,
-    resource_id UUID NOT NULL
-);
-
--- 提交事务
-COMMIT;
-
--- 创建业务相关表
-BEGIN;
-
-SET LOCAL statement_timeout = '5s';
-SET LOCAL lock_timeout = '1s';
-
--- 资产表
-CREATE TABLE IF NOT EXISTS biz.asset (
-    asset_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    asset_name TEXT NOT NULL DEFAULT '',
-    asset_code TEXT NOT NULL DEFAULT '',
-    asset_description TEXT NOT NULL DEFAULT '',
-    asset_type TEXT NOT NULL DEFAULT '',
-    asset_class TEXT NOT NULL DEFAULT '',
-    manufacturer TEXT NOT NULL DEFAULT '',
-    model TEXT NOT NULL DEFAULT '',
-    serial_number TEXT NOT NULL DEFAULT '',
-    ip_address TEXT NOT NULL DEFAULT '',
-    mac_address TEXT NOT NULL DEFAULT '',
-    location TEXT NOT NULL DEFAULT '',
-    department TEXT NOT NULL DEFAULT '',
-    owner TEXT NOT NULL DEFAULT '',
-    contact_info TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT '',
-    purchase_date TEXT NOT NULL DEFAULT '',
-    warranty_end_date TEXT NOT NULL DEFAULT '',
-    value TEXT NOT NULL DEFAULT '',
-    notes TEXT NOT NULL DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 漏洞表
-CREATE TABLE IF NOT EXISTS biz.vulnerability (
-    vulnerability_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    cve_id TEXT NOT NULL DEFAULT '',
-    nist_cve_id TEXT NOT NULL DEFAULT '',
-    title TEXT NOT NULL DEFAULT '',
-    description TEXT NOT NULL DEFAULT '',
-    severity TEXT NOT NULL DEFAULT '',
-    cvss_score FLOAT NOT NULL DEFAULT 0.0,
-    cvss_vector TEXT NOT NULL DEFAULT '',
-    affected_software TEXT NOT NULL DEFAULT '',
-    affected_versions TEXT NOT NULL DEFAULT '',
-    attack_vector TEXT NOT NULL DEFAULT '',
-    attack_complexity TEXT NOT NULL DEFAULT '',
-    privileges_required TEXT NOT NULL DEFAULT '',
-    user_interaction TEXT NOT NULL DEFAULT '',
-    scope TEXT NOT NULL DEFAULT '',
-    confidentiality_impact TEXT NOT NULL DEFAULT '',
-    integrity_impact TEXT NOT NULL DEFAULT '',
-    availability_impact TEXT NOT NULL DEFAULT '',
-    reference_urls TEXT NOT NULL DEFAULT '',
-    solution TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT '',
-    published_date TEXT NOT NULL DEFAULT '',
-    last_modified_date TEXT NOT NULL DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 资产漏洞关联表
-CREATE TABLE IF NOT EXISTS biz.asset_vulnerability (
-    asset_vulnerability_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    asset_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    vulnerability_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    detection_date TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT '',
-    risk_level TEXT NOT NULL DEFAULT '',
-    remediation_plan TEXT NOT NULL DEFAULT '',
-    assigned_to TEXT NOT NULL DEFAULT '',
-    due_date TEXT NOT NULL DEFAULT '',
-    notes TEXT NOT NULL DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 提交事务
-COMMIT;
-
--- 创建系统相关索引
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_user_id ON systems.users (user_id);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_user_email ON systems.users (email);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_user_nickname ON systems.users (nickname);
-
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_permission_id ON systems.permission (permission_id);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_permission_name ON systems.permission (permission_name);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_permission_code ON systems.permission (permission_code);
-
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_role_id ON systems.role (role_id);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_role_name ON systems.role (role_name);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_role_code ON systems.role (role_code);
-
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_organization_id ON systems.organization (organization_id);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_organization_name ON systems.organization (organization_name);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_sys_organization_code ON systems.organization (organization_code);
-
--- 创建业务相关索引
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_biz_asset_id ON biz.asset (asset_id);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_biz_asset_code ON biz.asset (asset_code);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_biz_vulnerability_id ON biz.vulnerability (vulnerability_id);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_biz_vulnerability_cve_id ON biz.vulnerability (cve_id);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_biz_asset_vulnerability_id ON biz.asset_vulnerability (asset_vulnerability_id);
-
--- 添加系统相关约束和触发器
-BEGIN;
-
-SET LOCAL statement_timeout = '5s';
-SET LOCAL lock_timeout = '1s';
-
--- 用户表
-ALTER TABLE systems.users
-    ADD CONSTRAINT pk_sys_user PRIMARY KEY USING INDEX idx_sys_user_id,
-    ADD CONSTRAINT uk_sys_user_email UNIQUE USING INDEX idx_sys_user_email,
-    ADD CONSTRAINT uk_sys_user_nickname UNIQUE USING INDEX idx_sys_user_nickname,
-    ADD CONSTRAINT chk_nickname_size CHECK (LENGTH(nickname) <= 64) NOT VALID,
-    ADD CONSTRAINT chk_full_name_size CHECK (LENGTH(full_name) <= 128) NOT VALID,
-    ADD CONSTRAINT chk_email_size CHECK (LENGTH(email) <= 256) NOT VALID,
-    ADD CONSTRAINT chk_password_hash_size CHECK (LENGTH(password_hash) <= 256) NOT VALID;
-
-DROP TRIGGER IF EXISTS tr_sys_user_set_updated_at ON systems.users;
-
-CREATE TRIGGER tr_sys_user_set_updated_at
-    BEFORE UPDATE
-    ON systems.users
-    FOR EACH ROW
-EXECUTE FUNCTION systems.set_updated_at();
-
--- 权限表
-DROP TRIGGER IF EXISTS tr_sys_permission_set_updated_at ON systems.permission;
-
-CREATE TRIGGER tr_sys_permission_set_updated_at
-    BEFORE UPDATE
-    ON systems.permission
-    FOR EACH ROW
-EXECUTE FUNCTION systems.set_updated_at();
-
-ALTER TABLE systems.permission
-    ADD CONSTRAINT pk_permission_id PRIMARY KEY USING INDEX idx_sys_permission_id,
-    ADD CONSTRAINT uk_permission_name UNIQUE USING INDEX idx_sys_permission_name,
-    ADD CONSTRAINT uk_permission_code UNIQUE USING INDEX idx_sys_permission_code,
-    ADD CONSTRAINT chk_permission_name CHECK (LENGTH(permission_name) <= 32),
-    ADD CONSTRAINT chk_permission_code CHECK (LENGTH(permission_code) <= 64),
-    ADD CONSTRAINT chk_permission_description CHECK (LENGTH(permission_description) <= 1024);
-
--- 角色表
-DROP TRIGGER IF EXISTS tr_sys_role_set_updated_at ON systems.role;
-
-CREATE TRIGGER tr_sys_role_set_updated_at
-    BEFORE UPDATE
-    ON systems.role
-    FOR EACH ROW
-EXECUTE FUNCTION systems.set_updated_at();
-
-ALTER TABLE systems.role
-    ADD CONSTRAINT pk_role_id PRIMARY KEY USING INDEX idx_sys_role_id,
-    ADD CONSTRAINT uk_role_name UNIQUE USING INDEX idx_sys_role_name,
-    ADD CONSTRAINT uk_role_code UNIQUE USING INDEX idx_sys_role_code,
-    ADD CONSTRAINT chk_role_name CHECK (LENGTH(role_name) <= 32),
-    ADD CONSTRAINT chk_role_code CHECK (LENGTH(role_code) <= 64),
-    ADD CONSTRAINT chk_role_description CHECK (LENGTH(role_description) <= 1024);
-
--- 组织表
-DROP TRIGGER IF EXISTS tr_sys_organization_set_updated_at ON systems.organization;
-
-CREATE TRIGGER tr_sys_organization_set_updated_at
-    BEFORE UPDATE
-    ON systems.organization
-    FOR EACH ROW
-EXECUTE FUNCTION systems.set_updated_at();
-
-ALTER TABLE systems.organization
-    ADD CONSTRAINT pk_organization_id PRIMARY KEY USING INDEX idx_sys_organization_id,
-    ADD CONSTRAINT uk_organization_name UNIQUE USING INDEX idx_sys_organization_name,
-    ADD CONSTRAINT uk_organization_code UNIQUE USING INDEX idx_sys_organization_code,
-    ADD CONSTRAINT chk_organization_name CHECK (LENGTH(organization_name) <= 32),
-    ADD CONSTRAINT chk_organization_code CHECK (LENGTH(organization_code) <= 64),
-    ADD CONSTRAINT chk_organization_description CHECK (LENGTH(organization_description) <= 1024);
-
--- 组织-角色关联表约束
-ALTER TABLE systems.organization_role
-    ADD CONSTRAINT pk_organization_role_id PRIMARY KEY (id),
-    ADD CONSTRAINT fk_organization_role_organization_id FOREIGN KEY (organization_id) REFERENCES systems.organization(organization_id),
-    ADD CONSTRAINT fk_organization_role_role_id FOREIGN KEY (role_id) REFERENCES systems.role(role_id);
-
--- 角色-权限关联表约束
-ALTER TABLE systems.permission_role
-    ADD CONSTRAINT pk_permission_role_id PRIMARY KEY (id),
-    ADD CONSTRAINT fk_permission_role_permission_id FOREIGN KEY (permission_id) REFERENCES systems.permission(permission_id),
-    ADD CONSTRAINT fk_permission_role_role_id FOREIGN KEY (role_id) REFERENCES systems.role(role_id);
-
--- 权限-资源关联表约束
-ALTER TABLE systems.permission_resource
-    ADD CONSTRAINT pk_permission_resource_id PRIMARY KEY (id),
-    ADD CONSTRAINT fk_permission_resource_permission_id FOREIGN KEY (permission_id) REFERENCES systems.permission(permission_id),
-    ADD CONSTRAINT fk_permission_resource_resource_id FOREIGN KEY (resource_id) REFERENCES systems.resource(resource_id);
-
--- 提交事务
-COMMIT;
-
--- 添加业务相关约束和触发器
-BEGIN;
-
-SET LOCAL statement_timeout = '5s';
-SET LOCAL lock_timeout = '1s';
-
--- 资产表
-DROP TRIGGER IF EXISTS tr_biz_asset_set_updated_at ON biz.asset;
-CREATE TRIGGER tr_biz_asset_set_updated_at
-    BEFORE UPDATE
-    ON biz.asset
-    FOR EACH ROW
-EXECUTE FUNCTION biz.set_updated_at();
-
-ALTER TABLE biz.asset
-    ADD CONSTRAINT pk_biz_asset_id PRIMARY KEY USING INDEX idx_biz_asset_id,
-    ADD CONSTRAINT uk_biz_asset_code UNIQUE USING INDEX idx_biz_asset_code,
-    ADD CONSTRAINT chk_biz_asset_name CHECK (LENGTH(asset_name) <= 128),
-    ADD CONSTRAINT chk_biz_asset_code CHECK (LENGTH(asset_code) <= 64),
-    ADD CONSTRAINT chk_biz_asset_description CHECK (LENGTH(asset_description) <= 1024);
-
--- 漏洞表
-DROP TRIGGER IF EXISTS tr_biz_vulnerability_set_updated_at ON biz.vulnerability;
-CREATE TRIGGER tr_biz_vulnerability_set_updated_at
-    BEFORE UPDATE
-    ON biz.vulnerability
-    FOR EACH ROW
-EXECUTE FUNCTION biz.set_updated_at();
-
-ALTER TABLE biz.vulnerability
-    ADD CONSTRAINT pk_biz_vulnerability_id PRIMARY KEY USING INDEX idx_biz_vulnerability_id,
-    ADD CONSTRAINT uk_biz_vulnerability_cve_id UNIQUE USING INDEX idx_biz_vulnerability_cve_id,
-    ADD CONSTRAINT chk_biz_vulnerability_title CHECK (LENGTH(title) <= 256),
-    ADD CONSTRAINT chk_biz_vulnerability_cve_id CHECK (LENGTH(cve_id) <= 64);
-
--- 资产漏洞关联表
-DROP TRIGGER IF EXISTS tr_biz_asset_vulnerability_set_updated_at ON biz.asset_vulnerability;
-CREATE TRIGGER tr_biz_asset_vulnerability_set_updated_at
-    BEFORE UPDATE
-    ON biz.asset_vulnerability
-    FOR EACH ROW
-EXECUTE FUNCTION biz.set_updated_at();
-
-ALTER TABLE biz.asset_vulnerability
-    ADD CONSTRAINT pk_biz_asset_vulnerability_id PRIMARY KEY USING INDEX idx_biz_asset_vulnerability_id,
-    ADD CONSTRAINT fk_biz_asset_vulnerability_asset_id FOREIGN KEY (asset_id) REFERENCES biz.asset(asset_id),
-    ADD CONSTRAINT fk_biz_asset_vulnerability_vulnerability_id FOREIGN KEY (vulnerability_id) REFERENCES biz.vulnerability(vulnerability_id);
-
--- 为 capstone 用户授予权限
-GRANT ALL PRIVILEGES ON SCHEMA biz TO capstone;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA biz TO capstone;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA biz TO capstone;
-GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA biz TO capstone;
-
--- 提交事务
-COMMIT;
-
--- 创建 AI 相关表
-BEGIN;
-
-SET LOCAL statement_timeout = '5s';
-SET LOCAL lock_timeout = '1s';
-
--- 创建 AI schema 触发器函数
-CREATE OR REPLACE FUNCTION ai.set_updated_at() RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- 表 4: ai.model_config 模型配置表
-CREATE TABLE IF NOT EXISTS ai.model_config (
-    config_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    provider_name TEXT NOT NULL,
-    model_name TEXT NOT NULL,
-    api_key TEXT NOT NULL,
-    api_endpoint TEXT,
-    api_version TEXT,
-    max_tokens INTEGER NOT NULL DEFAULT 4096,
-    temperature FLOAT NOT NULL DEFAULT 0.7,
-    timeout_seconds INTEGER NOT NULL DEFAULT 30,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    priority INTEGER NOT NULL DEFAULT 1,
-    config_metadata JSONB,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 表 5: ai.api_call_log AI调用日志
-CREATE TABLE IF NOT EXISTS ai.api_call_log (
-    log_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    config_id UUID,
-    call_type TEXT NOT NULL,
-    prompt_tokens INTEGER,
-    completion_tokens INTEGER,
-    total_tokens INTEGER,
-    request_payload JSONB,
-    response_payload JSONB,
-    status_code INTEGER,
-    error_message TEXT,
-    latency_ms INTEGER,
-    success BOOLEAN NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 表 6: ai.asset_classification 资产分类表
-CREATE TABLE IF NOT EXISTS ai.asset_classification (
-    classification_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    asset_id UUID NOT NULL,
-    log_id UUID NOT NULL,
-    predicted_category TEXT NOT NULL,
-    confidence FLOAT,
-    reasoning TEXT,
-    manual_category TEXT,
-    is_approved BOOLEAN NOT NULL DEFAULT FALSE,
-    approved_by UUID,
-    approved_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 表 7: ai.risk_assessment AI风险评估表
-CREATE TABLE IF NOT EXISTS ai.risk_assessment (
-    assessment_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    vulnerability_id UUID NOT NULL,
-    asset_id UUID,
-    log_id UUID NOT NULL,
-    risk_score FLOAT NOT NULL,
-    risk_level TEXT NOT NULL,
-    analysis TEXT,
-    factor_weights JSONB,
-    provider TEXT NOT NULL,
-    model TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 表 8: ai.security_recommendation AI安全建议表
-CREATE TABLE IF NOT EXISTS ai.security_recommendation (
-    recommendation_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    vulnerability_id UUID NOT NULL,
-    log_id UUID NOT NULL,
-    summary TEXT NOT NULL,
-    vulnerability_analysis TEXT,
-    remediation_steps JSONB,
-    recommended_patches JSONB,
-    mitigation_measures JSONB,
-    prevention_tips JSONB,
-    references JSONB,
-    provider TEXT NOT NULL,
-    model TEXT NOT NULL,
-    is_useful BOOLEAN,
-    feedback TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 表 9: ai.prompt_template AI提示词模板表
-CREATE TABLE IF NOT EXISTS ai.prompt_template (
-    template_id UUID NOT NULL DEFAULT GEN_RANDOM_UUID(),
-    template_name TEXT NOT NULL UNIQUE,
-    template_type TEXT NOT NULL,
-    template_content TEXT NOT NULL,
-    variables JSONB,
-    description TEXT,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    version INTEGER NOT NULL DEFAULT 1,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 创建索引
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_model_config_id ON ai.model_config (config_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_model_config_active ON ai.model_config (is_active) WHERE is_active = TRUE;
-
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_api_call_log_id ON ai.api_call_log (log_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_api_call_log_type ON ai.api_call_log (call_type);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_api_call_log_created ON ai.api_call_log (created_at DESC);
-
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_asset_classification_id ON ai.asset_classification (classification_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_asset_classification_asset_id ON ai.asset_classification (asset_id);
-
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_risk_assessment_id ON ai.risk_assessment (assessment_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_risk_assessment_vuln_id ON ai.risk_assessment (vulnerability_id);
-
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_security_recommendation_id ON ai.security_recommendation (recommendation_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_security_recommendation_vuln_id ON ai.security_recommendation (vulnerability_id);
-
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_prompt_template_id ON ai.prompt_template (template_id);
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ai_prompt_template_type ON ai.prompt_template (template_type);
-
--- 添加触发器
-DROP TRIGGER IF EXISTS tr_ai_model_config_set_updated_at ON ai.model_config;
-CREATE TRIGGER tr_ai_model_config_set_updated_at
-    BEFORE UPDATE ON ai.model_config
-    FOR EACH ROW EXECUTE FUNCTION ai.set_updated_at();
-
-DROP TRIGGER IF EXISTS tr_ai_asset_classification_set_updated_at ON ai.asset_classification;
-CREATE TRIGGER tr_ai_asset_classification_set_updated_at
-    BEFORE UPDATE ON ai.asset_classification
-    FOR EACH ROW EXECUTE FUNCTION ai.set_updated_at();
-
-DROP TRIGGER IF EXISTS tr_ai_prompt_template_set_updated_at ON ai.prompt_template;
-CREATE TRIGGER tr_ai_prompt_template_set_updated_at
-    BEFORE UPDATE ON ai.prompt_template
-    FOR EACH ROW EXECUTE FUNCTION ai.set_updated_at();
-
--- 添加主键和外键约束
-ALTER TABLE ai.model_config
-    ADD CONSTRAINT pk_ai_model_config_id PRIMARY KEY USING INDEX idx_ai_model_config_id;
-
-ALTER TABLE ai.api_call_log
-    ADD CONSTRAINT pk_ai_api_call_log_id PRIMARY KEY USING INDEX idx_ai_api_call_log_id,
-    ADD CONSTRAINT fk_ai_api_call_log_config_id FOREIGN KEY (config_id) REFERENCES ai.model_config(config_id);
-
-ALTER TABLE ai.asset_classification
-    ADD CONSTRAINT pk_ai_asset_classification_id PRIMARY KEY USING INDEX idx_ai_asset_classification_id,
-    ADD CONSTRAINT fk_ai_asset_classification_asset_id FOREIGN KEY (asset_id) REFERENCES biz.asset(asset_id),
-    ADD CONSTRAINT fk_ai_asset_classification_log_id FOREIGN KEY (log_id) REFERENCES ai.api_call_log(log_id),
-    ADD CONSTRAINT fk_ai_asset_classification_approved_by FOREIGN KEY (approved_by) REFERENCES systems.users(user_id);
-
-ALTER TABLE ai.risk_assessment
-    ADD CONSTRAINT pk_ai_risk_assessment_id PRIMARY KEY USING INDEX idx_ai_risk_assessment_id,
-    ADD CONSTRAINT fk_ai_risk_assessment_vuln_id FOREIGN KEY (vulnerability_id) REFERENCES biz.vulnerability(vulnerability_id),
-    ADD CONSTRAINT fk_ai_risk_assessment_asset_id FOREIGN KEY (asset_id) REFERENCES biz.asset(asset_id),
-    ADD CONSTRAINT fk_ai_risk_assessment_log_id FOREIGN KEY (log_id) REFERENCES ai.api_call_log(log_id);
-
-ALTER TABLE ai.security_recommendation
-    ADD CONSTRAINT pk_ai_security_recommendation_id PRIMARY KEY USING INDEX idx_ai_security_recommendation_id,
-    ADD CONSTRAINT fk_ai_security_recommendation_vuln_id FOREIGN KEY (vulnerability_id) REFERENCES biz.vulnerability(vulnerability_id),
-    ADD CONSTRAINT fk_ai_security_recommendation_log_id FOREIGN KEY (log_id) REFERENCES ai.api_call_log(log_id);
-
-ALTER TABLE ai.prompt_template
-    ADD CONSTRAINT pk_ai_prompt_template_id PRIMARY KEY USING INDEX idx_ai_prompt_template_id;
-
--- 为 capstone 用户授予权限
-GRANT ALL PRIVILEGES ON SCHEMA ai TO capstone;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ai TO capstone;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA ai TO capstone;
-GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA ai TO capstone;
-
--- 提交事务
-COMMIT;
-
--- 插入系统初始数据
-BEGIN;
-
-SET LOCAL statement_timeout = '5s';
-SET LOCAL lock_timeout = '1s';
-
--- 插入角色数据
-INSERT INTO systems.role (role_name, role_code, role_description, role_flag)
-VALUES ('SuperAdmin', 'sa', 'This is a superadmin role', 'active'),
-       ('OrganizationAdmin', 'org-admin', 'this is ad admin role', 'active'),
-       ('AssetManager', 'am', 'this is a asset-manage role', 'active'),
-       ('ThirdParty', 'tp', 'this is a ThirdParty role', 'active');
-
--- 插入权限数据
-INSERT INTO systems.permission (permission_name, permission_code, permission_description)
-VALUES ('UserRead', 'user:read', 'user read'),
-       ('UserWrite', 'user:write', 'user write'),
-       ('UserDelete', 'user:delete', 'user delete'),
-       ('RoleRead', 'role:read', 'role read'),
-       ('RoleWrite', 'role:write', 'role write'),
-       ('RoleDelete', 'role:delete', 'role delete'),
-       ('PermissionRead', 'permission:read', 'permission read'),
-       ('PermissionWrite', 'permission:write', 'permission write'),
-       ('PermissionDelete', 'permission:delete', 'permission delete'),
-       ('OrganizationRead', 'organization:read', 'organization read'),
-       ('OrganizationWrite', 'organization:write', 'organization write'),
-       ('OrganizationDelete', 'organization:delete', 'organization delete'),
-       ('MenuRead', 'menu:read', 'menu read'),
-       ('MenuWrite', 'menu:write', 'menu write'),
-       ('MenuDelete', 'menu:delete', 'menu delete'),
-       ('ResourceRead', 'resource:read', 'resource read'),
-       ('ResourceWrite', 'resource:write', 'resource write'),
-       ('ResourceDelete', 'resource:delete', 'resource delete');
-
--- 插入菜单数据
-INSERT INTO systems.menu (menu_name, menu_code, menu_description)
-VALUES ('UserManage', 'menu:user_manage', 'User Manager'),
-       ('RoleManage', 'menu:role_manage', 'Role Manager'),
-       ('PermissionManage', 'menu:perm_manage', 'Permission Manager'),
-       ('OrganizationManage', 'menu:org_manage', 'Organization Manager'),
-       ('ResourceManage', 'menu:resource_manage', 'Resource Manager');
-
--- 插入资源数据
-INSERT INTO systems.resource (resource_name, resource_code, resource_description, resource_type, resource_path, request_method)
-VALUES ('ReadUser', 'user::read', 'Read A user profile', 'HTTP', '/api/v1/users/:id', 'GET'),
-       ('CreateUser', 'user::write', 'Create A user', 'HTTP', '/api/v1/users', 'POST'),
-       ('UpdateUser', 'user::write', 'Update a user profile', 'HTTP', '/api/v1/users', 'PUT'),
-       ('DeleteUser', 'user::delete', 'Delete a user profile', 'HTTP', '/api/v1/users', 'DELETE'),
-       ('ListAllUser', 'user::read', 'ReadAllUserProfile', 'HTTP', '/api/v1/users/list', 'GET'),
-       ('ReadRole', 'role::read', 'Read A role profile', 'HTTP', '/api/v1/roles', 'GET'),
-       ('CreateRole', 'role::write', 'Create A role', 'HTTP', '/api/v1/roles', 'POST'),
-       ('UpdateRole', 'role::write', 'Update a role profile', 'HTTP', '/api/v1/roles', 'PUT'),
-       ('DeleteRole', 'role::delete', 'Delete a role profile', 'HTTP', '/api/v1/roles', 'DELETE'),
-       ('ListAllRole', 'role::read', 'ReadAllRoleProfile', 'HTTP', '/api/v1/roles/list', 'GET'),
-       ('ReadPermission', 'permission::read', 'Read A permission profile', 'HTTP', '/api/v1/permissions/:id', 'GET'),
-       ('CreatePermission', 'permission::write', 'Create A permission', 'HTTP', '/api/v1/permissions', 'POST'),
-       ('UpdatePermission', 'permission::write', 'Update a permission profile', 'HTTP', '/api/v1/permissions', 'PUT'),
-       ('DeletePermission', 'permission::delete', 'Delete a permission profile', 'HTTP', '/api/v1/permissions', 'DELETE'),
-       ('ListAllPermission', 'permission::read', 'ReadAllPermissionProfile', 'HTTP', '/api/v1/permissions/list', 'GET'),
-       ('ReadOrganization', 'organization::read', 'Read A organization profile', 'HTTP', '/api/v1/organizations', 'GET'),
-       ('CreateOrganization', 'organization::write', 'Create A organization', 'HTTP', '/api/v1/organizations', 'POST'),
-       ('UpdateOrganization', 'organization::write', 'Update a organization profile', 'HTTP', '/api/v1/organizations', 'PUT'),
-       ('DeleteOrganization', 'organization::delete', 'Delete a organization profile', 'HTTP', '/api/v1/organizations', 'DELETE'),
-       ('ListAllOrganization', 'organization::read', 'ReadAllOrganizationProfile', 'HTTP', '/api/v1/organizations/list', 'GET'),
-       ('ReadResource', 'resource::read', 'Read A resource profile', 'HTTP', '/api/v1/resources', 'GET'),
-       ('CreateResource', 'resource::write', 'Create A resource', 'HTTP', '/api/v1/resources', 'POST'),
-       ('UpdateResource', 'resource::write', 'Update a resource profile', 'HTTP', '/api/v1/resources', 'PUT'),
-       ('DeleteResource', 'resource::delete', 'Delete a resource profile', 'HTTP', '/api/v1/resources', 'DELETE'),
-       ('ListAllResource', 'resource::read', 'ReadAllResourceProfile', 'HTTP', '/api/v1/resources/list', 'GET');
-
--- 提交事务
-COMMIT;
-
--- 插入业务示例数据
-BEGIN;
-
-SET LOCAL statement_timeout = '5s';
-SET LOCAL lock_timeout = '1s';
-
--- 插入示例资产数据
-INSERT INTO biz.asset (asset_id, asset_name, asset_code, asset_description, asset_type, asset_class, manufacturer, model, serial_number, ip_address, mac_address, location, department, owner, contact_info, status, purchase_date, warranty_end_date, value, notes)
+INSERT INTO biz.asset_category (category_name, category_code, category_flag)
 VALUES 
-  (GEN_RANDOM_UUID(), 'Web Server 1', 'WEB-001', 'Main web server for the company website', 'server', 'hardware', 'Dell', 'PowerEdge R740', 'S123456789', '192.168.1.100', '00:11:22:33:44:55', 'Data Center', 'IT Department', 'John Doe', 'john.doe@example.com', 'active', '2023-01-15', '2026-01-14', '5000', 'Production web server'),
-  (GEN_RANDOM_UUID(), 'Database Server', 'DB-001', 'Main database server', 'server', 'hardware', 'HP', 'ProLiant DL380', 'S987654321', '192.168.1.101', '00:11:22:33:44:56', 'Data Center', 'IT Department', 'Jane Smith', 'jane.smith@example.com', 'active', '2023-02-20', '2026-02-19', '8000', 'Production database server'),
-  (GEN_RANDOM_UUID(), 'Workstation 1', 'WS-001', 'Developer workstation', 'workstation', 'hardware', 'Lenovo', 'ThinkCentre M70t', 'S135792468', '192.168.1.200', '00:11:22:33:44:57', 'Office', 'Development', 'Bob Johnson', 'bob.johnson@example.com', 'active', '2023-03-10', '2026-03-09', '2000', 'Developer workstation'),
-  (GEN_RANDOM_UUID(), 'Network Switch', 'NW-001', 'Core network switch', 'network_device', 'hardware', 'Cisco', 'Catalyst 9300', 'S246813579', '192.168.1.1', '00:11:22:33:44:58', 'Data Center', 'IT Department', 'Alice Brown', 'alice.brown@example.com', 'active', '2023-04-05', '2026-04-04', '3000', 'Core network switch'),
-  (GEN_RANDOM_UUID(), 'Firewall', 'FW-001', 'Corporate firewall', 'network_device', 'hardware', 'Palo Alto', 'PA-220', 'S975310864', '192.168.1.2', '00:11:22:33:44:59', 'Data Center', 'IT Department', 'Charlie Davis', 'charlie.davis@example.com', 'active', '2023-05-12', '2026-05-11', '4000', 'Corporate firewall');
+('固定资产', 'FIXED', 'ACTIVE'),
+('无形资产', 'INTANGIBLE', 'ACTIVE');
 
--- 插入示例漏洞数据
-INSERT INTO biz.vulnerability (cve_id, nist_cve_id, title, description, severity, cvss_score, cvss_vector, affected_software, affected_versions, attack_vector, attack_complexity, privileges_required, user_interaction, scope, confidentiality_impact, integrity_impact, availability_impact, reference_urls, solution, status, published_date, last_modified_date)
-VALUES 
-  ('CVE-2023-21706', 'CVE-2023-21706', 'Windows Kerberos Elevation of Privilege Vulnerability', 'An elevation of privilege vulnerability exists in Windows Kerberos.', 'Critical', 9.8, 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', 'Windows Server 2019, Windows Server 2022', '10.0.17763, 10.0.20348', 'Network', 'Low', 'None', 'None', 'Unchanged', 'High', 'High', 'High', 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-21706', 'Apply security update KB5022282', 'open', '2023-01-10', '2023-01-10'),
-  ('CVE-2023-22515', 'CVE-2023-22515', 'Atlassian Confluence Server and Data Center Remote Code Execution Vulnerability', 'A remote code execution vulnerability exists in Atlassian Confluence Server and Data Center.', 'Critical', 10.0, 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', 'Atlassian Confluence Server, Atlassian Confluence Data Center', '7.18.0 - 7.19.16, 7.20.0 - 7.20.12, 7.21.0 - 7.21.8, 7.22.0 - 7.22.3', 'Network', 'Low', 'None', 'None', 'Unchanged', 'High', 'High', 'High', 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-22515', 'Update to Confluence 7.19.17, 7.20.13, 7.21.9, or 7.22.4', 'open', '2023-03-23', '2023-03-23'),
-  ('CVE-2023-1389', 'CVE-2023-1389', 'Microsoft Exchange Server Remote Code Execution Vulnerability', 'A remote code execution vulnerability exists in Microsoft Exchange Server.', 'Critical', 9.8, 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', 'Microsoft Exchange Server 2013, Microsoft Exchange Server 2016, Microsoft Exchange Server 2019', '15.0.1497.0 - 15.0.1497.32, 15.1.2308.0 - 15.1.2308.24, 15.2.986.0 - 15.2.986.22', 'Network', 'Low', 'None', 'None', 'Unchanged', 'High', 'High', 'High', 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-1389', 'Apply security update KB5024204', 'open', '2023-04-11', '2023-04-11'),
-  ('CVE-2023-20198', 'CVE-2023-20198', 'Cisco IOS XE Software Web UI Privilege Escalation Vulnerability', 'A privilege escalation vulnerability exists in the web UI feature of Cisco IOS XE Software.', 'High', 8.8, 'CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', 'Cisco IOS XE Software', '17.6.1 - 17.6.3, 17.7.1 - 17.7.2, 17.8.1', 'Adjacent', 'Low', 'None', 'None', 'Unchanged', 'High', 'High', 'High', 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-20198', 'Update to Cisco IOS XE Software 17.6.4, 17.7.3, or 17.8.2', 'open', '2023-07-12', '2023-07-12'),
-  ('CVE-2023-3519', 'CVE-2023-3519', 'Microsoft Windows Secure Boot Security Feature Bypass Vulnerability', 'A security feature bypass vulnerability exists in Microsoft Windows Secure Boot.', 'High', 8.2, 'CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:H', 'Microsoft Windows 10, Microsoft Windows 11, Microsoft Windows Server 2019, Microsoft Windows Server 2022', '10.0.19044, 10.0.19045, 10.0.20348', 'Local', 'Low', 'None', 'None', 'Unchanged', 'High', 'None', 'High', 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-3519', 'Apply security update KB5028185', 'open', '2023-07-11', '2023-07-11');
+-- 固定资产子类型 批量插入
+INSERT INTO biz.asset_type (asset_type_name, asset_type_code, asset_type_flag, asset_category_id)
+VALUES
+('办公楼','房屋::办公楼','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('厂房','房屋::厂房','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('仓库','房屋::仓库','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('员工宿舍','房屋::员工宿舍','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('食堂','房屋::食堂','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('围墙','房屋::围墙','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('烟囱','房屋::烟囱','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('停车场','房屋::停车场','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('生产流水线','机器设备::生产流水线','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('加工机床','机器设备::加工机床','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('包装机械','机器设备::包装机械','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('注塑机','机器设备::注塑机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('纺织机','机器设备::纺织机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('印刷机','机器设备::印刷机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('专用生产工具','机器设备::专用生产工具','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('公司车辆','运输工具::公司车辆','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('叉车','运输工具::叉车','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('拖车','运输工具::拖车','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('船舶','运输工具::船舶','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('飞机','运输工具::飞机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('电脑','电子设备::电脑','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('服务器','电子设备::服务器','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('打印机','电子设备::打印机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('复印机','电子设备::复印机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('投影仪','电子设备::投影仪','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('路由器','电子设备::路由器','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('交换机','电子设备::交换机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('企业级交换机','电子设备::企业级交换机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('企业级路由器','电子设备::企业级路由器','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('监控设备','电子设备::监控设备','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('收银机','电子设备::收银机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('办公桌椅','办公设备::办公桌椅','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('文件柜','办公设备::文件柜','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('保险柜','办公设备::保险柜','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('空调','办公设备::空调','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('碎纸机','办公设备::碎纸机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('饮水机','办公设备::饮水机','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('沙发','家具及器具::沙发','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('茶几','家具及器具::茶几','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('会议桌','家具及器具::会议桌','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('会议椅','家具及器具::会议椅','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('书架','家具及器具::书架','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1)),
+('床','家具及器具::床','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'FIXED' LIMIT 1));
 
--- 插入示例资产漏洞关联数据
-INSERT INTO biz.asset_vulnerability (asset_id, vulnerability_id, detection_date, status, risk_level, remediation_plan, assigned_to, due_date, notes)
-VALUES 
-  ((SELECT asset_id FROM biz.asset WHERE asset_code = 'WEB-001'), 
-   (SELECT vulnerability_id FROM biz.vulnerability WHERE cve_id = 'CVE-2023-21706'), 
-   '2023-01-15', 'open', 'high', 'Apply security update KB5022282', 'John Doe', '2023-01-22', 'Critical vulnerability, needs immediate attention'),
-  ((SELECT asset_id FROM biz.asset WHERE asset_code = 'DB-001'), 
-   (SELECT vulnerability_id FROM biz.vulnerability WHERE cve_id = 'CVE-2023-21706'), 
-   '2023-01-15', 'open', 'high', 'Apply security update KB5022282', 'Jane Smith', '2023-01-22', 'Critical vulnerability, needs immediate attention'),
-  ((SELECT asset_id FROM biz.asset WHERE asset_code = 'WEB-001'), 
-   (SELECT vulnerability_id FROM biz.vulnerability WHERE cve_id = 'CVE-2023-1389'), 
-   '2023-04-12', 'open', 'high', 'Apply security update KB5024204', 'John Doe', '2023-04-19', 'Critical vulnerability, needs immediate attention'),
-  ((SELECT asset_id FROM biz.asset WHERE asset_code = 'NW-001'), 
-   (SELECT vulnerability_id FROM biz.vulnerability WHERE cve_id = 'CVE-2023-20198'), 
-   '2023-07-15', 'open', 'medium', 'Update to Cisco IOS XE Software 17.6.4', 'Alice Brown', '2023-07-22', 'High severity vulnerability, needs attention'),
-  ((SELECT asset_id FROM biz.asset WHERE asset_code = 'WS-001'), 
-   (SELECT vulnerability_id FROM biz.vulnerability WHERE cve_id = 'CVE-2023-3519'), 
-   '2023-07-12', 'open', 'medium', 'Apply security update KB5028185', 'Bob Johnson', '2023-07-19', 'High severity vulnerability, needs attention');
+-- 无形资产子类型 批量插入
+INSERT INTO biz.asset_type (asset_type_name, asset_type_code, asset_type_flag, asset_category_id)
+VALUES
+('发明专利','知识产权::发明专利','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('实用新型','知识产权::实用新型','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('外观设计','知识产权::外观设计','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('商标权','知识产权::商标权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('著作权','知识产权::著作权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('软件著作权','知识产权::软件著作权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('集成电路布图设计','知识产权::集成电路布图设计','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('植物新品种','知识产权::植物新品种','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('特许经营权','市场权利::特许经营权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('商标使用权','市场权利::商标使用权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('土地使用权','市场权利::土地使用权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('采矿权','市场权利::采矿权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('探矿权','市场权利::探矿权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('排污权','市场权利::排污权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('碳排放权','市场权利::碳排放权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('非专利技术','技术信息::非专利技术','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('技术秘密','技术信息::技术秘密','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('计算机软件','技术信息::计算机软件','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('客户关系','技术信息::客户关系','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('客户名单','技术信息::客户名单','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('销售网络','技术信息::销售网络','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('分销渠道','技术信息::分销渠道','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('合同权益','其他::合同权益','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('影视版权','其他::影视版权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1)),
+('音乐版权','其他::音乐版权','ACTIVE',(SELECT asset_category_id FROM biz.asset_category WHERE category_code = 'INTANGIBLE' LIMIT 1));
 
--- 提交事务
-COMMIT;
+
+-- 1. 插入 固定资产 10条
+INSERT INTO biz.assets (
+    asset_name, asset_code, asset_description, asset_flag,
+    quantity, location, purchase_price, depreciation_price, purchase_date,
+    manufacturer, model, other_metadata, asset_type_id, asset_category_id, organization_id
+)
+VALUES
+-- 1
+('办公楼','FIXED001','教学办公楼','IN-STOCK',1,'校本部',5000000,5000000,'2023-01-01','城建集团','OFFICE-BUILD-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='办公楼' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='校本部' LIMIT 1)),
+-- 2
+('厂房','FIXED002','实训厂房','IN-STOCK',1,'工程实训中心',2000000,2000000,'2023-02-01','重工机械','FACTORY-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='厂房' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='工程实训中心' LIMIT 1)),
+-- 3
+('仓库','FIXED003','物资仓库','IN-STOCK',1,'后勤园区',800000,800000,'2023-03-01','仓储设备','WAREHOUSE-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='仓库' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='后勤管理处' LIMIT 1)),
+-- 4
+('员工宿舍','FIXED004','教师公寓','IN-STOCK',1,'教工生活区',1500000,1500000,'2023-04-01','建设集团','DORM-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='员工宿舍' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='人事处' LIMIT 1)),
+-- 5
+('食堂','FIXED005','学生食堂','IN-STOCK',1,'生活区',1200000,1200000,'2023-05-01','餐饮设备','CANTEEN-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='食堂' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='后勤服务中心' LIMIT 1)),
+-- 6
+('生产流水线','FIXED006','实训流水线','IN-STOCK',1,'工学院大楼',800000,800000,'2023-06-01','工业设备','LINE-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='生产流水线' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='工学院' LIMIT 1)),
+-- 7
+('公司车辆','FIXED007','公务用车','IN-STOCK',2,'行政楼',300000,300000,'2023-07-01','汽车品牌','CAR-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='公司车辆' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='党政办公室' LIMIT 1)),
+-- 8
+('电脑','FIXED008','办公电脑','IN-STOCK',50,'计算机学院',4000,4000,'2023-08-01','电脑品牌','PC-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='电脑' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='计算机与智能教育学院' LIMIT 1)),
+-- 9
+('办公桌椅','FIXED009','办公桌椅套装','IN-STOCK',100,'行政办公楼',800,800,'2023-09-01','家具厂','DESK-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='办公桌椅' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='行政处' LIMIT 1)),
+-- 10
+('沙发','FIXED10','会议室沙发','IN-STOCK',10,'学术交流中心',2000,2000,'2023-10-01','家具品牌','SOFA-01','{}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='沙发' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='FIXED' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='学术交流中心' LIMIT 1));
+
+-- 2. 插入 无形资产 10条
+INSERT INTO biz.assets (
+    asset_name, asset_code, asset_description, asset_flag,
+    quantity, location, purchase_price, depreciation_price, purchase_date,
+    manufacturer, model, other_metadata, asset_type_id, asset_category_id, organization_id
+)
+VALUES
+-- 1
+('发明专利','INTANG001','教学方法发明专利','IN-STOCK',1,'',1000000,1000000,'2023-01-01','','','{"author":"教授A"}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='发明专利' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='科研处' LIMIT 1)),
+-- 2
+('实用新型','INTANG002','实验设备实用新型','IN-STOCK',1,'',800000,800000,'2023-02-01','','','{"author":"教授B"}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='实用新型' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='实验室管理处' LIMIT 1)),
+-- 3
+('外观设计','INTANG003','产品外观设计专利','IN-STOCK',1,'',500000,500000,'2023-03-01','','','{"author":"设计师C"}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='外观设计' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='艺术学院' LIMIT 1)),
+-- 4
+('商标权','INTANG004','学校品牌商标权','IN-STOCK',1,'',600000,600000,'2023-04-01','','','{"reg_no":"TM-2023-001"}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='商标权' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='品牌管理中心' LIMIT 1)),
+-- 5
+('著作权','INTANG005','教材著作权','IN-STOCK',1,'',300000,300000,'2023-05-01','','','{"isbn":"978-7-xxxx"}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='著作权' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='出版社' LIMIT 1)),
+-- 6
+('软件著作权','INTANG006','教学管理系统','IN-STOCK',1,'',400000,400000,'2023-06-01','','','{"version":"v2.0"}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='软件著作权' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='信息化中心' LIMIT 1)),
+-- 7
+('特许经营权','INTANG007','校园服务特许经营权','IN-STOCK',1,'',1500000,1500000,'2023-07-01','','','{"period":"10年"}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='特许经营权' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='资产管理处' LIMIT 1)),
+-- 8
+('土地使用权','INTANG008','校区土地使用权','IN-STOCK',1,'',3000000,3000000,'2023-08-01','','','{"area":"100亩"}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='土地使用权' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='规划处' LIMIT 1)),
+-- 9
+('非专利技术','INTANG009','实验专有技术','IN-STOCK',1,'',700000,700000,'2023-09-01','','','{"field":"新材料"}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='非专利技术' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='材料学院' LIMIT 1)),
+-- 10
+('客户关系','INTANG10','校企合作客户资源','IN-STOCK',1,'',500000,500000,'2023-10-01','','','{"partner_count":50}',
+ (SELECT asset_type_id FROM biz.asset_type WHERE asset_type_name='客户关系' LIMIT 1),
+ (SELECT asset_category_id FROM biz.asset_category WHERE category_code='INTANGIBLE' LIMIT 1),
+ (SELECT organization_id FROM systems.organization WHERE organization_name='校企合作办' LIMIT 1));
+
+CREATE TABLE IF NOT EXISTS biz.procurement_plan_type(
+    procurement_plan_type_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    procurement_plan_type_name text NOT NULL,
+    procurement_plan_type_code text NOT NULL,
+    procurement_plan_type_flag text NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT NULL
+);
+
+INSERT INTO biz.procurement_plan_type(
+    procurement_plan_type_name,
+    procurement_plan_type_code,
+    procurement_plan_type_flag
+) VALUES
+-- 按组织形式分类
+('自行招标', '组织形式::自行招标', 'ACTIVE'),
+('委托招标', '组织形式::委托招标', 'ACTIVE'),
+-- 按采购内容分类
+('货物类采购', '采购内容::货物类采购', 'ACTIVE'),
+('工程类采购', '采购内容::工程类采购', 'ACTIVE'),
+('服务类采购', '采购内容::服务类采购', 'ACTIVE'),
+-- 按采购方式分类
+('公开招标', '采购方式::公开招标', 'ACTIVE'),
+('邀请招标', '采购方式::邀请招标', 'ACTIVE'),
+('竞争性谈判', '采购方式::竞争性谈判', 'ACTIVE'),
+('竞争性磋商', '采购方式::竞争性磋商', 'ACTIVE'),
+('询价采购', '采购方式::询价采购', 'ACTIVE'),
+('单一来源采购', '采购方式::单一来源采购', 'ACTIVE'),
+('框架协议采购', '采购方式::框架协议采购', 'ACTIVE'),
+('电子采购', '采购方式::电子采购', 'ACTIVE'),
+('本地化采购', '采购方式::本地化采购', 'ACTIVE'),
+('全球采购', '采购方式::全球采购', 'ACTIVE');
+
+CREATE TABLE IF NOT EXISTS biz.procurement_plan(
+    procurement_plan_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    procurement_plan_name text NOT NULL,
+    procurement_plan_code text NOT NULL,
+    procurement_plan_description text NOT NULL,
+    procurement_plan_flag text NOT NULL,
+    procurement_plan_quantity integer NOT NULL DEFAULT 1,
+    procurement_plan_price decimal NOT NULL,
+    procurement_plan_purchase_date timestamptz DEFAULT NULL,
+    procurement_plan_purchase_type text NOT NULL DEFAULT '',
+    other_metadata jsonb NOT NULL DEFAULT '{}',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT NULL,
+    procurement_plan_type_id uuid DEFAULT NULL REFERENCES biz.procurement_plan_type(procurement_plan_type_id),
+    organization_id uuid DEFAULT NULL REFERENCES systems.organization(organization_id),
+    user_id uuid DEFAULT NULL REFERENCES systems.user(user_id)
+);
+INSERT INTO biz.procurement_plan(
+    procurement_plan_name,
+    procurement_plan_code,
+    procurement_plan_description,
+    procurement_plan_flag,
+    procurement_plan_quantity,
+    procurement_plan_price,
+    procurement_plan_purchase_date,
+    procurement_plan_purchase_type,
+    other_metadata,
+    procurement_plan_type_id,
+    organization_id,
+    user_id
+) VALUES
+('采购计划1','G100001','采购计划1','TENDER',100,1000000,'2023-01-01','软件采购','{}',
+(select procurement_plan_type_id from biz.procurement_plan_type where procurement_plan_type_name = '自行招标'),
+(select organization_id from systems.organization where organization_name = '校本部第五教学楼教室管理科'),
+(select user_id from systems.user where full_name = '用户2')),
+
+('采购计划2','G100002','采购计划2','TENDER',50,800000,'2023-02-01','硬件采购','{}',
+(select procurement_plan_type_id from biz.procurement_plan_type where procurement_plan_type_name = '委托招标'),
+(select organization_id from systems.organization where organization_name = '湖光校区'),
+(select user_id from systems.user where full_name = '用户4')),
+
+('采购计划3','G100003','采购计划3','BID',200,600000,'2023-03-01','服务采购','{}',
+(select procurement_plan_type_id from biz.procurement_plan_type where procurement_plan_type_name = '货物类采购'),
+(select organization_id from systems.organization where organization_name = '法政学院'),
+(select user_id from systems.user where full_name = '用户5')),
+
+('采购计划4','G100004','采购计划4','TENDER',30,1200000,'2023-04-01','软件升级','{}',
+(select procurement_plan_type_id from biz.procurement_plan_type where procurement_plan_type_name = '竞争性谈判'),
+(select organization_id from systems.organization where organization_name = '音乐与舞蹈学院'),
+(select user_id from systems.user where full_name = '用户2')),
+
+('采购计划5','G100005','采购计划5','TENDER',80,400000,'2023-05-01','办公用品','{}',
+(select procurement_plan_type_id from biz.procurement_plan_type where procurement_plan_type_name = '询价采购'),
+(select organization_id from systems.organization where organization_name = '计算机与智能教育学院'),
+(select user_id from systems.user where full_name = '用户3')),
+
+('采购计划6','G100006','采购计划6','BID',150,950000,'2023-06-01','实验设备','{}',
+(select procurement_plan_type_id from biz.procurement_plan_type where procurement_plan_type_name = '公开招标'),
+(select organization_id from systems.organization where organization_name = '校本部'),
+(select user_id from systems.user where full_name = '用户1'));
+
+CREATE TABLE IF NOT EXISTS biz.procurement_implementation(
+    procurement_implementation_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    procurement_implementation_name text NOT NULL,
+    procurement_implementation_code text NOT NULL,
+    procurement_implementation_description text NOT NULL,
+    procurement_implementation_flag text NOT NULL,
+    other_metadata jsonb NOT NULL DEFAULT '{}',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT NULL,
+    procurement_plan_id uuid DEFAULT NULL REFERENCES biz.procurement_plan(procurement_plan_id),
+    organization_id uuid DEFAULT NULL REFERENCES systems.organization(organization_id),
+    user_id uuid DEFAULT NULL REFERENCES systems.user(user_id)
+);
+
+INSERT INTO biz.procurement_implementation(
+    procurement_implementation_name,
+    procurement_implementation_code,
+    procurement_implementation_description,
+    procurement_implementation_flag,
+    other_metadata,
+    organization_id,
+    user_id
+) VALUES
+('采购计划1实施','G100001','采购计划1实施','STARTING','[{"date":"2023-01-01","status":"到场","acceptance":"通过","现场":"张三","photo":"https://example.com/photo1.jpg"},{"date":"2023-01-02","status":" 安装","acceptance":"通过","现场":"李四","photo":"https://example.com/photo2.jpg"},{"date":"2023-01-03","status":"项目验收专家入场","acceptance":"通过","现场":"王五","photo":"https://example.com/photo3.jpg"}]',
+(select organization_id from systems.organization where organization_name = '校本部第五教学楼教室管理科'),
+(select user_id from systems.user where full_name = '用户2')),
+('采购计划2实施','G100002','采购计划2实施','DOING','[{"date":"2023-02-01","status":"到场","acceptance":"通过","现场":"王五","photo":"https://example.com/photo1.jpg"},{"date":"2023-02-02","status":" 安装","acceptance":"通过","现场":"赵六","photo":"https://example.com/photo2.jpg"},{"date":"2023-02-03","status":"项目验收专家入场","acceptance":"通过","现场":"王五","photo":"https://example.com/photo3.jpg"}]',
+(select organization_id from systems.organization where organization_name = '湖光校区'),
+(select user_id from systems.user where full_name = '用户4')),
+('采购计划3实施','G100003','采购计划3实施','FINISH','[{"date":"2023-03-01","status":"到场","acceptance":"通过","现场":"钱七","photo":"https://example.com/photo1.jpg"},{"date":"2023-03-02","status":" 安装","acceptance":"通过","现场":"王八","photo":"https://example.com/photo2.jpg"},{"date":"2023-03-03","status":"项目验收专家入场","acceptance":"通过","现场":"王五","photo":"https://example.com/photo3.jpg"}]',
+(select organization_id from systems.organization where organization_name = '法政学院'),
+(select user_id from systems.user where full_name = '用户5')),
+('采购计划4实施','G100004','采购计划4实施','FINISH','[{"date":"2023-04-01","status":"到场","acceptance":"通过","现场":"赵六","photo":"https://example.com/photo1.jpg"},{"date":"2023-04-02","status":" 安装","acceptance":"通过","现场":"王五","photo":"https://example.com/photo2.jpg"},{"date":"2023-04-03","status":"项目验收专家入场","acceptance":"通过","现场":"王五","photo":"https://example.com/photo3.jpg"}]',
+(select organization_id from systems.organization where organization_name = '音乐与舞蹈学院'),
+(select user_id from systems.user where full_name = '用户2'));
+
+CREATE TABLE IF NOT EXISTS biz.procurement_expert(
+    procurement_expert_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    procurement_expert_name text NOT NULL,
+    procurement_expert_code text NOT NULL,
+    procurement_expert_description text NOT NULL,
+    procurement_expert_flag text NOT NULL,
+    procurement_expert_job_grade text NOT NULL DEFAULT '',
+    procurement_expert_bank_name text NOT NULL DEFAULT '',
+    procurement_expert_bank_account text NOT NULL DEFAULT '',
+    other_metadata jsonb NOT NULL DEFAULT '{}',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT NULL,
+    organization_id uuid DEFAULT NULL REFERENCES systems.organization(organization_id),
+    user_id uuid DEFAULT NULL REFERENCES systems.user(user_id)
+);
+
+INSERT INTO biz.procurement_expert(
+    procurement_expert_name,
+    procurement_expert_code,
+    procurement_expert_description,
+    procurement_expert_flag,
+    procurement_expert_job_grade,
+    procurement_expert_bank_name,
+    procurement_expert_bank_account,
+    other_metadata,
+    organization_id,
+    user_id
+) VALUES
+('专家1','ZJ100001','专家1','ACTIVE','高级工程师','中国银行','6100000000000000000','{}',
+(select organization_id from systems.organization where organization_name = '校本部第五教学楼教室管理科'),
+(select user_id from systems.user where full_name = '用户2')),
+('专家2','ZJ100002','专家2','ACTIVE','高级工程师','中国银行','6200000000000000000','{}',
+(select organization_id from systems.organization where organization_name = '校本部第五教学楼教室管理科'),
+(select user_id from systems.user where full_name = '用户3')),
+('专家3','ZJ100003','专家3','ACTIVE','高级工程师','中国银行','6300000000000000000','{}',
+(select organization_id from systems.organization where organization_name = '校本部第五教学楼教室管理科'),
+(select user_id from systems.user where full_name = '用户4')),
+('专家4','ZJ100004','专家4','ACTIVE','高级工程师','中国银行','6400000000000000000','{}',
+(select organization_id from systems.organization where organization_name = '校本部第五教学楼教室管理科'),
+(select user_id from systems.user where full_name = '用户5'));
+
+CREATE TABLE IF NOT EXISTS biz.procurement_review (
+    procurement_review_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    procurement_review_name text NOT NULL,
+    procurement_review_code text NOT NULL,
+    procurement_review_result text NOT NULL,
+    procurement_review_opinion text NOT NULL DEFAULT '',
+    other_metadata jsonb NOT NULL DEFAULT '{}',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz NULL,
+    procurement_implementation_id uuid NULL REFERENCES biz.procurement_implementation(procurement_implementation_id),
+    organization_id uuid NULL REFERENCES systems.organization(organization_id),
+    user_id uuid NULL REFERENCES systems.user(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS biz.procurement_acceptance (
+    procurement_acceptance_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    procurement_acceptance_name text NOT NULL,
+    procurement_acceptance_code text NOT NULL,
+    procurement_acceptance_result text NOT NULL,
+    procurement_acceptance_description text NOT NULL DEFAULT '',
+    other_metadata jsonb NOT NULL DEFAULT '{}',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz NULL,
+    procurement_implementation_id uuid NULL REFERENCES biz.procurement_implementation(procurement_implementation_id),
+    organization_id uuid NULL REFERENCES systems.organization(organization_id),
+    user_id uuid NULL REFERENCES systems.user(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS biz.procurement_review_procurement_expert (
+    procurement_review_id uuid NOT NULL REFERENCES biz.procurement_review(procurement_review_id) ON DELETE CASCADE,
+    procurement_expert_id uuid NOT NULL REFERENCES biz.procurement_expert(procurement_expert_id) ON DELETE CASCADE,
+    PRIMARY KEY (procurement_review_id, procurement_expert_id)
+);
+
+-- 1. 多大模型配置表（兼容GPT、DeepSeek、通义千问、火山方舟）
+CREATE TABLE IF NOT EXISTS ai.llm_model (
+    model_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    model_name text NOT NULL,
+    provider text NOT NULL,
+    model_code text UNIQUE NOT NULL,
+    api_key text NOT NULL,
+    api_endpoint text,
+    enabled bool DEFAULT true,
+    max_tokens int DEFAULT 4096,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz
+);
+
+-- 2. Token 消耗统计表（计费、监控、用量统计）
+CREATE TABLE IF NOT EXISTS ai.llm_token_usage (
+    usage_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    model_id uuid NOT NULL REFERENCES ai.llm_model(model_id),
+    user_id uuid NULL,
+    prompt_tokens int DEFAULT 0,
+    completion_tokens int DEFAULT 0,
+    total_tokens int DEFAULT 0,
+    cost_amount decimal(18,6) DEFAULT 0.0,
+    created_at timestamptz DEFAULT now()
+);
+
+-- 3. AI 采购舞弊分析结果表
+CREATE TABLE IF NOT EXISTS ai.procurement_fraud_risk (
+    risk_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    procurement_plan_id uuid NULL REFERENCES biz.procurement_plan(procurement_plan_id),
+    procurement_implementation_id uuid NULL REFERENCES biz.procurement_implementation(procurement_implementation_id),
+    risk_level text NOT NULL,
+    risk_reason text,
+    risk_score int DEFAULT 0,
+    created_at timestamptz DEFAULT now()
+);
+
+-- 4. AI 采购分析日志表
+CREATE TABLE IF NOT EXISTS ai.llm_procurement_analysis (
+    log_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    model_id uuid REFERENCES ai.llm_model(model_id),
+    procurement_plan_id uuid NULL REFERENCES biz.procurement_plan(procurement_plan_id),
+    procurement_implementation_id uuid NULL REFERENCES biz.procurement_implementation(procurement_implementation_id),
+    analysis_result text,
+    token_usage_id uuid REFERENCES ai.llm_token_usage(usage_id),
+    created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS biz.vulnerability(
+    vulnerability_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    vulnerability_name text NOT NULL,
+    vulnerability_code text NOT NULL,
+    vulnerability_description text NOT NULL,
+    vulnerability_flag text NOT NULL,
+    vulnerability_type text NOT NULL DEFAULT '',
+    other_metadata jsonb NOT NULL DEFAULT '{}',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT NULL,
+);
+INSERT INTO biz.vulnerability(
+    vulnerability_name,
+    vulnerability_code,
+    vulnerability_description,
+    vulnerability_flag,
+    vulnerability_type,
+    other_metadata,
+) VALUES
+('漏洞1','V100001','漏洞1','ACTIVE','SQL注入','{"cveid":"CVE-2023-1234","cve_description":"SQL注入漏洞1","cve_score":9.0,"cvss_score":9.0"}'),
+('漏洞2','V100002','漏洞2','ACTIVE','SQL注入','{"cveid":"CVE-2023-1235","cve_description":"SQL注入漏洞2","cve_score":9.0,"cvss_score":9.0"}'),
+('漏洞3','V100003','漏洞3','ACTIVE','SQL注入','{"cveid":"CVE-2023-1236","cve_description":"SQL注入漏洞3","cve_score":9.0,"cvss_score":9.0"}');
+
+CREATE TABLE IF NOT EXISTS biz.vulnerability_software(
+    vulnerability_software_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    vulnerability_software_name text NOT NULL,
+    vulnerability_software_code text NOT NULL,
+    vulnerability_software_description text NOT NULL,
+    vulnerability_software_flag text NOT NULL,
+    other_metadata jsonb NOT NULL DEFAULT '{}',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT NULL,
+
+);
+
+INSERT INTO biz.vulnerability_software(
+    vulnerability_software_name,
+    vulnerability_software_code,
+    vulnerability_software_description,
+    vulnerability_software_flag,
+    other_metadata,
+)VALUES
+('漏洞1软件1','V100001软件1','漏洞1软件1','ACTIVE','{"version":[{"version":"v1.0","release_date":"2023-01-01"},{"version":"v1.1","release_date":"2023-02-01"}]}'),
+('漏洞2软件1','V100002软件1','漏洞2软件1','ACTIVE','{"version":[{"version":"v1.0","release_date":"2023-01-01"},{"version":"v1.1","release_date":"2023-02-01"}]}'),
+('漏洞3软件1','V100003软件1','漏洞3软件1','ACTIVE','{"version":[{"version":"v1.0","release_date":"2023-01-01"},{"version":"v1.1","release_date":"2023-02-01"}]}');
+
+
+
+
+
+
