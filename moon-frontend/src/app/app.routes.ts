@@ -18,6 +18,7 @@ import { ProcurementFraudRiskPage } from '@pages/procurement-fraud-risk-page/pro
 import { AssetsPage } from '@pages/assets-page/assets-page';
 import { AssetTypePage } from '@pages/asset-type-page/asset-type-page';
 import { AssetCategoryPage } from '@pages/asset-category-page/asset-category-page';
+import { FilePageComponent } from '@pages/file-page/file-page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,6 +30,7 @@ export const routes: Routes = [
       { path: 'organization-page', component: OrganizationPage },
       { path: 'role-page', component: RolePage },
       { path: 'permission-page', component: PermissionPage },
+      { path: 'file-page', component: FilePageComponent },
       { path: 'procurement-acceptance-page', component: ProcurementAcceptancePage },
       { path: 'procurement-expert-page', component: ProcurementExpertPage },
       { path: 'procurement-implementation-page', component: ProcurementImplementationPage },

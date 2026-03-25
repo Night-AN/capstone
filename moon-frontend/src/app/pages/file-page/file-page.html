@@ -1,0 +1,131 @@
+<nz-card nzTitle="文件管理" [nzBordered]="false">
+  <div class="file-management">
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+      <nz-input-group nzSearch [nzAddOnAfter]="searchButton">
+        <input type="text" nz-input placeholder="搜索文件名" [(ngModel)]="searchValue" />
+      </nz-input-group>
+      <ng-template #searchButton>
+        <button nz-button nzType="primary" nzSearch (click)="searchFiles()">
+          <span nz-icon nzType="search"></span>
+        </button>
+      </ng-template>
+      <button nz-button nzType="primary" nzShape="round" (click)="openCreateModal()">
+        <span nz-icon nzType="plus"></span>
+        新建文件
+      </button>
+    </div>
+
+    <!-- 文件列表 -->
+    <nz-table #fileTable [nzData]="fileList" [nzLoading]="loading" nzBordered>
+      <thead>
+        <tr>
+          <th>文件名</th>
+          <th>文件类型</th>
+          <th>文件大小</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let file of fileList">
+          <td>{{ file.fileName }}</td>
+          <td>{{ file.fileType }}</td>
+          <td>{{ formatFileSize(file.fileSize) }}</td>
+          <td>{{ file.createdAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td>{{ file.updatedAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td>
+            <button nz-button nzSize="small" nzType="primary" (click)="openUpdateModal(file)">
+              <span nz-icon nzType="edit"></span>
+              编辑
+            </button>
+            <button nz-button nzSize="small" nzDanger (click)="deleteFile(file.id, file.fileName)">
+              <span nz-icon nzType="delete"></span>
+              删除
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="6">
+            <nz-pagination
+              [nzTotal]="totalCount"
+              [nzPageSize]="pageSize"
+              [nzPageIndex]="currentPage"
+              (nzPageIndexChange)="pageIndexChange($event)"
+              (nzPageSizeChange)="pageSizeChange($event)"
+              nzShowSizeChanger
+              nzShowQuickJumper
+            ></nz-pagination>
+          </td>
+        </tr>
+      </tfoot>
+    </nz-table>
+  </div>
+</nz-card>
+
+<!-- 创建文件弹窗 -->
+<nz-modal
+  [(nzVisible)]="createModalVisible"
+  nzTitle="新建文件"
+  nzWidth="600px"
+  (nzOnCancel)="createModalVisible = false"
+  (nzOnOk)="handleCreateFile()"
+>
+  <div class="modal-content">
+    <form nz-form [formGroup]="createForm">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6">文件名</nz-form-label>
+        <nz-form-control [nzSpan]="14">
+          <input nz-input formControlName="fileName" placeholder="请输入文件名" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6">文件类型</nz-form-label>
+        <nz-form-control [nzSpan]="14">
+          <input nz-input formControlName="fileType" placeholder="请输入文件类型" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6">文件大小</nz-form-label>
+        <nz-form-control [nzSpan]="14">
+          <input nz-input type="number" formControlName="fileSize" placeholder="请输入文件大小(字节)" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </div>
+</nz-modal>
+
+<!-- 更新文件弹窗 -->
+<nz-modal
+  [(nzVisible)]="updateModalVisible"
+  nzTitle="编辑文件"
+  nzWidth="600px"
+  (nzOnCancel)="updateModalVisible = false"
+  (nzOnOk)="handleUpdateFile()"
+>
+  <div class="modal-content">
+    <form nz-form [formGroup]="updateForm">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6">文件名</nz-form-label>
+        <nz-form-control [nzSpan]="14">
+          <input nz-input formControlName="fileName" placeholder="请输入文件名" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6">文件类型</nz-form-label>
+        <nz-form-control [nzSpan]="14">
+          <input nz-input formControlName="fileType" placeholder="请输入文件类型" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6">文件大小</nz-form-label>
+        <nz-form-control [nzSpan]="14">
+          <input nz-input type="number" formControlName="fileSize" placeholder="请输入文件大小(字节)" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </div>
+</nz-modal>

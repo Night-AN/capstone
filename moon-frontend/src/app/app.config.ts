@@ -12,6 +12,7 @@ import { HttpLink } from 'apollo-angular/http';
 import { InMemoryCache } from '@apollo/client';
 import { AuthInterceptor } from '@services/auth.interceptor';
 import { SetContextLink } from '@apollo/client/link/context';
+import { provideNzConfig } from 'ng-zorro-antd/core/config';
 
 export const appConfig: ApplicationConfig = {
   providers: [
