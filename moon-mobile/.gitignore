@@ -67,21 +67,33 @@ testem.log
 
 # Android
 android/
-android/.gradle/
-android/app/build/
-android/build/
-android/local.properties
-android/.idea/
-android/captures/
-android/gradlew
-android/gradlew.bat
-android/gradle/wrapper/
-android/app/src/main/assets/
-android/app/src/main/res/drawable-v24/
-android/app/src/main/res/values-v24/
-android/app/src/main/res/values-v26/
-android/app/src/main/res/values-v28/
 
-# System files
+# iOS
+ios/
+ios/Pods/
+ios/build/
+ios/*.xcworkspace
+*.xcworkspace
+*.xcodeproj
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+
