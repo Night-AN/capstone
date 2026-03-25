@@ -65,6 +65,16 @@ yarn-error.log
 testem.log
 /typings
 
+# Android
+android/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/.idea/
+android/.gradle/
+android/app/release/
+
 # System files
 .DS_Store
 Thumbs.db
