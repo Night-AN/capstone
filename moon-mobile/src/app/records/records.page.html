@@ -1,0 +1,123 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      采购验收管理
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">采购验收管理</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="container">
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button
+        class="tab-button"
+        [class.active]="activeTab === 'procurement'"
+        (click)="setActiveTab('procurement')"
+      >
+        采购记录
+      </button>
+      <button
+        class="tab-button"
+        [class.active]="activeTab === 'acceptance'"
+        (click)="setActiveTab('acceptance')"
+      >
+        验收记录
+      </button>
+    </div>
+
+    <!-- Procurement Records -->
+    <div *ngIf="activeTab === 'procurement'" class="tab-content">
+      <h2>采购记录</h2>
+      <ion-list>
+        <ion-item *ngFor="let record of procurementRecords" class="record-item" (click)="toggleExpand(record)">
+          <div class="record-column">
+            <div class="record-header">
+              <div class="record-main">
+                <div class="record-title">{{ record.projectName }}</div>
+                <div class="record-meta">
+                  <ion-badge [color]="getStatusColor(record.status, record.acceptanceResult)">{{ record.status }}</ion-badge>
+                  <span class="record-date">{{ record.date }}</span>
+                </div>
+              </div>
+              <div class="record-arrow" [class.expanded]="record.expanded">▼</div>
+            </div>
+            
+            <div *ngIf="record.expanded" class="record-details">
+              <div class="detail-item">
+                <span class="detail-label">供应商:</span>
+                <span class="detail-value">{{ record.supplier }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">金额:</span>
+                <span class="detail-value">¥{{ record.amount?.toLocaleString() }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">备注:</span>
+                <span class="detail-value">{{ record.remarks }}</span>
+              </div>
+              <div *ngIf="record.status === '进行中'" class="action-buttons">
+                <ion-button expand="full" color="success" size="small" (click)="approveAcceptance(record); $event.stopPropagation()">
+                  验收通过
+                </ion-button>
+                <ion-button expand="full" color="danger" size="small" (click)="rejectAcceptance(record); $event.stopPropagation()">
+                  验收不通过
+                </ion-button>
+              </div>
+            </div>
+          </div>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <!-- Acceptance Records -->
+    <div *ngIf="activeTab === 'acceptance'" class="tab-content">
+      <h2>验收记录</h2>
+      <ion-list>
+        <ion-item *ngFor="let record of acceptanceRecords" class="record-item" (click)="toggleExpand(record)">
+          <div class="record-column">
+            <div class="record-header">
+              <div class="record-main">
+                <div class="record-title">{{ record.projectName }}</div>
+                <div class="record-meta">
+                  <ion-badge [color]="getStatusColor(record.status, record.acceptanceResult)">{{ record.status }}</ion-badge>
+                  <span class="record-date">{{ record.date }}</span>
+                </div>
+              </div>
+              <div class="record-arrow" [class.expanded]="record.expanded">▼</div>
+            </div>
+            
+            <div *ngIf="record.expanded" class="record-details">
+              <div class="detail-item">
+                <span class="detail-label">专家:</span>
+                <span class="detail-value">{{ record.expertName }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">验收结果:</span>
+                <span class="detail-value">{{ record.acceptanceResult }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">备注:</span>
+                <span class="detail-value">{{ record.remarks }}</span>
+              </div>
+              <div *ngIf="record.status === '进行中'" class="action-buttons">
+                <ion-button expand="full" color="success" size="small" (click)="approveAcceptance(record); $event.stopPropagation()">
+                  验收通过
+                </ion-button>
+                <ion-button expand="full" color="danger" size="small" (click)="rejectAcceptance(record); $event.stopPropagation()">
+                  验收不通过
+                </ion-button>
+              </div>
+            </div>
+          </div>
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+</ion-content>
