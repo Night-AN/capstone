@@ -25,8 +25,12 @@ func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
+	File() FileResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
+	CreateFileInput() CreateFileInputResolver
+	FileWhereInput() FileWhereInputResolver
+	UpdateFileInput() UpdateFileInputResolver
 }
 
 type DirectiveRoot struct {
@@ -114,6 +118,44 @@ type ComplexityRoot struct {
 		Node   func(childComplexity int) int
 	}
 
+	File struct {
+		CreatedAt func(childComplexity int) int
+		FileName  func(childComplexity int) int
+		FileRefs  func(childComplexity int) int
+		FileSize  func(childComplexity int) int
+		FileType  func(childComplexity int) int
+		ID        func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+	}
+
+	FileConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	FileEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
+	FileRef struct {
+		File   func(childComplexity int) int
+		FileID func(childComplexity int) int
+		ID     func(childComplexity int) int
+	}
+
+	FileRefConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	FileRefEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	LlmModel struct {
 		APIEndpoint func(childComplexity int) int
 		APIKey      func(childComplexity int) int
@@ -185,6 +227,8 @@ type ComplexityRoot struct {
 		CreateAsset                     func(childComplexity int, input ent.CreateAssetsInput) int
 		CreateAssetCategory             func(childComplexity int, input ent.CreateAssetCategoryInput) int
 		CreateAssetType                 func(childComplexity int, input ent.CreateAssetTypeInput) int
+		CreateFile                      func(childComplexity int, input ent.CreateFileInput) int
+		CreateFileRef                   func(childComplexity int, input ent.CreateFileRefInput) int
 		CreateLlmModel                  func(childComplexity int, input ent.CreateLlmModelInput) int
 		CreateLlmProcurementAnalysis    func(childComplexity int, input ent.CreateLlmProcurementAnalysisInput) int
 		CreateLlmTokenUsage             func(childComplexity int, input ent.CreateLlmTokenUsageInput) int
@@ -202,6 +246,8 @@ type ComplexityRoot struct {
 		DeleteAsset                     func(childComplexity int, id uuid.UUID) int
 		DeleteAssetCategory             func(childComplexity int, id uuid.UUID) int
 		DeleteAssetType                 func(childComplexity int, id uuid.UUID) int
+		DeleteFile                      func(childComplexity int, id uuid.UUID) int
+		DeleteFileRef                   func(childComplexity int, id uuid.UUID) int
 		DeleteLlmModel                  func(childComplexity int, id uuid.UUID) int
 		DeleteLlmProcurementAnalysis    func(childComplexity int, id uuid.UUID) int
 		DeleteLlmTokenUsage             func(childComplexity int, id uuid.UUID) int
@@ -221,6 +267,8 @@ type ComplexityRoot struct {
 		UpdateAsset                     func(childComplexity int, id uuid.UUID, input ent.UpdateAssetsInput) int
 		UpdateAssetCategory             func(childComplexity int, id uuid.UUID, input ent.UpdateAssetCategoryInput) int
 		UpdateAssetType                 func(childComplexity int, id uuid.UUID, input ent.UpdateAssetTypeInput) int
+		UpdateFile                      func(childComplexity int, id uuid.UUID, input ent.UpdateFileInput) int
+		UpdateFileRef                   func(childComplexity int, id uuid.UUID, input ent.UpdateFileRefInput) int
 		UpdateLlmModel                  func(childComplexity int, id uuid.UUID, input ent.UpdateLlmModelInput) int
 		UpdateLlmProcurementAnalysis    func(childComplexity int, id uuid.UUID, input ent.UpdateLlmProcurementAnalysisInput) int
 		UpdateLlmTokenUsage             func(childComplexity int, id uuid.UUID, input ent.UpdateLlmTokenUsageInput) int
@@ -477,6 +525,7 @@ type ComplexityRoot struct {
 		AssetCategories            func(childComplexity int, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.AssetCategoryWhereInput) int
 		AssetTypes                 func(childComplexity int, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.AssetTypeWhereInput) int
 		Assets                     func(childComplexity int, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.AssetsWhereInput) int
+		Files                      func(childComplexity int, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.FileWhereInput) int
 		LlmModels                  func(childComplexity int, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.LlmModelWhereInput) int
 		LlmProcurementAnalyses     func(childComplexity int, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.LlmProcurementAnalysisWhereInput) int
 		LlmTokenUsages             func(childComplexity int, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.LlmTokenUsageWhereInput) int
@@ -929,6 +978,146 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.AssetsEdge.Node(childComplexity), true
 
+	case "File.createdat":
+		if e.ComplexityRoot.File.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.File.CreatedAt(childComplexity), true
+
+	case "File.filename":
+		if e.ComplexityRoot.File.FileName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.File.FileName(childComplexity), true
+
+	case "File.fileRefs":
+		if e.ComplexityRoot.File.FileRefs == nil {
+			break
+		}
+
+		return e.ComplexityRoot.File.FileRefs(childComplexity), true
+
+	case "File.filesize":
+		if e.ComplexityRoot.File.FileSize == nil {
+			break
+		}
+
+		return e.ComplexityRoot.File.FileSize(childComplexity), true
+
+	case "File.filetype":
+		if e.ComplexityRoot.File.FileType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.File.FileType(childComplexity), true
+
+	case "File.id":
+		if e.ComplexityRoot.File.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.File.ID(childComplexity), true
+
+	case "File.updatedat":
+		if e.ComplexityRoot.File.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.File.UpdatedAt(childComplexity), true
+
+	case "FileConnection.edges":
+		if e.ComplexityRoot.FileConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileConnection.Edges(childComplexity), true
+
+	case "FileConnection.pageInfo":
+		if e.ComplexityRoot.FileConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileConnection.PageInfo(childComplexity), true
+
+	case "FileConnection.totalCount":
+		if e.ComplexityRoot.FileConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileConnection.TotalCount(childComplexity), true
+
+	case "FileEdge.cursor":
+		if e.ComplexityRoot.FileEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileEdge.Cursor(childComplexity), true
+
+	case "FileEdge.node":
+		if e.ComplexityRoot.FileEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileEdge.Node(childComplexity), true
+
+	case "FileRef.file":
+		if e.ComplexityRoot.FileRef.File == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileRef.File(childComplexity), true
+
+	case "FileRef.fileID":
+		if e.ComplexityRoot.FileRef.FileID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileRef.FileID(childComplexity), true
+
+	case "FileRef.id":
+		if e.ComplexityRoot.FileRef.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileRef.ID(childComplexity), true
+
+	case "FileRefConnection.edges":
+		if e.ComplexityRoot.FileRefConnection.Edges == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileRefConnection.Edges(childComplexity), true
+
+	case "FileRefConnection.pageInfo":
+		if e.ComplexityRoot.FileRefConnection.PageInfo == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileRefConnection.PageInfo(childComplexity), true
+
+	case "FileRefConnection.totalCount":
+		if e.ComplexityRoot.FileRefConnection.TotalCount == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileRefConnection.TotalCount(childComplexity), true
+
+	case "FileRefEdge.cursor":
+		if e.ComplexityRoot.FileRefEdge.Cursor == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileRefEdge.Cursor(childComplexity), true
+
+	case "FileRefEdge.node":
+		if e.ComplexityRoot.FileRefEdge.Node == nil {
+			break
+		}
+
+		return e.ComplexityRoot.FileRefEdge.Node(childComplexity), true
+
 	case "LlmModel.apiEndpoint":
 		if e.ComplexityRoot.LlmModel.APIEndpoint == nil {
 			break
@@ -1245,6 +1434,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Mutation.CreateAssetType(childComplexity, args["input"].(ent.CreateAssetTypeInput)), true
 
+	case "Mutation.createFile":
+		if e.ComplexityRoot.Mutation.CreateFile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createFile_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateFile(childComplexity, args["input"].(ent.CreateFileInput)), true
+
+	case "Mutation.createFileRef":
+		if e.ComplexityRoot.Mutation.CreateFileRef == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createFileRef_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateFileRef(childComplexity, args["input"].(ent.CreateFileRefInput)), true
+
 	case "Mutation.createLlmModel":
 		if e.ComplexityRoot.Mutation.CreateLlmModel == nil {
 			break
@@ -1448,6 +1661,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteAssetType(childComplexity, args["id"].(uuid.UUID)), true
+
+	case "Mutation.deleteFile":
+		if e.ComplexityRoot.Mutation.DeleteFile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteFile_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteFile(childComplexity, args["id"].(uuid.UUID)), true
+
+	case "Mutation.deleteFileRef":
+		if e.ComplexityRoot.Mutation.DeleteFileRef == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteFileRef_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteFileRef(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Mutation.deleteLlmModel":
 		if e.ComplexityRoot.Mutation.DeleteLlmModel == nil {
@@ -1676,6 +1913,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateAssetType(childComplexity, args["id"].(uuid.UUID), args["input"].(ent.UpdateAssetTypeInput)), true
+
+	case "Mutation.updateFile":
+		if e.ComplexityRoot.Mutation.UpdateFile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateFile_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateFile(childComplexity, args["id"].(uuid.UUID), args["input"].(ent.UpdateFileInput)), true
+
+	case "Mutation.updateFileRef":
+		if e.ComplexityRoot.Mutation.UpdateFileRef == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateFileRef_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateFileRef(childComplexity, args["id"].(uuid.UUID), args["input"].(ent.UpdateFileRefInput)), true
 
 	case "Mutation.updateLlmModel":
 		if e.ComplexityRoot.Mutation.UpdateLlmModel == nil {
@@ -2950,6 +3211,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Query.Assets(childComplexity, args["after"].(*entgql.Cursor[uuid.UUID]), args["before"].(*entgql.Cursor[uuid.UUID]), args["first"].(*int), args["last"].(*int), args["where"].(*ent.AssetsWhereInput)), true
 
+	case "Query.files":
+		if e.ComplexityRoot.Query.Files == nil {
+			break
+		}
+
+		args, err := ec.field_Query_files_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Files(childComplexity, args["after"].(*entgql.Cursor[uuid.UUID]), args["before"].(*entgql.Cursor[uuid.UUID]), args["first"].(*int), args["last"].(*int), args["where"].(*ent.FileWhereInput)), true
+
 	case "Query.llmModels":
 		if e.ComplexityRoot.Query.LlmModels == nil {
 			break
@@ -3374,6 +3647,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateAssetCategoryInput,
 		ec.unmarshalInputCreateAssetTypeInput,
 		ec.unmarshalInputCreateAssetsInput,
+		ec.unmarshalInputCreateFileInput,
+		ec.unmarshalInputCreateFileRefInput,
 		ec.unmarshalInputCreateLlmModelInput,
 		ec.unmarshalInputCreateLlmProcurementAnalysisInput,
 		ec.unmarshalInputCreateLlmTokenUsageInput,
@@ -3388,6 +3663,10 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateProcurementReviewInput,
 		ec.unmarshalInputCreateRoleInput,
 		ec.unmarshalInputCreateUserInput,
+		ec.unmarshalInputFileOrder,
+		ec.unmarshalInputFileRefOrder,
+		ec.unmarshalInputFileRefWhereInput,
+		ec.unmarshalInputFileWhereInput,
 		ec.unmarshalInputLlmModelOrder,
 		ec.unmarshalInputLlmModelWhereInput,
 		ec.unmarshalInputLlmProcurementAnalysisOrder,
@@ -3417,6 +3696,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputUpdateAssetCategoryInput,
 		ec.unmarshalInputUpdateAssetTypeInput,
 		ec.unmarshalInputUpdateAssetsInput,
+		ec.unmarshalInputUpdateFileInput,
+		ec.unmarshalInputUpdateFileRefInput,
 		ec.unmarshalInputUpdateLlmModelInput,
 		ec.unmarshalInputUpdateLlmProcurementAnalysisInput,
 		ec.unmarshalInputUpdateLlmTokenUsageInput,

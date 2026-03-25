@@ -1,6 +1,9 @@
 package graph
 
-import "moon/ent"
+import (
+	"moon/ent"
+	"moon/pkg/s3"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,5 +11,6 @@ import "moon/ent"
 // here.
 
 type Resolver struct {
-	Client *ent.Client
+	Client   *ent.Client
+	S3Client *s3.Client
 }

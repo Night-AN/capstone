@@ -13,6 +13,11 @@ import (
 	"github.com/google/uuid"
 )
 
+// FileSize is the resolver for the filesize field.
+func (r *fileResolver) FileSize(ctx context.Context, obj *ent.File) (int, error) {
+	panic(fmt.Errorf("not implemented: FileSize - filesize"))
+}
+
 // Node is the resolver for the node field.
 func (r *queryResolver) Node(ctx context.Context, id uuid.UUID) (ent.Noder, error) {
 	panic(fmt.Errorf("not implemented: Node - node"))
@@ -23,7 +28,73 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []uuid.UUID) ([]ent.Noder
 	panic(fmt.Errorf("not implemented: Nodes - nodes"))
 }
 
+// Filesize is the resolver for the filesize field.
+func (r *createFileInputResolver) Filesize(ctx context.Context, obj *ent.CreateFileInput, data int) error {
+	panic(fmt.Errorf("not implemented: Filesize - filesize"))
+}
+
+// Filesize is the resolver for the filesize field.
+func (r *fileWhereInputResolver) Filesize(ctx context.Context, obj *ent.FileWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: Filesize - filesize"))
+}
+
+// FilesizeNeq is the resolver for the filesizeNEQ field.
+func (r *fileWhereInputResolver) FilesizeNeq(ctx context.Context, obj *ent.FileWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: FilesizeNeq - filesizeNEQ"))
+}
+
+// FilesizeIn is the resolver for the filesizeIn field.
+func (r *fileWhereInputResolver) FilesizeIn(ctx context.Context, obj *ent.FileWhereInput, data []int) error {
+	panic(fmt.Errorf("not implemented: FilesizeIn - filesizeIn"))
+}
+
+// FilesizeNotIn is the resolver for the filesizeNotIn field.
+func (r *fileWhereInputResolver) FilesizeNotIn(ctx context.Context, obj *ent.FileWhereInput, data []int) error {
+	panic(fmt.Errorf("not implemented: FilesizeNotIn - filesizeNotIn"))
+}
+
+// FilesizeGt is the resolver for the filesizeGT field.
+func (r *fileWhereInputResolver) FilesizeGt(ctx context.Context, obj *ent.FileWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: FilesizeGt - filesizeGT"))
+}
+
+// FilesizeGte is the resolver for the filesizeGTE field.
+func (r *fileWhereInputResolver) FilesizeGte(ctx context.Context, obj *ent.FileWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: FilesizeGte - filesizeGTE"))
+}
+
+// FilesizeLt is the resolver for the filesizeLT field.
+func (r *fileWhereInputResolver) FilesizeLt(ctx context.Context, obj *ent.FileWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: FilesizeLt - filesizeLT"))
+}
+
+// FilesizeLte is the resolver for the filesizeLTE field.
+func (r *fileWhereInputResolver) FilesizeLte(ctx context.Context, obj *ent.FileWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: FilesizeLte - filesizeLTE"))
+}
+
+// Filesize is the resolver for the filesize field.
+func (r *updateFileInputResolver) Filesize(ctx context.Context, obj *ent.UpdateFileInput, data *int) error {
+	panic(fmt.Errorf("not implemented: Filesize - filesize"))
+}
+
+// File returns FileResolver implementation.
+func (r *Resolver) File() FileResolver { return &fileResolver{r} }
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// CreateFileInput returns CreateFileInputResolver implementation.
+func (r *Resolver) CreateFileInput() CreateFileInputResolver { return &createFileInputResolver{r} }
+
+// FileWhereInput returns FileWhereInputResolver implementation.
+func (r *Resolver) FileWhereInput() FileWhereInputResolver { return &fileWhereInputResolver{r} }
+
+// UpdateFileInput returns UpdateFileInputResolver implementation.
+func (r *Resolver) UpdateFileInput() UpdateFileInputResolver { return &updateFileInputResolver{r} }
+
+type fileResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type createFileInputResolver struct{ *Resolver }
+type fileWhereInputResolver struct{ *Resolver }
+type updateFileInputResolver struct{ *Resolver }

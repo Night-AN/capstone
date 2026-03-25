@@ -293,6 +293,69 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id uuid.UUID) (*ent.U
 	return u, nil
 }
 
+// CreateFile is the resolver for the createFile field.
+func (r *mutationResolver) CreateFile(ctx context.Context, input ent.CreateFileInput) (*ent.File, error) {
+	// 创建文件
+	file, err := r.Client.File.Create().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("创建文件失败: %w", err)
+	}
+	return file, nil
+}
+
+// UpdateFile is the resolver for the updateFile field.
+func (r *mutationResolver) UpdateFile(ctx context.Context, id uuid.UUID, input ent.UpdateFileInput) (*ent.File, error) {
+	// 查询文件是否存在
+	file, err := r.Client.File.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("文件不存在")
+		}
+		return nil, fmt.Errorf("查询文件失败: %w", err)
+	}
+
+	// 更新文件
+	file, err = file.Update().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("更新文件失败: %w", err)
+	}
+	return file, nil
+}
+
+// DeleteFile is the resolver for the deleteFile field.
+func (r *mutationResolver) DeleteFile(ctx context.Context, id uuid.UUID) (*ent.File, error) {
+	// 查询文件是否存在
+	file, err := r.Client.File.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("文件不存在")
+		}
+		return nil, fmt.Errorf("查询文件失败: %w", err)
+	}
+
+	// 删除文件
+	err = r.Client.File.DeleteOneID(id).Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("删除文件失败: %w", err)
+	}
+	return file, nil
+}
+
+// CreateFileRef is the resolver for the createFileRef field.
+func (r *mutationResolver) CreateFileRef(ctx context.Context, input ent.CreateFileRefInput) (*ent.FileRef, error) {
+	panic(fmt.Errorf("not implemented: CreateFileRef - createFileRef"))
+}
+
+// UpdateFileRef is the resolver for the updateFileRef field.
+func (r *mutationResolver) UpdateFileRef(ctx context.Context, id uuid.UUID, input ent.UpdateFileRefInput) (*ent.FileRef, error) {
+	panic(fmt.Errorf("not implemented: UpdateFileRef - updateFileRef"))
+}
+
+// DeleteFileRef is the resolver for the deleteFileRef field.
+func (r *mutationResolver) DeleteFileRef(ctx context.Context, id uuid.UUID) (*ent.FileRef, error) {
+	panic(fmt.Errorf("not implemented: DeleteFileRef - deleteFileRef"))
+}
+
 // CreateProcurementPlanType is the resolver for the createProcurementPlanType field.
 func (r *mutationResolver) CreateProcurementPlanType(ctx context.Context, input ent.CreateProcurementPlanTypeInput) (*ent.ProcurementPlanType, error) {
 	// 创建采购计划类型
@@ -876,47 +939,187 @@ func (r *mutationResolver) DeleteAssetType(ctx context.Context, id uuid.UUID) (*
 
 // CreateLlmModel is the resolver for the createLlmModel field.
 func (r *mutationResolver) CreateLlmModel(ctx context.Context, input ent.CreateLlmModelInput) (*ent.LlmModel, error) {
-	panic(fmt.Errorf("not implemented: CreateLlmModel - createLlmModel"))
+	llmModel, err := r.Client.LlmModel.Create().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("创建LLM模型失败: %w", err)
+	}
+	return llmModel, nil
 }
 
 // UpdateLlmModel is the resolver for the updateLlmModel field.
 func (r *mutationResolver) UpdateLlmModel(ctx context.Context, id uuid.UUID, input ent.UpdateLlmModelInput) (*ent.LlmModel, error) {
-	panic(fmt.Errorf("not implemented: UpdateLlmModel - updateLlmModel"))
+	// 查询LLM模型是否存在
+	llmModel, err := r.Client.LlmModel.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("LLM模型不存在")
+		}
+		return nil, fmt.Errorf("查询LLM模型失败: %w", err)
+	}
+
+	// 更新LLM模型
+	llmModel, err = llmModel.Update().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("更新LLM模型失败: %w", err)
+	}
+	return llmModel, nil
 }
 
 // DeleteLlmModel is the resolver for the deleteLlmModel field.
 func (r *mutationResolver) DeleteLlmModel(ctx context.Context, id uuid.UUID) (*ent.LlmModel, error) {
-	panic(fmt.Errorf("not implemented: DeleteLlmModel - deleteLlmModel"))
+	// 查询LLM模型是否存在
+	llmModel, err := r.Client.LlmModel.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("LLM模型不存在")
+		}
+		return nil, fmt.Errorf("查询LLM模型失败: %w", err)
+	}
+
+	// 删除LLM模型
+	err = r.Client.LlmModel.DeleteOneID(id).Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("删除LLM模型失败: %w", err)
+	}
+	return llmModel, nil
 }
 
 // CreateLlmTokenUsage is the resolver for the createLlmTokenUsage field.
 func (r *mutationResolver) CreateLlmTokenUsage(ctx context.Context, input ent.CreateLlmTokenUsageInput) (*ent.LlmTokenUsage, error) {
-	panic(fmt.Errorf("not implemented: CreateLlmTokenUsage - createLlmTokenUsage"))
+	// 校验用户ID是否存在
+	if input.UserID != nil {
+		_, err := r.Client.User.Get(ctx, *input.UserID)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				return nil, fmt.Errorf("用户不存在")
+			}
+			return nil, fmt.Errorf("查询用户失败: %w", err)
+		}
+	}
+
+	llmTokenUsage, err := r.Client.LlmTokenUsage.Create().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("创建LLM Token使用记录失败: %w", err)
+	}
+	return llmTokenUsage, nil
 }
 
 // UpdateLlmTokenUsage is the resolver for the updateLlmTokenUsage field.
 func (r *mutationResolver) UpdateLlmTokenUsage(ctx context.Context, id uuid.UUID, input ent.UpdateLlmTokenUsageInput) (*ent.LlmTokenUsage, error) {
-	panic(fmt.Errorf("not implemented: UpdateLlmTokenUsage - updateLlmTokenUsage"))
+	// 查询LLM Token使用记录是否存在
+	llmTokenUsage, err := r.Client.LlmTokenUsage.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("LLM Token使用记录不存在")
+		}
+		return nil, fmt.Errorf("查询LLM Token使用记录失败: %w", err)
+	}
+
+	// 校验用户ID是否存在
+	if input.UserID != nil {
+		_, err = r.Client.User.Get(ctx, *input.UserID)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				return nil, fmt.Errorf("用户不存在")
+			}
+			return nil, fmt.Errorf("查询用户失败: %w", err)
+		}
+	}
+
+	// 更新LLM Token使用记录
+	llmTokenUsage, err = llmTokenUsage.Update().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("更新LLM Token使用记录失败: %w", err)
+	}
+	return llmTokenUsage, nil
 }
 
 // DeleteLlmTokenUsage is the resolver for the deleteLlmTokenUsage field.
 func (r *mutationResolver) DeleteLlmTokenUsage(ctx context.Context, id uuid.UUID) (*ent.LlmTokenUsage, error) {
-	panic(fmt.Errorf("not implemented: DeleteLlmTokenUsage - deleteLlmTokenUsage"))
+	// 查询LLM Token使用记录是否存在
+	llmTokenUsage, err := r.Client.LlmTokenUsage.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("LLM Token使用记录不存在")
+		}
+		return nil, fmt.Errorf("查询LLM Token使用记录失败: %w", err)
+	}
+
+	// 删除LLM Token使用记录
+	err = r.Client.LlmTokenUsage.DeleteOneID(id).Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("删除LLM Token使用记录失败: %w", err)
+	}
+	return llmTokenUsage, nil
 }
 
 // CreateProcurementFraudRisk is the resolver for the createProcurementFraudRisk field.
 func (r *mutationResolver) CreateProcurementFraudRisk(ctx context.Context, input ent.CreateProcurementFraudRiskInput) (*ent.ProcurementFraudRisk, error) {
-	panic(fmt.Errorf("not implemented: CreateProcurementFraudRisk - createProcurementFraudRisk"))
+	// 校验采购计划ID是否存在
+	if input.ProcurementPlanID != nil {
+		_, err := r.Client.ProcurementPlan.Get(ctx, *input.ProcurementPlanID)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				return nil, fmt.Errorf("采购计划不存在")
+			}
+			return nil, fmt.Errorf("查询采购计划失败: %w", err)
+		}
+	}
+
+	procurementFraudRisk, err := r.Client.ProcurementFraudRisk.Create().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("创建采购欺诈风险记录失败: %w", err)
+	}
+	return procurementFraudRisk, nil
 }
 
 // UpdateProcurementFraudRisk is the resolver for the updateProcurementFraudRisk field.
 func (r *mutationResolver) UpdateProcurementFraudRisk(ctx context.Context, id uuid.UUID, input ent.UpdateProcurementFraudRiskInput) (*ent.ProcurementFraudRisk, error) {
-	panic(fmt.Errorf("not implemented: UpdateProcurementFraudRisk - updateProcurementFraudRisk"))
+	// 查询采购欺诈风险记录是否存在
+	procurementFraudRisk, err := r.Client.ProcurementFraudRisk.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("采购欺诈风险记录不存在")
+		}
+		return nil, fmt.Errorf("查询采购欺诈风险记录失败: %w", err)
+	}
+
+	// 校验采购计划ID是否存在
+	if input.ProcurementPlanID != nil {
+		_, err = r.Client.ProcurementPlan.Get(ctx, *input.ProcurementPlanID)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				return nil, fmt.Errorf("采购计划不存在")
+			}
+			return nil, fmt.Errorf("查询采购计划失败: %w", err)
+		}
+	}
+
+	// 更新采购欺诈风险记录
+	procurementFraudRisk, err = procurementFraudRisk.Update().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("更新采购欺诈风险记录失败: %w", err)
+	}
+	return procurementFraudRisk, nil
 }
 
 // DeleteProcurementFraudRisk is the resolver for the deleteProcurementFraudRisk field.
 func (r *mutationResolver) DeleteProcurementFraudRisk(ctx context.Context, id uuid.UUID) (*ent.ProcurementFraudRisk, error) {
-	panic(fmt.Errorf("not implemented: DeleteProcurementFraudRisk - deleteProcurementFraudRisk"))
+	// 查询采购欺诈风险记录是否存在
+	procurementFraudRisk, err := r.Client.ProcurementFraudRisk.Get(ctx, id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, fmt.Errorf("采购欺诈风险记录不存在")
+		}
+		return nil, fmt.Errorf("查询采购欺诈风险记录失败: %w", err)
+	}
+
+	// 删除采购欺诈风险记录
+	err = r.Client.ProcurementFraudRisk.DeleteOneID(id).Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("删除采购欺诈风险记录失败: %w", err)
+	}
+	return procurementFraudRisk, nil
 }
 
 // CreateLlmProcurementAnalysis is the resolver for the createLlmProcurementAnalysis field.
@@ -1013,6 +1216,23 @@ func (r *queryResolver) Permissions(ctx context.Context, after *entgql.Cursor[uu
 	}
 
 	return []*ent.PermissionConnection{conn}, nil
+}
+
+// Files is the resolver for the files field.
+func (r *queryResolver) Files(ctx context.Context, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.FileWhereInput) ([]*ent.FileConnection, error) {
+	// 查询文件列表
+	query := r.Client.File.Query()
+	if where != nil {
+		where.Filter(query)
+	}
+
+	// 应用分页
+	conn, err := query.Paginate(ctx, after, first, before, last)
+	if err != nil {
+		return nil, fmt.Errorf("查询文件列表失败: %w", err)
+	}
+
+	return []*ent.FileConnection{conn}, nil
 }
 
 // ProcurementPlanTypes is the resolver for the procurementPlanTypes field.
@@ -1170,22 +1390,70 @@ func (r *queryResolver) AssetTypes(ctx context.Context, after *entgql.Cursor[uui
 
 // LlmModels is the resolver for the llmModels field.
 func (r *queryResolver) LlmModels(ctx context.Context, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.LlmModelWhereInput) ([]*ent.LlmModelConnection, error) {
-	panic(fmt.Errorf("not implemented: LlmModels - llmModels"))
+	// 查询LLM模型列表
+	query := r.Client.LlmModel.Query()
+	if where != nil {
+		where.Filter(query)
+	}
+
+	// 应用分页
+	conn, err := query.Paginate(ctx, after, first, before, last)
+	if err != nil {
+		return nil, fmt.Errorf("查询LLM模型列表失败: %w", err)
+	}
+
+	return []*ent.LlmModelConnection{conn}, nil
 }
 
 // LlmTokenUsages is the resolver for the llmTokenUsages field.
 func (r *queryResolver) LlmTokenUsages(ctx context.Context, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.LlmTokenUsageWhereInput) ([]*ent.LlmTokenUsageConnection, error) {
-	panic(fmt.Errorf("not implemented: LlmTokenUsages - llmTokenUsages"))
+	// 查询LLM Token使用记录列表
+	query := r.Client.LlmTokenUsage.Query()
+	if where != nil {
+		where.Filter(query)
+	}
+
+	// 应用分页
+	conn, err := query.Paginate(ctx, after, first, before, last)
+	if err != nil {
+		return nil, fmt.Errorf("查询LLM Token使用记录列表失败: %w", err)
+	}
+
+	return []*ent.LlmTokenUsageConnection{conn}, nil
 }
 
 // ProcurementFraudRisks is the resolver for the procurementFraudRisks field.
 func (r *queryResolver) ProcurementFraudRisks(ctx context.Context, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.ProcurementFraudRiskWhereInput) ([]*ent.ProcurementFraudRiskConnection, error) {
-	panic(fmt.Errorf("not implemented: ProcurementFraudRisks - procurementFraudRisks"))
+	// 查询采购欺诈风险记录列表
+	query := r.Client.ProcurementFraudRisk.Query()
+	if where != nil {
+		where.Filter(query)
+	}
+
+	// 应用分页
+	conn, err := query.Paginate(ctx, after, first, before, last)
+	if err != nil {
+		return nil, fmt.Errorf("查询采购欺诈风险记录列表失败: %w", err)
+	}
+
+	return []*ent.ProcurementFraudRiskConnection{conn}, nil
 }
 
 // LlmProcurementAnalyses is the resolver for the llmProcurementAnalyses field.
 func (r *queryResolver) LlmProcurementAnalyses(ctx context.Context, after *entgql.Cursor[uuid.UUID], before *entgql.Cursor[uuid.UUID], first *int, last *int, where *ent.LlmProcurementAnalysisWhereInput) ([]*ent.LlmProcurementAnalysisConnection, error) {
-	panic(fmt.Errorf("not implemented: LlmProcurementAnalyses - llmProcurementAnalyses"))
+	// 查询LLM采购分析记录列表
+	query := r.Client.LlmProcurementAnalysis.Query()
+	if where != nil {
+		where.Filter(query)
+	}
+
+	// 应用分页
+	conn, err := query.Paginate(ctx, after, first, before, last)
+	if err != nil {
+		return nil, fmt.Errorf("查询LLM采购分析记录列表失败: %w", err)
+	}
+
+	return []*ent.LlmProcurementAnalysisConnection{conn}, nil
 }
 
 // Mutation returns MutationResolver implementation.

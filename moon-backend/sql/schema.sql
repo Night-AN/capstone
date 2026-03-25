@@ -263,6 +263,20 @@ CREATE TABLE IF NOT EXISTS systems.role_permission (
     PRIMARY KEY (role_id, permission_id)
 );
 
+CREATE TABLE IF NOT EXISTS systems.files(
+    file_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    file_name text NOT NULL,
+    file_type text NOT NULL,
+    file_size bigint NOT NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz NULL
+);
+
+CREATE TABLE IF NOT EXISTS systems.file_refs(
+    file_ref_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    file_id uuid NOT NULL REFERENCES systems.files(file_id) ON DELETE CASCADE,
+);
+
 INSERT INTO systems.role_permission (role_id, permission_id)
 SELECT
     r.role_id,

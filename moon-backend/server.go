@@ -7,9 +7,11 @@ import (
 	"moon/ent"
 	"moon/graph"
 	"moon/pkg/auth"
+	"moon/pkg/s3"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
@@ -25,7 +27,27 @@ import (
 
 const defaultPort = "8080"
 
+const RUSTFS_ACCESSKEY = "7EubftlJSGnVZm4C8vKY"
+const RUSTFS_SECRETKEY = "SwyYG39BnCPDsMTduvkZeilgEtfjQI20741HKraX"
+const RUSTFS_API = "s3v4"
+const RUSTFS_PATH = "auto"
+const RUSTFS_RIGION = "cn-south-1"
+const RUSTFS_ENDPOINT = "http://localhost:9000"
+const RUSTFS_BUCKET = "capstone"
+
 func main() {
+	s3Client := s3.NewS3Client(context.Background(), s3.Config{
+		Region:     RUSTFS_RIGION,
+		Endpoint:   RUSTFS_ENDPOINT,
+		AccessKey:  RUSTFS_ACCESSKEY,
+		SecretKey:  RUSTFS_SECRETKEY,
+		BucketName: RUSTFS_BUCKET,
+	})
+	url, err := s3Client.PresignDownload(context.Background(), "中秋节.svg", time.Hour)
+	if err != nil {
+		log.Fatalf("presign download: %v", err)
+	}
+	fmt.Printf("%s", url)
 	client, err := ent.Open("postgres", "host=localhost port=5432 user=capstone password=capstone dbname=capstone sslmode=disable")
 	if err != nil {
 		log.Fatalf("opening connection: %v", err)
@@ -54,7 +76,7 @@ func main() {
 		permMap := make(map[string]bool)
 		for _, perm := range userPermissions {
 			if perm == "any::any" {
-				userClaims.HasAny = true
+				return next(ctx)
 			}
 			permMap[perm] = true
 		}
