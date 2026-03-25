@@ -1,0 +1,67 @@
+<div class="procurement-plan-type-page">
+  <nz-card nzTitle="计划类型管理" [nzExtra]="extraTemplate">
+    <nz-table #planTypeTable [nzData]="planTypes" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>计划类型名称</th>
+          <th>计划类型编码</th>
+          <th>计划类型标识</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let planType of planTypes">
+          <td>{{ planType.id }}</td>
+          <td>{{ planType.ProcurementPlanTypeName }}</td>
+          <td>{{ planType.ProcurementPlanTypeCode }}</td>
+          <td>{{ planType.ProcurementPlanTypeFlag }}</td>
+          <td>{{ planType.CreatedAt }}</td>
+          <td>{{ planType.UpdatedAt || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editPlanType(planType)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deletePlanType(planType.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createPlanType()">
+      <span nz-icon nzType="plus"></span>
+      创建计划类型
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="planTypeForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>计划类型名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="ProcurementPlanTypeName" placeholder="请输入计划类型名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>计划类型编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="ProcurementPlanTypeCode" placeholder="请输入计划类型编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>计划类型标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="ProcurementPlanTypeFlag" placeholder="请输入计划类型标识" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

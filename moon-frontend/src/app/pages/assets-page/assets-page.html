@@ -1,0 +1,155 @@
+<div class="assets-page">
+  <nz-card nzTitle="资产管理" [nzExtra]="extraTemplate">
+    <nz-table #assetTable [nzData]="assets" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>资产名称</th>
+          <th>资产编码</th>
+          <th>资产描述</th>
+          <th>资产标识</th>
+          <th>数量</th>
+          <th>位置</th>
+          <th>购买价格</th>
+          <th>折旧价格</th>
+          <th>购买日期</th>
+          <th>厂商</th>
+          <th>型号</th>
+          <th>类型ID</th>
+          <th>分类ID</th>
+          <th>组织ID</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let asset of assets">
+          <td>{{ asset.id }}</td>
+          <td>{{ asset.asset_name }}</td>
+          <td>{{ asset.asset_code }}</td>
+          <td>{{ asset.asset_description }}</td>
+          <td>{{ asset.asset_flag }}</td>
+          <td>{{ asset.quantity }}</td>
+          <td>{{ asset.location }}</td>
+          <td>{{ asset.purchase_price }}</td>
+          <td>{{ asset.depreciation_price }}</td>
+          <td>{{ asset.purchase_date || '-' }}</td>
+          <td>{{ asset.manufacturer }}</td>
+          <td>{{ asset.model }}</td>
+          <td>{{ asset.asset_type_id || '-' }}</td>
+          <td>{{ asset.asset_category_id || '-' }}</td>
+          <td>{{ asset.organization_id || '-' }}</td>
+          <td>{{ asset.created_at }}</td>
+          <td>{{ asset.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editAsset(asset)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteAsset(asset.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createAsset()">
+      <span nz-icon nzType="plus"></span>
+      创建资产
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="assetForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>资产名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_name" placeholder="请输入资产名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>资产编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_code" placeholder="请输入资产编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>资产描述</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_description" placeholder="请输入资产描述" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>资产标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_flag" placeholder="请输入资产标识" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>数量</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="quantity" placeholder="请输入数量" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>位置</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="location" placeholder="请输入位置" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>购买价格</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="purchase_price" placeholder="请输入购买价格" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>折旧价格</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="depreciation_price" placeholder="请输入折旧价格" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>购买日期</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="date" formControlName="purchase_date" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>厂商</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="manufacturer" placeholder="请输入厂商" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>型号</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="model" placeholder="请输入型号" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>类型ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_type_id" placeholder="请输入类型ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>分类ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_category_id" placeholder="请输入分类ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>组织ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="organization_id" placeholder="请输入组织ID" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

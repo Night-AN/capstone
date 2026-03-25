@@ -1,0 +1,75 @@
+<div class="asset-type-page">
+  <nz-card nzTitle="资产类型管理" [nzExtra]="extraTemplate">
+    <nz-table #typeTable [nzData]="types" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>类型名称</th>
+          <th>类型编码</th>
+          <th>类型标识</th>
+          <th>分类ID</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let type of types">
+          <td>{{ type.id }}</td>
+          <td>{{ type.asset_type_name }}</td>
+          <td>{{ type.asset_type_code }}</td>
+          <td>{{ type.asset_type_flag }}</td>
+          <td>{{ type.asset_category_id }}</td>
+          <td>{{ type.created_at }}</td>
+          <td>{{ type.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editType(type)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteType(type.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createType()">
+      <span nz-icon nzType="plus"></span>
+      创建资产类型
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="typeForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>类型名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_type_name" placeholder="请输入类型名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>类型编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_type_code" placeholder="请输入类型编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>类型标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_type_flag" placeholder="请输入类型标识" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>分类ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="asset_category_id" placeholder="请输入分类ID" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

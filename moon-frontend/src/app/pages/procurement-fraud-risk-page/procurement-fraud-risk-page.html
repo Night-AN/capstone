@@ -1,0 +1,81 @@
+<div class="procurement-fraud-risk-page">
+  <nz-card nzTitle="欺诈风险记录管理" [nzExtra]="extraTemplate">
+    <nz-table #riskTable [nzData]="risks" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>采购计划ID</th>
+          <th>采购实施ID</th>
+          <th>风险等级</th>
+          <th>风险原因</th>
+          <th>风险分数</th>
+          <th>创建时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let risk of risks">
+          <td>{{ risk.id }}</td>
+          <td>{{ risk.procurement_plan_id || '-' }}</td>
+          <td>{{ risk.procurement_implementation_id || '-' }}</td>
+          <td>{{ risk.risk_level }}</td>
+          <td>{{ risk.risk_reason || '-' }}</td>
+          <td>{{ risk.risk_score }}</td>
+          <td>{{ risk.created_at }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editRisk(risk)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteRisk(risk.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createRisk()">
+      <span nz-icon nzType="plus"></span>
+      创建欺诈风险记录
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="riskForm">
+      <nz-form-item>
+        <nz-form-label>采购计划ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="procurement_plan_id" placeholder="请输入采购计划ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>采购实施ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="procurement_implementation_id" placeholder="请输入采购实施ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>风险等级</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="risk_level" placeholder="请输入风险等级" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>风险原因</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="risk_reason" placeholder="请输入风险原因" rows="4"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>风险分数</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="risk_score" placeholder="请输入风险分数" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

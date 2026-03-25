@@ -1,0 +1,75 @@
+<div class="procurement-acceptance-page">
+  <nz-card nzTitle="验收记录管理" [nzExtra]="extraTemplate">
+    <nz-table #acceptanceTable [nzData]="acceptances" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>验收名称</th>
+          <th>验收编码</th>
+          <th>验收描述</th>
+          <th>验收标识</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let acceptance of acceptances">
+          <td>{{ acceptance.id }}</td>
+          <td>{{ acceptance.acceptance_name }}</td>
+          <td>{{ acceptance.acceptance_code }}</td>
+          <td>{{ acceptance.acceptance_description }}</td>
+          <td>{{ acceptance.acceptance_flag }}</td>
+          <td>{{ acceptance.created_at }}</td>
+          <td>{{ acceptance.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editAcceptance(acceptance)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteAcceptance(acceptance.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createAcceptance()">
+      <span nz-icon nzType="plus"></span>
+      创建验收记录
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="acceptanceForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>验收名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="acceptance_name" placeholder="请输入验收名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>验收编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="acceptance_code" placeholder="请输入验收编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>验收描述</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="acceptance_description" placeholder="请输入验收描述" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>验收标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="acceptance_flag" placeholder="请输入验收标识" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

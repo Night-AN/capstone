@@ -1,0 +1,131 @@
+<div class="procurement-plan-page">
+  <nz-card nzTitle="采购计划管理" [nzExtra]="extraTemplate">
+    <nz-table #planTable [nzData]="plans" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>计划名称</th>
+          <th>计划编码</th>
+          <th>计划描述</th>
+          <th>计划标识</th>
+          <th>数量</th>
+          <th>价格</th>
+          <th>购买日期</th>
+          <th>购买类型</th>
+          <th>类型ID</th>
+          <th>组织ID</th>
+          <th>用户ID</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let plan of plans">
+          <td>{{ plan.id }}</td>
+          <td>{{ plan.ProcurementPlanName }}</td>
+          <td>{{ plan.ProcurementPlanCode }}</td>
+          <td>{{ plan.ProcurementPlanDescription }}</td>
+          <td>{{ plan.ProcurementPlanFlag }}</td>
+          <td>{{ plan.ProcurementPlanQuantity }}</td>
+          <td>{{ plan.ProcurementPlanPrice }}</td>
+          <td>{{ plan.ProcurementPlanPurchaseDate || '-' }}</td>
+          <td>{{ plan.ProcurementPlanPurchaseType }}</td>
+          <td>{{ plan.procurement_plan_type_id || '-' }}</td>
+          <td>{{ plan.organization_id || '-' }}</td>
+          <td>{{ plan.user_id || '-' }}</td>
+          <td>{{ plan.CreatedAt }}</td>
+          <td>{{ plan.UpdatedAt || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editPlan(plan)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deletePlan(plan.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createPlan()">
+      <span nz-icon nzType="plus"></span>
+      创建采购计划
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="planForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>计划名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="ProcurementPlanName" placeholder="请输入计划名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>计划编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="ProcurementPlanCode" placeholder="请输入计划编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>计划描述</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="ProcurementPlanDescription" placeholder="请输入计划描述" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>计划标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="ProcurementPlanFlag" placeholder="请输入计划标识" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>数量</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="ProcurementPlanQuantity" placeholder="请输入数量" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>价格</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="ProcurementPlanPrice" placeholder="请输入价格" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>购买日期</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="date" formControlName="ProcurementPlanPurchaseDate" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>购买类型</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="ProcurementPlanPurchaseType" placeholder="请输入购买类型" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>类型ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="procurement_plan_type_id" placeholder="请输入类型ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>组织ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="organization_id" placeholder="请输入组织ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>用户ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="user_id" placeholder="请输入用户ID" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

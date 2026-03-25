@@ -1,0 +1,67 @@
+<div class="asset-category-page">
+  <nz-card nzTitle="资产分类管理" [nzExtra]="extraTemplate">
+    <nz-table #categoryTable [nzData]="categories" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>分类名称</th>
+          <th>分类编码</th>
+          <th>分类标识</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let category of categories">
+          <td>{{ category.id }}</td>
+          <td>{{ category.category_name }}</td>
+          <td>{{ category.category_code }}</td>
+          <td>{{ category.category_flag }}</td>
+          <td>{{ category.created_at }}</td>
+          <td>{{ category.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editCategory(category)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteCategory(category.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createCategory()">
+      <span nz-icon nzType="plus"></span>
+      创建资产分类
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="categoryForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>分类名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="category_name" placeholder="请输入分类名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>分类编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="category_code" placeholder="请输入分类编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>分类标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="category_flag" placeholder="请输入分类标识" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

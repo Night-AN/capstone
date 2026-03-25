@@ -1,0 +1,75 @@
+<div class="permission-page">
+  <nz-card nzTitle="权限管理" [nzExtra]="extraTemplate">
+    <nz-table #permissionTable [nzData]="permissions" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>权限名称</th>
+          <th>权限编码</th>
+          <th>权限描述</th>
+          <th>权限标识</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let permission of permissions">
+          <td>{{ permission.id }}</td>
+          <td>{{ permission.permission_name }}</td>
+          <td>{{ permission.permission_code }}</td>
+          <td>{{ permission.permission_description }}</td>
+          <td>{{ permission.permission_flag }}</td>
+          <td>{{ permission.created_at }}</td>
+          <td>{{ permission.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editPermission(permission)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deletePermission(permission.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createPermission()">
+      <span nz-icon nzType="plus"></span>
+      创建权限
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="permissionForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>权限名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="permission_name" placeholder="请输入权限名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>权限编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="permission_code" placeholder="请输入权限编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>权限描述</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="permission_description" placeholder="请输入权限描述" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>权限标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="permission_flag" placeholder="请输入权限标识" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

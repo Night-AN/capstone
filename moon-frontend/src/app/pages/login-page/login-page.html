@@ -1,0 +1,27 @@
+<div class="login-container">
+  <nz-card class="login-card">
+    <div class="logo-container">
+      <img src="/favicon.svg" alt="Moon" class="logo-image" />
+    </div>
+    <h2>登录</h2>
+    <form nz-form [formGroup]="loginForm" (ngSubmit)="submitForm()">
+      <nz-form-item>
+        <nz-form-label nzRequired>邮箱</nz-form-label>
+        <nz-form-control nzErrorTip="请输入有效的邮箱地址">
+          <input nz-input formControlName="email" placeholder="请输入邮箱" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>密码</nz-form-label>
+        <nz-form-control nzErrorTip="请输入密码">
+          <input nz-input type="password" formControlName="password" placeholder="请输入密码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button nz-button nzType="primary" [nzLoading]="loading" class="login-button" nzBlock>登录</button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+</div>

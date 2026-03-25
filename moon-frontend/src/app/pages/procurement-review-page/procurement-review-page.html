@@ -1,0 +1,75 @@
+<div class="procurement-review-page">
+  <nz-card nzTitle="评审记录管理" [nzExtra]="extraTemplate">
+    <nz-table #reviewTable [nzData]="reviews" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>评审名称</th>
+          <th>评审编码</th>
+          <th>评审描述</th>
+          <th>评审标识</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let review of reviews">
+          <td>{{ review.id }}</td>
+          <td>{{ review.review_name }}</td>
+          <td>{{ review.review_code }}</td>
+          <td>{{ review.review_description }}</td>
+          <td>{{ review.review_flag }}</td>
+          <td>{{ review.created_at }}</td>
+          <td>{{ review.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editReview(review)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteReview(review.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createReview()">
+      <span nz-icon nzType="plus"></span>
+      创建评审记录
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="reviewForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>评审名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="review_name" placeholder="请输入评审名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>评审编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="review_code" placeholder="请输入评审编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>评审描述</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="review_description" placeholder="请输入评审描述" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>评审标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="review_flag" placeholder="请输入评审标识" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

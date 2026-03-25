@@ -1,0 +1,74 @@
+<div class="organization-page">
+  <nz-card class="list-card">
+    <div class="card-header">
+      <h2>组织机构管理</h2>
+      <button nz-button nzType="primary" (click)="createOrganization()">创建组织机构</button>
+    </div>
+    <nz-table [nzData]="organizations" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>组织机构名称</th>
+          <th>组织机构代码</th>
+          <th>组织机构描述</th>
+          <th>状态</th>
+          <th>父级ID</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let organization of organizations">
+          <td>{{ organization.id }}</td>
+          <td>{{ organization.organization_name }}</td>
+          <td>{{ organization.organization_code }}</td>
+          <td>{{ organization.organization_description }}</td>
+          <td>{{ organization.organization_flag }}</td>
+          <td>{{ organization.parent_id || '-' }}</td>
+          <td>{{ organization.created_at | date }}</td>
+          <td>{{ organization.updated_at | date }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editOrganization(organization)">编辑</button>
+            <button nz-button nzType="default" nzSize="small" (click)="deleteOrganization(organization.id)" style="margin-left: 8px;">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <nz-modal [(nzVisible)]="visible" [nzTitle]="modalTitle" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()" [nzOkLoading]="isLoading">
+    <form nz-form [formGroup]="organizationForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>组织机构名称</nz-form-label>
+        <nz-form-control nzErrorTip="请输入组织机构名称">
+          <input nz-input formControlName="organization_name" placeholder="请输入组织机构名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>组织机构代码</nz-form-label>
+        <nz-form-control nzErrorTip="请输入组织机构代码">
+          <input nz-input formControlName="organization_code" placeholder="请输入组织机构代码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>组织机构描述</nz-form-label>
+        <nz-form-control nzErrorTip="请输入组织机构描述">
+          <input nz-input formControlName="organization_description" placeholder="请输入组织机构描述" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>状态</nz-form-label>
+        <nz-form-control nzErrorTip="请输入状态">
+          <input nz-input formControlName="organization_flag" placeholder="请输入状态（例如：ACTIVE）" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>父级ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="parent_id" placeholder="请输入父级ID（可选）" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-modal>
+</div>

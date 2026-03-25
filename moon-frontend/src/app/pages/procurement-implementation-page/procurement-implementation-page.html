@@ -1,0 +1,75 @@
+<div class="procurement-implementation-page">
+  <nz-card nzTitle="实施记录管理" [nzExtra]="extraTemplate">
+    <nz-table #implementationTable [nzData]="implementations" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>实施名称</th>
+          <th>实施编码</th>
+          <th>实施描述</th>
+          <th>实施标识</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let implementation of implementations">
+          <td>{{ implementation.id }}</td>
+          <td>{{ implementation.implementation_name }}</td>
+          <td>{{ implementation.implementation_code }}</td>
+          <td>{{ implementation.implementation_description }}</td>
+          <td>{{ implementation.implementation_flag }}</td>
+          <td>{{ implementation.created_at }}</td>
+          <td>{{ implementation.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editImplementation(implementation)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteImplementation(implementation.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createImplementation()">
+      <span nz-icon nzType="plus"></span>
+      创建实施记录
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="implementationForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>实施名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="implementation_name" placeholder="请输入实施名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>实施编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="implementation_code" placeholder="请输入实施编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>实施描述</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="implementation_description" placeholder="请输入实施描述" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>实施标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="implementation_flag" placeholder="请输入实施标识" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

@@ -1,0 +1,81 @@
+<div class="llm-procurement-analysis-page">
+  <nz-card nzTitle="采购分析管理" [nzExtra]="extraTemplate">
+    <nz-table #analysisTable [nzData]="analyses" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>模型ID</th>
+          <th>采购计划ID</th>
+          <th>采购实施ID</th>
+          <th>分析结果</th>
+          <th>Token使用ID</th>
+          <th>创建时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let analysis of analyses">
+          <td>{{ analysis.id }}</td>
+          <td>{{ analysis.model_id || '-' }}</td>
+          <td>{{ analysis.procurement_plan_id || '-' }}</td>
+          <td>{{ analysis.procurement_implementation_id || '-' }}</td>
+          <td>{{ analysis.analysis_result || '-' }}</td>
+          <td>{{ analysis.token_usage_id || '-' }}</td>
+          <td>{{ analysis.created_at }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editAnalysis(analysis)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteAnalysis(analysis.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createAnalysis()">
+      <span nz-icon nzType="plus"></span>
+      创建采购分析
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="analysisForm">
+      <nz-form-item>
+        <nz-form-label>模型ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="model_id" placeholder="请输入模型ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>采购计划ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="procurement_plan_id" placeholder="请输入采购计划ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>采购实施ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="procurement_implementation_id" placeholder="请输入采购实施ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>分析结果</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="analysis_result" placeholder="请输入分析结果" rows="4"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Token使用ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="token_usage_id" placeholder="请输入Token使用ID" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

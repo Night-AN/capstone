@@ -1,0 +1,60 @@
+<div class="user-page">
+    <h2>用户列表</h2>
+    <div class="card-header">
+        <button nz-button nzType="primary" (click)="createUser()">创建用户</button>
+    </div>
+    <nz-table class="card-content" [nzData]="users" nzBordered>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>昵称</th>
+                <th>姓名</th>
+                <th>邮箱</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (item of users; track item.id) {
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.nickname }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.email }}</td>
+                <td>{{ item.createdAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+                <td>
+                    <button nz-button nzType="primary" nzSize="small" (click)="editUser(item)">编辑</button>
+                    <button nz-button nzType="dashed" nzSize="small" (click)="deleteUser(item.id)">删除</button>
+                </td>
+            </tr>
+            }
+
+        </tbody>
+    </nz-table>
+
+    <nz-modal [(nzVisible)]="visible" [nzTitle]="modalTitle" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()"
+        [nzContent]="modalContent">
+        <ng-template #modalContent>
+            <form nz-form [formGroup]="userForm">
+                <nz-form-item>
+                    <nz-form-label nzRequired>昵称</nz-form-label>
+                    <nz-form-control nzErrorTip="请输入昵称">
+                        <input nz-input formControlName="nickname" placeholder="请输入昵称" />
+                    </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                    <nz-form-label nzRequired>姓名</nz-form-label>
+                    <nz-form-control nzErrorTip="请输入姓名">
+                        <input nz-input formControlName="fullname" placeholder="请输入姓名" />
+                    </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                    <nz-form-label nzRequired>邮箱</nz-form-label>
+                    <nz-form-control nzErrorTip="请输入有效的邮箱地址">
+                        <input nz-input formControlName="email" placeholder="请输入邮箱" />
+                    </nz-form-control>
+                </nz-form-item>
+            </form>
+        </ng-template>
+    </nz-modal>
+</div>

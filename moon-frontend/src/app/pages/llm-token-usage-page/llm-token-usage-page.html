@@ -1,0 +1,89 @@
+<div class="llm-token-usage-page">
+  <nz-card nzTitle="Token使用记录管理" [nzExtra]="extraTemplate">
+    <nz-table #usageTable [nzData]="usages" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>模型ID</th>
+          <th>用户ID</th>
+          <th>提示Tokens</th>
+          <th>完成Tokens</th>
+          <th>总Tokens</th>
+          <th>成本金额</th>
+          <th>创建时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let usage of usages">
+          <td>{{ usage.id }}</td>
+          <td>{{ usage.model_id }}</td>
+          <td>{{ usage.user_id || '-' }}</td>
+          <td>{{ usage.prompt_tokens }}</td>
+          <td>{{ usage.completion_tokens }}</td>
+          <td>{{ usage.total_tokens }}</td>
+          <td>{{ usage.cost_amount }}</td>
+          <td>{{ usage.created_at }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editUsage(usage)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteUsage(usage.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createUsage()">
+      <span nz-icon nzType="plus"></span>
+      创建Token使用记录
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="usageForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>模型ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="model_id" placeholder="请输入模型ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>用户ID</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="user_id" placeholder="请输入用户ID" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>提示Tokens</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="prompt_tokens" placeholder="请输入提示Tokens" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>完成Tokens</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="completion_tokens" placeholder="请输入完成Tokens" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>总Tokens</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="total_tokens" placeholder="请输入总Tokens" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>成本金额</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="cost_amount" placeholder="请输入成本金额" step="0.001" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

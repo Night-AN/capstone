@@ -1,0 +1,22 @@
+.user-page {
+  display: flex;
+  flex-direction: column;
+
+  .form-card {
+    max-width: 600px;
+
+    h2 {
+      margin-bottom: 24px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+
+  .list-card {
+    h2 {
+      margin-bottom: 16px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+}

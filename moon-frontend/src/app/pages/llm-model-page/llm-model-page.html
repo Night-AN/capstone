@@ -1,0 +1,99 @@
+<div class="llm-model-page">
+  <nz-card nzTitle="LLM模型管理" [nzExtra]="extraTemplate">
+    <nz-table #modelTable [nzData]="models" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>模型名称</th>
+          <th>提供商</th>
+          <th>模型编码</th>
+          <th>API密钥</th>
+          <th>API端点</th>
+          <th>启用状态</th>
+          <th>最大Tokens</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let model of models">
+          <td>{{ model.id }}</td>
+          <td>{{ model.model_name }}</td>
+          <td>{{ model.provider }}</td>
+          <td>{{ model.model_code }}</td>
+          <td>{{ model.api_key }}</td>
+          <td>{{ model.api_endpoint || '-' }}</td>
+          <td>{{ model.enabled ? '是' : '否' }}</td>
+          <td>{{ model.max_tokens }}</td>
+          <td>{{ model.created_at }}</td>
+          <td>{{ model.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editModel(model)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteModel(model.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createModel()">
+      <span nz-icon nzType="plus"></span>
+      创建LLM模型
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="modelForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>模型名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="model_name" placeholder="请输入模型名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>提供商</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="provider" placeholder="请输入提供商" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>模型编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="model_code" placeholder="请输入模型编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>API密钥</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="api_key" placeholder="请输入API密钥" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>API端点</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="api_endpoint" placeholder="请输入API端点" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>启用状态</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="checkbox" formControlName="enabled" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>最大Tokens</nz-form-label>
+        <nz-form-control>
+          <input nz-input type="number" formControlName="max_tokens" placeholder="请输入最大Tokens" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

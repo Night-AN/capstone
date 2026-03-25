@@ -1,0 +1,75 @@
+<div class="role-page">
+  <nz-card nzTitle="角色管理" [nzExtra]="extraTemplate">
+    <nz-table #roleTable [nzData]="roles" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>角色名称</th>
+          <th>角色编码</th>
+          <th>角色描述</th>
+          <th>角色标识</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let role of roles">
+          <td>{{ role.id }}</td>
+          <td>{{ role.role_name }}</td>
+          <td>{{ role.role_code }}</td>
+          <td>{{ role.role_description }}</td>
+          <td>{{ role.role_flag }}</td>
+          <td>{{ role.created_at }}</td>
+          <td>{{ role.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editRole(role)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteRole(role.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createRole()">
+      <span nz-icon nzType="plus"></span>
+      创建角色
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="roleForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>角色名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="role_name" placeholder="请输入角色名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>角色编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="role_code" placeholder="请输入角色编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>角色描述</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="role_description" placeholder="请输入角色描述" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>角色标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="role_flag" placeholder="请输入角色标识" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>

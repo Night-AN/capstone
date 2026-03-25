@@ -1,0 +1,75 @@
+<div class="procurement-expert-page">
+  <nz-card nzTitle="专家管理" [nzExtra]="extraTemplate">
+    <nz-table #expertTable [nzData]="experts" nzBordered>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>专家名称</th>
+          <th>专家编码</th>
+          <th>专家描述</th>
+          <th>专家标识</th>
+          <th>创建时间</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let expert of experts">
+          <td>{{ expert.id }}</td>
+          <td>{{ expert.expert_name }}</td>
+          <td>{{ expert.expert_code }}</td>
+          <td>{{ expert.expert_description }}</td>
+          <td>{{ expert.expert_flag }}</td>
+          <td>{{ expert.created_at }}</td>
+          <td>{{ expert.updated_at || '-' }}</td>
+          <td>
+            <button nz-button nzType="primary" nzSize="small" (click)="editExpert(expert)">编辑</button>
+            <button nz-button nzDanger nzSize="small" (click)="deleteExpert(expert.id)">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <ng-template #extraTemplate>
+    <button nz-button nzType="primary" (click)="createExpert()">
+      <span nz-icon nzType="plus"></span>
+      创建专家
+    </button>
+  </ng-template>
+
+  <nz-modal
+    [(nzVisible)]="visible"
+    [nzTitle]="modalTitle"
+    (nzOnCancel)="handleCancel()"
+    (nzOnOk)="handleOk()"
+    [nzOkLoading]="isLoading"
+  >
+    <nz-form [formGroup]="expertForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>专家名称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="expert_name" placeholder="请输入专家名称" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>专家编码</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="expert_code" placeholder="请输入专家编码" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>专家描述</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="expert_description" placeholder="请输入专家描述" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>专家标识</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="expert_flag" placeholder="请输入专家标识" />
+        </nz-form-control>
+      </nz-form-item>
+    </nz-form>
+  </nz-modal>
+</div>
