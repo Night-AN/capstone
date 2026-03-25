@@ -72,8 +72,15 @@ android/app/build/
 android/build/
 android/local.properties
 android/.idea/
-android/.gradle/
-android/app/release/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/
+android/app/src/main/assets/
+android/app/src/main/res/drawable-v24/
+android/app/src/main/res/values-v24/
+android/app/src/main/res/values-v26/
+android/app/src/main/res/values-v28/
 
 # System files
 .DS_Store
