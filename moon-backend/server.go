@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
@@ -43,11 +42,7 @@ func main() {
 		SecretKey:  RUSTFS_SECRETKEY,
 		BucketName: RUSTFS_BUCKET,
 	})
-	url, err := s3Client.PresignDownload(context.Background(), "中秋节.svg", time.Hour)
-	if err != nil {
-		log.Fatalf("presign download: %v", err)
-	}
-	fmt.Printf("%s", url)
+
 	client, err := ent.Open("postgres", "host=localhost port=5432 user=capstone password=capstone dbname=capstone sslmode=disable")
 	if err != nil {
 		log.Fatalf("opening connection: %v", err)
@@ -58,7 +53,7 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
-	c := graph.Config{Resolvers: &graph.Resolver{Client: client}}
+	c := graph.Config{Resolvers: &graph.Resolver{Client: client, S3Client: s3Client}}
 	c.Directives.HasPermission = func(ctx context.Context, obj any, next graphql.Resolver, required []string) (res any, err error) {
 		// 从上下文中获取user_claims
 		userClaims, ok := ctx.Value("user_claims").(*auth.UserClaims) // 假设UserClaims是你的JWT结构体类型
