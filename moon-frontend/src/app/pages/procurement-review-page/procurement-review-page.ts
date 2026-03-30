@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -29,6 +29,7 @@ enum ModalTitle {
   selector: 'app-procurement-review-page',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
@@ -44,6 +45,7 @@ enum ModalTitle {
 export class ProcurementReviewPage implements OnInit {
   reviewForm: FormGroup;
   reviews: ProcurementReview[] = [];
+  originalReviews: ProcurementReview[] = [];
 
   isEditing = false;
   currentReviewId: string | null = null;
@@ -51,6 +53,7 @@ export class ProcurementReviewPage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -80,7 +83,22 @@ export class ProcurementReviewPage implements OnInit {
         created_at: edge.node.created_at,
         updated_at: edge.node.updated_at
       }));
+      this.originalReviews = [...this.reviews];
     });
+  }
+
+  searchReviews(): void {
+    if (this.searchKeyword) {
+      const keyword = this.searchKeyword.toLowerCase();
+      this.reviews = this.originalReviews.filter(review => 
+        review.review_name.toLowerCase().includes(keyword) ||
+        review.review_code.toLowerCase().includes(keyword) ||
+        review.review_description.toLowerCase().includes(keyword) ||
+        review.review_flag.toLowerCase().includes(keyword)
+      );
+    } else {
+      this.reviews = [...this.originalReviews];
+    }
   }
 
   createReview(): void {

@@ -14,7 +14,6 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
   styleUrl:  './backend-layout.scss'
 })
 export class BackendLayout {
-  isCollapsed = false;
   constructor() {
   }
 }

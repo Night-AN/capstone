@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -28,6 +28,7 @@ enum ModalTitle {
   selector: 'app-procurement-plan-type-page',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
@@ -50,6 +51,7 @@ export class ProcurementPlanTypePage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -78,6 +80,27 @@ export class ProcurementPlanTypePage implements OnInit {
         UpdatedAt: edge.node.UpdatedAt
       }));
     });
+  }
+
+  searchPlanTypes(): void {
+    if (this.searchKeyword) {
+      this.planTypeService.getList({ 
+        ProcurementPlanTypeName: { contains: this.searchKeyword },
+        ProcurementPlanTypeCode: { contains: this.searchKeyword },
+        ProcurementPlanTypeFlag: { contains: this.searchKeyword }
+      }).subscribe(planTypes => {
+        this.planTypes = planTypes[0].edges.map((edge: any) => ({
+          id: edge.node.id,
+          ProcurementPlanTypeName: edge.node.ProcurementPlanTypeName,
+          ProcurementPlanTypeCode: edge.node.ProcurementPlanTypeCode,
+          ProcurementPlanTypeFlag: edge.node.ProcurementPlanTypeFlag,
+          CreatedAt: edge.node.CreatedAt,
+          UpdatedAt: edge.node.UpdatedAt
+        }));
+      });
+    } else {
+      this.loadPlanTypes();
+    }
   }
 
   createPlanType(): void {

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -27,6 +27,7 @@ enum ModalTitle {
   selector: 'app-asset-category-page',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
@@ -42,6 +43,7 @@ enum ModalTitle {
 export class AssetCategoryPage implements OnInit {
   categoryForm: FormGroup;
   categories: AssetCategory[] = [];
+  originalCategories: AssetCategory[] = [];
 
   isEditing = false;
   currentCategoryId: string | null = null;
@@ -49,6 +51,7 @@ export class AssetCategoryPage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -77,6 +80,20 @@ export class AssetCategoryPage implements OnInit {
         updated_at: null
       }
     ];
+    this.originalCategories = [...this.categories];
+  }
+
+  searchCategories(): void {
+    if (this.searchKeyword) {
+      const keyword = this.searchKeyword.toLowerCase();
+      this.categories = this.originalCategories.filter(category => 
+        category.category_name.toLowerCase().includes(keyword) ||
+        category.category_code.toLowerCase().includes(keyword) ||
+        category.category_flag.toLowerCase().includes(keyword)
+      );
+    } else {
+      this.categories = [...this.originalCategories];
+    }
   }
 
   createCategory(): void {

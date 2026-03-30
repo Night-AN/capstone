@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -27,11 +27,10 @@ enum ModalTitle {
 
 @Component({
   selector: 'app-permission-page',
-  standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     FormsModule,
+    ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
     NzFormModule,
@@ -40,7 +39,7 @@ enum ModalTitle {
     NzModalModule
   ],
   templateUrl: './permission-page.html',
-  styleUrl: './permission-page.scss',
+  styleUrl: './permission-page.less',
   providers: [NzMessageService]
 })
 export class PermissionPage implements OnInit {
@@ -53,12 +52,7 @@ export class PermissionPage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
-  loading = false;
-
-  // 搜索相关
-  searchName = '';
-  searchCode = '';
-  searchFlag = '';
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -78,7 +72,6 @@ export class PermissionPage implements OnInit {
   }
 
   loadPermissions(): void {
-    this.loading = true;
     this.permissionService.getList().subscribe(permissions => {
       this.permissions = permissions[0].edges.map((edge: any) => ({
         id: edge.node.id,
@@ -89,25 +82,29 @@ export class PermissionPage implements OnInit {
         created_at: edge.node.created_at,
         updated_at: edge.node.updated_at
       }));
-      this.loading = false;
     });
   }
 
-  // 搜索权限
   searchPermissions(): void {
-    this.loading = true;
-    // 这里可以根据搜索条件调用后端API
-    // 暂时使用前端过滤
-    setTimeout(() => {
-      this.loading = false;
-    }, 500);
-  }
-
-  // 重置搜索
-  resetSearch(): void {
-    this.searchName = '';
-    this.searchCode = '';
-    this.searchFlag = '';
+    if (this.searchKeyword) {
+      this.permissionService.getList({ 
+        permission_name: { contains: this.searchKeyword },
+        permission_code: { contains: this.searchKeyword },
+        permission_description: { contains: this.searchKeyword }
+      }).subscribe(permissions => {
+        this.permissions = permissions[0].edges.map((edge: any) => ({
+          id: edge.node.id,
+          permission_name: edge.node.permission_name,
+          permission_code: edge.node.permission_code,
+          permission_description: edge.node.permission_description,
+          permission_flag: edge.node.permission_flag,
+          created_at: edge.node.created_at,
+          updated_at: edge.node.updated_at
+        }));
+      });
+    } else {
+      this.loadPermissions();
+    }
   }
 
   createPermission(): void {

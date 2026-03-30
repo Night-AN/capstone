@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -28,6 +28,7 @@ enum ModalTitle {
   selector: 'app-asset-type-page',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
@@ -43,6 +44,7 @@ enum ModalTitle {
 export class AssetTypePage implements OnInit {
   typeForm: FormGroup;
   types: AssetType[] = [];
+  originalTypes: AssetType[] = [];
 
   isEditing = false;
   currentTypeId: string | null = null;
@@ -50,6 +52,7 @@ export class AssetTypePage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -80,6 +83,20 @@ export class AssetTypePage implements OnInit {
         updated_at: null
       }
     ];
+    this.originalTypes = [...this.types];
+  }
+
+  searchTypes(): void {
+    if (this.searchKeyword) {
+      const keyword = this.searchKeyword.toLowerCase();
+      this.types = this.originalTypes.filter(type => 
+        type.asset_type_name.toLowerCase().includes(keyword) ||
+        type.asset_type_code.toLowerCase().includes(keyword) ||
+        type.asset_type_flag.toLowerCase().includes(keyword)
+      );
+    } else {
+      this.types = [...this.originalTypes];
+    }
   }
 
   createType(): void {

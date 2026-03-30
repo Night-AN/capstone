@@ -1,5 +1,12 @@
 <div class="procurement-review-page">
-  <nz-card nzTitle="评审记录管理" [nzExtra]="extraTemplate">
+  <nz-card>
+    <div class="card-header">
+      <h2>评审记录管理</h2>
+      <div class="search-area">
+        <input nz-input placeholder="搜索评审记录" [(ngModel)]="searchKeyword" (input)="searchReviews()" />
+        <button nz-button nzType="primary" (click)="createReview()">创建评审记录</button>
+      </div>
+    </div>
     <nz-table #reviewTable [nzData]="reviews" nzBordered>
       <thead>
         <tr>
@@ -14,29 +21,24 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let review of reviews">
-          <td>{{ review.id }}</td>
-          <td>{{ review.review_name }}</td>
-          <td>{{ review.review_code }}</td>
-          <td>{{ review.review_description }}</td>
-          <td>{{ review.review_flag }}</td>
-          <td>{{ review.created_at }}</td>
-          <td>{{ review.updated_at || '-' }}</td>
+        @for (item of reviews; track item.id) {
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.review_name }}</td>
+          <td>{{ item.review_code }}</td>
+          <td>{{ item.review_description }}</td>
+          <td>{{ item.review_flag }}</td>
+          <td>{{ item.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td>{{ item.updated_at ? (item.updated_at | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
           <td>
-            <button nz-button nzType="primary" nzSize="small" (click)="editReview(review)">编辑</button>
-            <button nz-button nzDanger nzSize="small" (click)="deleteReview(review.id)">删除</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="editReview(item)">编辑</button>
+            <button nz-button nzType="dashed" nzSize="small" (click)="deleteReview(item.id)">删除</button>
           </td>
         </tr>
+        }
       </tbody>
     </nz-table>
   </nz-card>
-
-  <ng-template #extraTemplate>
-    <button nz-button nzType="primary" (click)="createReview()">
-      <span nz-icon nzType="plus"></span>
-      创建评审记录
-    </button>
-  </ng-template>
 
   <nz-modal
     [(nzVisible)]="visible"

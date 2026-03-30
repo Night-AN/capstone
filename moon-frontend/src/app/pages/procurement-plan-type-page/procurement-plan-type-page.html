@@ -1,5 +1,12 @@
 <div class="procurement-plan-type-page">
-  <nz-card nzTitle="计划类型管理" [nzExtra]="extraTemplate">
+  <nz-card>
+    <div class="card-header">
+      <h2>计划类型管理</h2>
+      <div class="search-area">
+        <input nz-input placeholder="搜索计划类型" [(ngModel)]="searchKeyword" (input)="searchPlanTypes()" />
+        <button nz-button nzType="primary" (click)="createPlanType()">创建计划类型</button>
+      </div>
+    </div>
     <nz-table #planTypeTable [nzData]="planTypes" nzBordered>
       <thead>
         <tr>
@@ -13,28 +20,23 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let planType of planTypes">
-          <td>{{ planType.id }}</td>
-          <td>{{ planType.ProcurementPlanTypeName }}</td>
-          <td>{{ planType.ProcurementPlanTypeCode }}</td>
-          <td>{{ planType.ProcurementPlanTypeFlag }}</td>
-          <td>{{ planType.CreatedAt }}</td>
-          <td>{{ planType.UpdatedAt || '-' }}</td>
+        @for (item of planTypes; track item.id) {
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.ProcurementPlanTypeName }}</td>
+          <td>{{ item.ProcurementPlanTypeCode }}</td>
+          <td>{{ item.ProcurementPlanTypeFlag }}</td>
+          <td>{{ item.CreatedAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td>{{ item.UpdatedAt ? (item.UpdatedAt | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
           <td>
-            <button nz-button nzType="primary" nzSize="small" (click)="editPlanType(planType)">编辑</button>
-            <button nz-button nzDanger nzSize="small" (click)="deletePlanType(planType.id)">删除</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="editPlanType(item)">编辑</button>
+            <button nz-button nzType="dashed" nzSize="small" (click)="deletePlanType(item.id)">删除</button>
           </td>
         </tr>
+        }
       </tbody>
     </nz-table>
   </nz-card>
-
-  <ng-template #extraTemplate>
-    <button nz-button nzType="primary" (click)="createPlanType()">
-      <span nz-icon nzType="plus"></span>
-      创建计划类型
-    </button>
-  </ng-template>
 
   <nz-modal
     [(nzVisible)]="visible"

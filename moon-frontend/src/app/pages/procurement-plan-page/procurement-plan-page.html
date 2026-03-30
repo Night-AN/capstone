@@ -1,5 +1,12 @@
 <div class="procurement-plan-page">
-  <nz-card nzTitle="采购计划管理" [nzExtra]="extraTemplate">
+  <nz-card>
+    <div class="card-header">
+      <h2>采购计划管理</h2>
+      <div class="search-area">
+        <input nz-input placeholder="搜索采购计划" [(ngModel)]="searchKeyword" (input)="searchPlans()" />
+        <button nz-button nzType="primary" (click)="createPlan()">创建采购计划</button>
+      </div>
+    </div>
     <nz-table #planTable [nzData]="plans" nzBordered>
       <thead>
         <tr>
@@ -21,36 +28,31 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let plan of plans">
-          <td>{{ plan.id }}</td>
-          <td>{{ plan.ProcurementPlanName }}</td>
-          <td>{{ plan.ProcurementPlanCode }}</td>
-          <td>{{ plan.ProcurementPlanDescription }}</td>
-          <td>{{ plan.ProcurementPlanFlag }}</td>
-          <td>{{ plan.ProcurementPlanQuantity }}</td>
-          <td>{{ plan.ProcurementPlanPrice }}</td>
-          <td>{{ plan.ProcurementPlanPurchaseDate || '-' }}</td>
-          <td>{{ plan.ProcurementPlanPurchaseType }}</td>
-          <td>{{ plan.procurement_plan_type_id || '-' }}</td>
-          <td>{{ plan.organization_id || '-' }}</td>
-          <td>{{ plan.user_id || '-' }}</td>
-          <td>{{ plan.CreatedAt }}</td>
-          <td>{{ plan.UpdatedAt || '-' }}</td>
+        @for (item of plans; track item.id) {
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.ProcurementPlanName }}</td>
+          <td>{{ item.ProcurementPlanCode }}</td>
+          <td>{{ item.ProcurementPlanDescription }}</td>
+          <td>{{ item.ProcurementPlanFlag }}</td>
+          <td>{{ item.ProcurementPlanQuantity }}</td>
+          <td>{{ item.ProcurementPlanPrice }}</td>
+          <td>{{ item.ProcurementPlanPurchaseDate || '-' }}</td>
+          <td>{{ item.ProcurementPlanPurchaseType }}</td>
+          <td>{{ item.procurement_plan_type_id || '-' }}</td>
+          <td>{{ item.organization_id || '-' }}</td>
+          <td>{{ item.user_id || '-' }}</td>
+          <td>{{ item.CreatedAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td>{{ item.UpdatedAt ? (item.UpdatedAt | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
           <td>
-            <button nz-button nzType="primary" nzSize="small" (click)="editPlan(plan)">编辑</button>
-            <button nz-button nzDanger nzSize="small" (click)="deletePlan(plan.id)">删除</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="editPlan(item)">编辑</button>
+            <button nz-button nzType="dashed" nzSize="small" (click)="deletePlan(item.id)">删除</button>
           </td>
         </tr>
+        }
       </tbody>
     </nz-table>
   </nz-card>
-
-  <ng-template #extraTemplate>
-    <button nz-button nzType="primary" (click)="createPlan()">
-      <span nz-icon nzType="plus"></span>
-      创建采购计划
-    </button>
-  </ng-template>
 
   <nz-modal
     [(nzVisible)]="visible"

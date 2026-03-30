@@ -1,143 +1,74 @@
 <div class="role-page">
-  <!-- 标题行 -->
-  <div nz-row [nzGutter]="[16, 16]">
-    <div nz-col nzSpan="24">
+  <nz-card>
+    <div class="card-header">
       <h2>角色管理</h2>
-    </div>
-  </div>
-
-  <!-- 查询行 -->
-  <div nz-row [nzGutter]="[16, 16]">
-    <div nz-col nzSpan="24">
       <div class="search-area">
-        <div nz-row [nzGutter]="[16, 16]">
-          <div nz-col nzSpan="8">
-            <nz-input-group nzSearch [nzAddOnAfter]="searchButton">
-              <input type="text" nz-input [(ngModel)]="searchName" placeholder="请输入角色名称" />
-            </nz-input-group>
-            <ng-template #searchButton>
-              <button nz-button nzType="primary" nzSearch (click)="searchRoles()">
-                <i nz-icon nzType="search"></i>
-              </button>
-            </ng-template>
-          </div>
-          <div nz-col nzSpan="8">
-            <nz-input-group nzSearch [nzAddOnAfter]="searchCodeButton">
-              <input type="text" nz-input [(ngModel)]="searchCode" placeholder="请输入角色编码" />
-            </nz-input-group>
-            <ng-template #searchCodeButton>
-              <button nz-button nzType="primary" nzSearch (click)="searchRoles()">
-                <i nz-icon nzType="search"></i>
-              </button>
-            </ng-template>
-          </div>
-          <div nz-col nzSpan="8">
-            <div nz-row [nzGutter]="[8, 8]">
-              <div nz-col nzSpan="12">
-                <nz-input-group nzSearch [nzAddOnAfter]="searchFlagButton">
-                  <input type="text" nz-input [(ngModel)]="searchFlag" placeholder="请输入角色标识" />
-                </nz-input-group>
-                <ng-template #searchFlagButton>
-                  <button nz-button nzType="primary" nzSearch (click)="searchRoles()">
-                    <i nz-icon nzType="search"></i>
-                  </button>
-                </ng-template>
-              </div>
-              <div nz-col nzSpan="12">
-                <button nz-button nzType="primary" (click)="searchRoles()">
-                  <i nz-icon nzType="search"></i>
-                  查询
-                </button>
-                <button nz-button (click)="resetSearch()" style="margin-left: 8px;">
-                  <i nz-icon nzType="reload"></i>
-                  重置
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <input nz-input placeholder="搜索角色" [(ngModel)]="searchKeyword" (input)="searchRoles()" />
+        <button nz-button nzType="primary" (click)="createRole()">创建角色</button>
       </div>
     </div>
-  </div>
-
-  <!-- 功能行 -->
-  <div nz-row [nzGutter]="[16, 16]">
-    <div nz-col nzSpan="24">
-      <div class="function-area">
-        <button nz-button nzType="primary" (click)="createRole()">
-          <i nz-icon nzType="plus"></i>
-          创建角色
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 列表行 -->
-  <div nz-row [nzGutter]="[16, 16]">
-    <div nz-col nzSpan="24">
-      <nz-table [nzData]="roles" nzBordered [nzLoading]="loading">
+    <nz-table [nzData]="roles" nzBordered>
         <thead>
-          <tr>
-            <th nzWidth="80px">ID</th>
-            <th nzWidth="120px">角色名称</th>
-            <th nzWidth="120px">角色编码</th>
-            <th nzWidth="200px">角色描述</th>
-            <th nzWidth="120px">角色标识</th>
-            <th nzWidth="160px">创建时间</th>
-            <th nzWidth="160px">更新时间</th>
-            <th nzWidth="120px">操作</th>
-          </tr>
+            <tr>
+                <th>ID</th>
+                <th>角色名称</th>
+                <th>角色编码</th>
+                <th>角色描述</th>
+                <th>角色标识</th>
+                <th>创建时间</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
         </thead>
         <tbody>
-          @for (item of roles; track item.id) {
-          <tr>
-            <td>{{ item.id }}</td>
-            <td>{{ item.role_name }}</td>
-            <td>{{ item.role_code }}</td>
-            <td>{{ item.role_description }}</td>
-            <td>{{ item.role_flag }}</td>
-            <td>{{ item.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
-            <td>{{ item.updated_at ? (item.updated_at | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
-            <td>
-              <button nz-button nzType="primary" nzSize="small" (click)="editRole(item)">编辑</button>
-              <button nz-button nzType="dashed" nzSize="small" (click)="deleteRole(item.id)" style="margin-left: 8px;">删除</button>
-            </td>
-          </tr>
-          }
-        </tbody>
-      </nz-table>
-    </div>
-  </div>
+            @for (item of roles; track item.id) {
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.role_name }}</td>
+                <td>{{ item.role_code }}</td>
+                <td>{{ item.role_description }}</td>
+                <td>{{ item.role_flag }}</td>
+                <td>{{ item.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+                <td>{{ item.updated_at ? (item.updated_at | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
+                <td>
+                    <button nz-button nzType="primary" nzSize="small" (click)="editRole(item)">编辑</button>
+                    <button nz-button nzType="dashed" nzSize="small" (click)="deleteRole(item.id)">删除</button>
+                </td>
+            </tr>
+            }
 
-  <!-- 弹窗 -->
-  <nz-modal [(nzVisible)]="visible" [nzTitle]="modalTitle" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()" [nzOkLoading]="isLoading">
-    <ng-template #modalContent>
-        <form nz-form [formGroup]="roleForm">
-            <nz-form-item>
-                <nz-form-label nzRequired>角色名称</nz-form-label>
-                <nz-form-control nzErrorTip="请输入角色名称">
-                    <input nz-input formControlName="role_name" placeholder="请输入角色名称" />
-                </nz-form-control>
-            </nz-form-item>
-            <nz-form-item>
-                <nz-form-label nzRequired>角色编码</nz-form-label>
-                <nz-form-control nzErrorTip="请输入角色编码">
-                    <input nz-input formControlName="role_code" placeholder="请输入角色编码" />
-                </nz-form-control>
-            </nz-form-item>
-            <nz-form-item>
-                <nz-form-label nzRequired>角色描述</nz-form-label>
-                <nz-form-control nzErrorTip="请输入角色描述">
-                    <input nz-input formControlName="role_description" placeholder="请输入角色描述" />
-                </nz-form-control>
-            </nz-form-item>
-            <nz-form-item>
-                <nz-form-label nzRequired>角色标识</nz-form-label>
-                <nz-form-control nzErrorTip="请输入角色标识">
-                    <input nz-input formControlName="role_flag" placeholder="请输入角色标识" />
-                </nz-form-control>
-            </nz-form-item>
-        </form>
-    </ng-template>
-  </nz-modal>
+        </tbody>
+    </nz-table>
+  </nz-card>
+
+    <nz-modal [(nzVisible)]="visible" [nzTitle]="modalTitle" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()" [nzOkLoading]="isLoading">
+        <ng-template #modalContent>
+            <form nz-form [formGroup]="roleForm">
+                <nz-form-item>
+                    <nz-form-label nzRequired>角色名称</nz-form-label>
+                    <nz-form-control nzErrorTip="请输入角色名称">
+                        <input nz-input formControlName="role_name" placeholder="请输入角色名称" />
+                    </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                    <nz-form-label nzRequired>角色编码</nz-form-label>
+                    <nz-form-control nzErrorTip="请输入角色编码">
+                        <input nz-input formControlName="role_code" placeholder="请输入角色编码" />
+                    </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                    <nz-form-label nzRequired>角色描述</nz-form-label>
+                    <nz-form-control nzErrorTip="请输入角色描述">
+                        <input nz-input formControlName="role_description" placeholder="请输入角色描述" />
+                    </nz-form-control>
+                </nz-form-item>
+                <nz-form-item>
+                    <nz-form-label nzRequired>角色标识</nz-form-label>
+                    <nz-form-control nzErrorTip="请输入角色标识">
+                        <input nz-input formControlName="role_flag" placeholder="请输入角色标识" />
+                    </nz-form-control>
+                </nz-form-item>
+            </form>
+        </ng-template>
+    </nz-modal>
 </div>

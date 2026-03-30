@@ -1,5 +1,12 @@
 <div class="procurement-implementation-page">
-  <nz-card nzTitle="实施记录管理" [nzExtra]="extraTemplate">
+  <nz-card>
+    <div class="card-header">
+      <h2>实施记录管理</h2>
+      <div class="search-area">
+        <input nz-input placeholder="搜索实施记录" [(ngModel)]="searchKeyword" (input)="searchImplementations()" />
+        <button nz-button nzType="primary" (click)="createImplementation()">创建实施记录</button>
+      </div>
+    </div>
     <nz-table #implementationTable [nzData]="implementations" nzBordered>
       <thead>
         <tr>
@@ -14,29 +21,24 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let implementation of implementations">
-          <td>{{ implementation.id }}</td>
-          <td>{{ implementation.implementation_name }}</td>
-          <td>{{ implementation.implementation_code }}</td>
-          <td>{{ implementation.implementation_description }}</td>
-          <td>{{ implementation.implementation_flag }}</td>
-          <td>{{ implementation.created_at }}</td>
-          <td>{{ implementation.updated_at || '-' }}</td>
+        @for (item of implementations; track item.id) {
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.implementation_name }}</td>
+          <td>{{ item.implementation_code }}</td>
+          <td>{{ item.implementation_description }}</td>
+          <td>{{ item.implementation_flag }}</td>
+          <td>{{ item.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td>{{ item.updated_at ? (item.updated_at | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
           <td>
-            <button nz-button nzType="primary" nzSize="small" (click)="editImplementation(implementation)">编辑</button>
-            <button nz-button nzDanger nzSize="small" (click)="deleteImplementation(implementation.id)">删除</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="editImplementation(item)">编辑</button>
+            <button nz-button nzType="dashed" nzSize="small" (click)="deleteImplementation(item.id)">删除</button>
           </td>
         </tr>
+        }
       </tbody>
     </nz-table>
   </nz-card>
-
-  <ng-template #extraTemplate>
-    <button nz-button nzType="primary" (click)="createImplementation()">
-      <span nz-icon nzType="plus"></span>
-      创建实施记录
-    </button>
-  </ng-template>
 
   <nz-modal
     [(nzVisible)]="visible"

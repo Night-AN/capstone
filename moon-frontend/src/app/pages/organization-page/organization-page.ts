@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -7,7 +7,6 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CommonModule } from '@angular/common';
 import { OrganizationService } from 'src/app/services/organization.service';
 
@@ -29,18 +28,16 @@ enum ModalTitle {
 
 @Component({
   selector: 'app-organization-page',
-  standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     FormsModule,
+    ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
     NzFormModule,
     NzInputModule,
     NzTableModule,
-    NzModalModule,
-    NzSelectModule
+    NzModalModule
   ],
   templateUrl: './organization-page.html',
   styleUrl: './organization-page.scss',
@@ -56,12 +53,7 @@ export class OrganizationPage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
-  loading = false;
-
-  // 搜索相关
-  searchName = '';
-  searchCode = '';
-  searchStatus = '';
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -82,7 +74,6 @@ export class OrganizationPage implements OnInit {
   }
 
   loadOrganizations(): void {
-    this.loading = true;
     this.organizationService.getList().subscribe(organizations => {
       this.organizations = organizations[0].edges.map((edge: any) => ({
         id: edge.node.id,
@@ -94,25 +85,30 @@ export class OrganizationPage implements OnInit {
         created_at: edge.node.created_at,
         updated_at: edge.node.updated_at
       }));
-      this.loading = false;
     });
   }
 
-  // 搜索组织机构
   searchOrganizations(): void {
-    this.loading = true;
-    // 这里可以根据搜索条件调用后端API
-    // 暂时使用前端过滤
-    setTimeout(() => {
-      this.loading = false;
-    }, 500);
-  }
-
-  // 重置搜索
-  resetSearch(): void {
-    this.searchName = '';
-    this.searchCode = '';
-    this.searchStatus = '';
+    if (this.searchKeyword) {
+      this.organizationService.getList({ 
+        organization_name: { contains: this.searchKeyword },
+        organization_code: { contains: this.searchKeyword },
+        organization_description: { contains: this.searchKeyword }
+      }).subscribe(organizations => {
+        this.organizations = organizations[0].edges.map((edge: any) => ({
+          id: edge.node.id,
+          organization_name: edge.node.organization_name,
+          organization_code: edge.node.organization_code,
+          organization_description: edge.node.organization_description,
+          organization_flag: edge.node.organization_flag,
+          parent_id: edge.node.parent_id,
+          created_at: edge.node.created_at,
+          updated_at: edge.node.updated_at
+        }));
+      });
+    } else {
+      this.loadOrganizations();
+    }
   }
 
   createOrganization(): void {

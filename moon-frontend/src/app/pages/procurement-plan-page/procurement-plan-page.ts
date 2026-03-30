@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -37,6 +37,7 @@ enum ModalTitle {
   selector: 'app-procurement-plan-page',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
@@ -59,6 +60,7 @@ export class ProcurementPlanPage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -105,6 +107,36 @@ export class ProcurementPlanPage implements OnInit {
         user_id: edge.node.user_id
       }));
     });
+  }
+
+  searchPlans(): void {
+    if (this.searchKeyword) {
+      this.planService.getList({ 
+        ProcurementPlanName: { contains: this.searchKeyword },
+        ProcurementPlanCode: { contains: this.searchKeyword },
+        ProcurementPlanDescription: { contains: this.searchKeyword }
+      }).subscribe(plans => {
+        this.plans = plans[0].edges.map((edge: any) => ({
+          id: edge.node.id,
+          ProcurementPlanName: edge.node.ProcurementPlanName,
+          ProcurementPlanCode: edge.node.ProcurementPlanCode,
+          ProcurementPlanDescription: edge.node.ProcurementPlanDescription,
+          ProcurementPlanFlag: edge.node.ProcurementPlanFlag,
+          ProcurementPlanQuantity: edge.node.ProcurementPlanQuantity,
+          ProcurementPlanPrice: edge.node.ProcurementPlanPrice,
+          ProcurementPlanPurchaseDate: edge.node.ProcurementPlanPurchaseDate,
+          ProcurementPlanPurchaseType: edge.node.ProcurementPlanPurchaseType,
+          OtherMetadata: edge.node.OtherMetadata,
+          CreatedAt: edge.node.CreatedAt,
+          UpdatedAt: edge.node.UpdatedAt,
+          procurement_plan_type_id: edge.node.procurement_plan_type_id,
+          organization_id: edge.node.organization_id,
+          user_id: edge.node.user_id
+        }));
+      });
+    } else {
+      this.loadPlans();
+    }
   }
 
   createPlan(): void {

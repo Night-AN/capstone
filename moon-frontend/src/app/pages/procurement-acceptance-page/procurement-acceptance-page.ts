@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -29,6 +29,7 @@ enum ModalTitle {
   selector: 'app-procurement-acceptance-page',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
@@ -51,6 +52,7 @@ export class ProcurementAcceptancePage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -81,6 +83,28 @@ export class ProcurementAcceptancePage implements OnInit {
         updated_at: edge.node.updated_at
       }));
     });
+  }
+
+  searchAcceptances(): void {
+    if (this.searchKeyword) {
+      this.acceptanceService.getList({ 
+        acceptance_name: { contains: this.searchKeyword },
+        acceptance_code: { contains: this.searchKeyword },
+        acceptance_description: { contains: this.searchKeyword }
+      }).subscribe(acceptances => {
+        this.acceptances = acceptances[0].edges.map((edge: any) => ({
+          id: edge.node.id,
+          acceptance_name: edge.node.acceptance_name,
+          acceptance_code: edge.node.acceptance_code,
+          acceptance_description: edge.node.acceptance_description,
+          acceptance_flag: edge.node.acceptance_flag,
+          created_at: edge.node.created_at,
+          updated_at: edge.node.updated_at
+        }));
+      });
+    } else {
+      this.loadAcceptances();
+    }
   }
 
   createAcceptance(): void {

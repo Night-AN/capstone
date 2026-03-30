@@ -1,15 +1,31 @@
-.file-management {
-  .search-bar {
+.file-page {
+  padding: 24px;
+
+  .card-header {
     margin-bottom: 16px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 16px;
 
-    :deep(.ant-input-group) {
-      flex: 1;
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
     }
   }
 
+  .search-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+
+    input {
+      width: 300px;
+    }
+  }
+}
+
+.file-management {
   .modal-content {
     padding: 16px 0;
   }

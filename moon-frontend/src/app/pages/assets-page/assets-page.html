@@ -1,5 +1,12 @@
 <div class="assets-page">
-  <nz-card nzTitle="资产管理" [nzExtra]="extraTemplate">
+  <nz-card>
+    <div class="card-header">
+      <h2>资产管理</h2>
+      <div class="search-area">
+        <input nz-input placeholder="搜索资产" [(ngModel)]="searchKeyword" (input)="searchAssets()" />
+        <button nz-button nzType="primary" (click)="createAsset()">创建资产</button>
+      </div>
+    </div>
     <nz-table #assetTable [nzData]="assets" nzBordered>
       <thead>
         <tr>
@@ -24,39 +31,34 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let asset of assets">
-          <td>{{ asset.id }}</td>
-          <td>{{ asset.asset_name }}</td>
-          <td>{{ asset.asset_code }}</td>
-          <td>{{ asset.asset_description }}</td>
-          <td>{{ asset.asset_flag }}</td>
-          <td>{{ asset.quantity }}</td>
-          <td>{{ asset.location }}</td>
-          <td>{{ asset.purchase_price }}</td>
-          <td>{{ asset.depreciation_price }}</td>
-          <td>{{ asset.purchase_date || '-' }}</td>
-          <td>{{ asset.manufacturer }}</td>
-          <td>{{ asset.model }}</td>
-          <td>{{ asset.asset_type_id || '-' }}</td>
-          <td>{{ asset.asset_category_id || '-' }}</td>
-          <td>{{ asset.organization_id || '-' }}</td>
-          <td>{{ asset.created_at }}</td>
-          <td>{{ asset.updated_at || '-' }}</td>
+        @for (item of assets; track item.id) {
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.asset_name }}</td>
+          <td>{{ item.asset_code }}</td>
+          <td>{{ item.asset_description }}</td>
+          <td>{{ item.asset_flag }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.location }}</td>
+          <td>{{ item.purchase_price }}</td>
+          <td>{{ item.depreciation_price }}</td>
+          <td>{{ item.purchase_date || '-' }}</td>
+          <td>{{ item.manufacturer }}</td>
+          <td>{{ item.model }}</td>
+          <td>{{ item.asset_type_id || '-' }}</td>
+          <td>{{ item.asset_category_id || '-' }}</td>
+          <td>{{ item.organization_id || '-' }}</td>
+          <td>{{ item.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td>{{ item.updated_at ? (item.updated_at | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
           <td>
-            <button nz-button nzType="primary" nzSize="small" (click)="editAsset(asset)">编辑</button>
-            <button nz-button nzDanger nzSize="small" (click)="deleteAsset(asset.id)">删除</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="editAsset(item)">编辑</button>
+            <button nz-button nzType="dashed" nzSize="small" (click)="deleteAsset(item.id)">删除</button>
           </td>
         </tr>
+        }
       </tbody>
     </nz-table>
   </nz-card>
-
-  <ng-template #extraTemplate>
-    <button nz-button nzType="primary" (click)="createAsset()">
-      <span nz-icon nzType="plus"></span>
-      创建资产
-    </button>
-  </ng-template>
 
   <nz-modal
     [(nzVisible)]="visible"

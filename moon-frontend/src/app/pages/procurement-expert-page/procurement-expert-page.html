@@ -1,5 +1,12 @@
 <div class="procurement-expert-page">
-  <nz-card nzTitle="专家管理" [nzExtra]="extraTemplate">
+  <nz-card>
+    <div class="card-header">
+      <h2>专家管理</h2>
+      <div class="search-area">
+        <input nz-input placeholder="搜索专家" [(ngModel)]="searchKeyword" (input)="searchExperts()" />
+        <button nz-button nzType="primary" (click)="createExpert()">创建专家</button>
+      </div>
+    </div>
     <nz-table #expertTable [nzData]="experts" nzBordered>
       <thead>
         <tr>
@@ -14,29 +21,24 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let expert of experts">
-          <td>{{ expert.id }}</td>
-          <td>{{ expert.expert_name }}</td>
-          <td>{{ expert.expert_code }}</td>
-          <td>{{ expert.expert_description }}</td>
-          <td>{{ expert.expert_flag }}</td>
-          <td>{{ expert.created_at }}</td>
-          <td>{{ expert.updated_at || '-' }}</td>
+        @for (item of experts; track item.id) {
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.expert_name }}</td>
+          <td>{{ item.expert_code }}</td>
+          <td>{{ item.expert_description }}</td>
+          <td>{{ item.expert_flag }}</td>
+          <td>{{ item.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td>{{ item.updated_at ? (item.updated_at | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
           <td>
-            <button nz-button nzType="primary" nzSize="small" (click)="editExpert(expert)">编辑</button>
-            <button nz-button nzDanger nzSize="small" (click)="deleteExpert(expert.id)">删除</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="editExpert(item)">编辑</button>
+            <button nz-button nzType="dashed" nzSize="small" (click)="deleteExpert(item.id)">删除</button>
           </td>
         </tr>
+        }
       </tbody>
     </nz-table>
   </nz-card>
-
-  <ng-template #extraTemplate>
-    <button nz-button nzType="primary" (click)="createExpert()">
-      <span nz-icon nzType="plus"></span>
-      创建专家
-    </button>
-  </ng-template>
 
   <nz-modal
     [(nzVisible)]="visible"

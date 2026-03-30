@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -7,7 +7,6 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { CommonModule } from '@angular/common';
 import { UserService } from 'src/app/services/user.service';
 
@@ -28,15 +27,14 @@ enum ModalTitle {
   selector: 'app-user-page',
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     FormsModule,
+    ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
     NzFormModule,
     NzInputModule,
     NzTableModule,
-    NzModalModule,
-    NzDatePickerModule
+    NzModalModule
   ],
   templateUrl: './user-page.html',
   styleUrl: './user-page.scss',
@@ -52,12 +50,7 @@ export class UserPage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
-  loading = false;
-
-  // 搜索相关
-  searchName = '';
-  searchEmail = '';
-  dateRange: Date[] = [];
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -66,7 +59,7 @@ export class UserPage implements OnInit {
   ) {
     this.userForm = this.fb.group({
       nickname: ['', [Validators.required]],
-      fullname: ['', [Validators.required]],
+      name: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]]
     });
   }
@@ -76,34 +69,35 @@ export class UserPage implements OnInit {
   }
 
   loadUsers(): void {
-    this.loading = true;
     this.userService.getList().subscribe(users => {
       this.users = users[0].edges.map((edge: any) => ({
         id: edge.node.id,
         nickname: edge.node.nickname,
-        fullname: edge.node.fullname,
+        name: edge.node.fullname,
         email: edge.node.email,
         createdAt: edge.node.createdat
       }));
-      this.loading = false;
     });
   }
 
-  // 搜索用户
   searchUsers(): void {
-    this.loading = true;
-    // 这里可以根据搜索条件调用后端API
-    // 暂时使用前端过滤
-    setTimeout(() => {
-      this.loading = false;
-    }, 500);
-  }
-
-  // 重置搜索
-  resetSearch(): void {
-    this.searchName = '';
-    this.searchEmail = '';
-    this.dateRange = [];
+    if (this.searchKeyword) {
+      this.userService.getList({ 
+        nickname: { contains: this.searchKeyword },
+        fullname: { contains: this.searchKeyword },
+        email: { contains: this.searchKeyword }
+      }).subscribe(users => {
+        this.users = users[0].edges.map((edge: any) => ({
+          id: edge.node.id,
+          nickname: edge.node.nickname,
+          name: edge.node.fullname,
+          email: edge.node.email,
+          createdAt: edge.node.createdat
+        }));
+      });
+    } else {
+      this.loadUsers();
+    }
   }
 
   createUser(): void {

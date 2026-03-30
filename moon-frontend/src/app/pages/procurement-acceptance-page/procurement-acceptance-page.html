@@ -1,5 +1,12 @@
 <div class="procurement-acceptance-page">
-  <nz-card nzTitle="验收记录管理" [nzExtra]="extraTemplate">
+  <nz-card>
+    <div class="card-header">
+      <h2>验收记录管理</h2>
+      <div class="search-area">
+        <input nz-input placeholder="搜索验收记录" [(ngModel)]="searchKeyword" (input)="searchAcceptances()" />
+        <button nz-button nzType="primary" (click)="createAcceptance()">创建验收记录</button>
+      </div>
+    </div>
     <nz-table #acceptanceTable [nzData]="acceptances" nzBordered>
       <thead>
         <tr>
@@ -14,29 +21,24 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let acceptance of acceptances">
-          <td>{{ acceptance.id }}</td>
-          <td>{{ acceptance.acceptance_name }}</td>
-          <td>{{ acceptance.acceptance_code }}</td>
-          <td>{{ acceptance.acceptance_description }}</td>
-          <td>{{ acceptance.acceptance_flag }}</td>
-          <td>{{ acceptance.created_at }}</td>
-          <td>{{ acceptance.updated_at || '-' }}</td>
+        @for (item of acceptances; track item.id) {
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.acceptance_name }}</td>
+          <td>{{ item.acceptance_code }}</td>
+          <td>{{ item.acceptance_description }}</td>
+          <td>{{ item.acceptance_flag }}</td>
+          <td>{{ item.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+          <td>{{ item.updated_at ? (item.updated_at | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
           <td>
-            <button nz-button nzType="primary" nzSize="small" (click)="editAcceptance(acceptance)">编辑</button>
-            <button nz-button nzDanger nzSize="small" (click)="deleteAcceptance(acceptance.id)">删除</button>
+            <button nz-button nzType="primary" nzSize="small" (click)="editAcceptance(item)">编辑</button>
+            <button nz-button nzType="dashed" nzSize="small" (click)="deleteAcceptance(item.id)">删除</button>
           </td>
         </tr>
+        }
       </tbody>
     </nz-table>
   </nz-card>
-
-  <ng-template #extraTemplate>
-    <button nz-button nzType="primary" (click)="createAcceptance()">
-      <span nz-icon nzType="plus"></span>
-      创建验收记录
-    </button>
-  </ng-template>
 
   <nz-modal
     [(nzVisible)]="visible"

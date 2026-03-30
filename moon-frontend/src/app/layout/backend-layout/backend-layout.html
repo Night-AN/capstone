@@ -1,16 +1,14 @@
 <nz-layout class="container">
-  <nz-sider nzCollapsible [(nzCollapsed)]="isCollapsed" [nzTrigger]="null">
+  <nz-header>
     <div class="logo">
       <img class="pic" src="favicon.svg" />
-      @if(!isCollapsed){
       <span class="text">MOON BACKEND</span>
-      }
     </div>
-    <ul class="menu" nz-menu nzTheme="dark" nzMode="inline">
-
-      <li nz-menu-item>
-        <nz-icon nzType="dashboard" nzTheme="outline" />&nbsp;&nbsp;
-        <a routerLink="/backend">资产仪表盘</a>
+    <ul class="menu" nz-menu nzTheme="dark" nzMode="horizontal">
+      <li nz-menu-item nzTitle="仪表盘">
+        <nz-icon nzType="dashboard" nzTheme="outline" />
+        <span>资产仪表盘</span>
+        <a routerLink="/backend"></a>
       </li>
       <li nz-submenu nzTitle="系统管理" nzIcon="user">
         <ul>
@@ -45,18 +43,13 @@
         </ul>
       </li>
     </ul>
-
-  </nz-sider>
-  <nz-layout class="content">
-    <nz-header>
-      <nz-icon class="trigger" [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
-        (click)="isCollapsed = !isCollapsed" />
-    </nz-header>
-    <nz-content>
-
-      <div class="inner-content">
-        <router-outlet></router-outlet>
-      </div>
-    </nz-content>
-  </nz-layout>
+  </nz-header>
+  <nz-content>
+    <div class="inner-content">
+      <router-outlet></router-outlet>
+    </div>
+  </nz-content>
+  <nz-footer>
+    ©2026 MOON BACKEND
+  </nz-footer>
 </nz-layout>

@@ -1,40 +1,29 @@
 .container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     height: 100vh;
     overflow: hidden;
-
+    
     .logo {
-        margin: 10px;
-        justify-items: center;
+        float: left;
+        margin: 0 24px;
+        display: flex;
         align-items: center;
-        text-align: center;
 
         .pic {
             height: 32px;
-            display: block;
-            margin: 0 auto;
+            margin-right: 12px;
         }
 
         .text {
             font-size: 14px;
             font-weight: 600;
-            color: #fff;
-            vertical-align: middle;
+            color: #ffffff;
         }
     }
     .menu {
-        height: calc(100vh - 84px);
-        overflow-y: auto;
-        scrollbar-width: none;
-    }
-
-    .content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        scrollbar-width: none;
+        float: left;
+        line-height: 64px;
     }
 }
 
@@ -42,23 +31,10 @@
     flex: 1 1 auto;
 }
 
-.trigger {
-    font-size: 18px;
-    line-height: 64px;
-    padding: 0 24px;
-    cursor: pointer;
-    transition: color 0.3s;
-}
-
-.trigger:hover {
-    color: #1890ff;
-}
-
-
 nz-header {
-    background: #fff;
+    background: #001529;
     padding: 0;
-    flex: 0 0 auto; // 头部不自动扩展
+    flex: 0 0 auto;
 }
 
 nz-content {
@@ -79,4 +55,5 @@ nz-breadcrumb {
 
 nz-footer {
     text-align: center;
+    background: #f0f0f0;
 }

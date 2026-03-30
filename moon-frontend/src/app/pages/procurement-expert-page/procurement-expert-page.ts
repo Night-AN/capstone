@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -29,6 +29,7 @@ enum ModalTitle {
   selector: 'app-procurement-expert-page',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
@@ -51,6 +52,7 @@ export class ProcurementExpertPage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -81,6 +83,28 @@ export class ProcurementExpertPage implements OnInit {
         updated_at: edge.node.updated_at
       }));
     });
+  }
+
+  searchExperts(): void {
+    if (this.searchKeyword) {
+      this.expertService.getList({ 
+        expert_name: { contains: this.searchKeyword },
+        expert_code: { contains: this.searchKeyword },
+        expert_description: { contains: this.searchKeyword }
+      }).subscribe(experts => {
+        this.experts = experts[0].edges.map((edge: any) => ({
+          id: edge.node.id,
+          expert_name: edge.node.expert_name,
+          expert_code: edge.node.expert_code,
+          expert_description: edge.node.expert_description,
+          expert_flag: edge.node.expert_flag,
+          created_at: edge.node.created_at,
+          updated_at: edge.node.updated_at
+        }));
+      });
+    } else {
+      this.loadExperts();
+    }
   }
 
   createExpert(): void {

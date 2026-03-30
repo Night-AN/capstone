@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -29,6 +29,7 @@ enum ModalTitle {
   selector: 'app-procurement-implementation-page',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
@@ -51,6 +52,7 @@ export class ProcurementImplementationPage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
+  searchKeyword: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -81,6 +83,28 @@ export class ProcurementImplementationPage implements OnInit {
         updated_at: edge.node.updated_at
       }));
     });
+  }
+
+  searchImplementations(): void {
+    if (this.searchKeyword) {
+      this.implementationService.getList({ 
+        implementation_name: { contains: this.searchKeyword },
+        implementation_code: { contains: this.searchKeyword },
+        implementation_description: { contains: this.searchKeyword }
+      }).subscribe(implementations => {
+        this.implementations = implementations[0].edges.map((edge: any) => ({
+          id: edge.node.id,
+          implementation_name: edge.node.implementation_name,
+          implementation_code: edge.node.implementation_code,
+          implementation_description: edge.node.implementation_description,
+          implementation_flag: edge.node.implementation_flag,
+          created_at: edge.node.created_at,
+          updated_at: edge.node.updated_at
+        }));
+      });
+    } else {
+      this.loadImplementations();
+    }
   }
 
   createImplementation(): void {
