@@ -1,0 +1,118 @@
+.supply-chain-risk-analysis {
+  .analysis-form {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    h3 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .form-actions {
+      margin-top: 20px;
+      button {
+        margin-right: 12px;
+      }
+    }
+  }
+  
+  .analysis-result {
+    h3 {
+      margin-bottom: 16px;
+      color: #333;
+    }
+    .risk-score {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      .score-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .score-label {
+          font-weight: 500;
+          color: #666;
+        }
+        .score-value {
+          font-weight: 600;
+          &.total-score {
+            font-size: 18px;
+          }
+          &.high-risk {
+            color: #f5222d;
+          }
+          &.medium-risk {
+            color: #faad14;
+          }
+          &.low-risk {
+            color: #52c41a;
+          }
+        }
+      }
+    }
+    
+    .risk-details {
+      margin-top: 16px;
+      .risk-list {
+        list-style: none;
+        padding: 0;
+        .risk-item {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          margin-bottom: 12px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+          .risk-name {
+            flex: 1;
+            font-weight: 500;
+            margin-right: 12px;
+          }
+          .risk-level {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            &.high {
+              background: #fff1f0;
+              color: #f5222d;
+            }
+            &.medium {
+              background: #fffbe6;
+              color: #faad14;
+            }
+            &.low {
+              background: #f6ffed;
+              color: #52c41a;
+            }
+          }
+          .risk-description {
+            flex: 100%;
+            margin-top: 8px;
+            color: #666;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+    
+    .suggestions {
+      list-style: none;
+      padding: 0;
+      li {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+        i {
+          margin-right: 8px;
+          margin-top: 2px;
+          color: #52c41a;
+        }
+      }
+    }
+  }
+}

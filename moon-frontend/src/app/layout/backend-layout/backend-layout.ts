@@ -15,9 +15,6 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
 })
 export class BackendLayout {
   isCollapsed = false;
-  breadcrumbItems: string[] = [];
   constructor() {
-    this.breadcrumbItems = ['User', 'Bill'];
   }
-  protected readonly date = new Date();
 }

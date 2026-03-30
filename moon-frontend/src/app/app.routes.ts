@@ -19,6 +19,9 @@ import { AssetsPage } from '@pages/assets-page/assets-page';
 import { AssetTypePage } from '@pages/asset-type-page/asset-type-page';
 import { AssetCategoryPage } from '@pages/asset-category-page/asset-category-page';
 import { FilePageComponent } from '@pages/file-page/file-page';
+import { FinancialExportComponent } from '@pages/financial-export/financial-export';
+import { SupplyChainRiskAnalysisComponent } from '@pages/supply-chain-risk-analysis/supply-chain-risk-analysis';
+import { DashboardComponent } from '@pages/dashboard/dashboard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -26,6 +29,8 @@ export const routes: Routes = [
   { path: 'backend'
     , component: BackendLayout
     , children: [
+      { path: '', component: DashboardComponent },
+      { path: 'dashboard', component: DashboardComponent },
       { path: 'user-page', component: UserPage },
       { path: 'organization-page', component: OrganizationPage },
       { path: 'role-page', component: RolePage },
@@ -43,7 +48,9 @@ export const routes: Routes = [
       { path: 'procurement-fraud-risk-page', component: ProcurementFraudRiskPage },
       { path: 'assets-page', component: AssetsPage },
       { path: 'asset-type-page', component: AssetTypePage },
-      { path: 'asset-category-page', component: AssetCategoryPage }
+      { path: 'asset-category-page', component: AssetCategoryPage },
+      { path: 'financial-export-page', component: FinancialExportComponent },
+      { path: 'supply-chain-risk-analysis-page', component: SupplyChainRiskAnalysisComponent }
     ]
   },
 ];

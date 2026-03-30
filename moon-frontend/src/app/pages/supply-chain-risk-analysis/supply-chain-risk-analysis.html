@@ -1,0 +1,110 @@
+<nz-card nzTitle="供应链风险分析" [nzBordered]="false">
+  <div class="supply-chain-risk-analysis">
+    <div class="analysis-form">
+      <h3>供应链风险分析</h3>
+      <form nz-form [formGroup]="analysisForm">
+        <nz-form-item>
+          <nz-form-label>分析类型</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="analysisType" nzPlaceHolder="选择分析类型">
+              <nz-option nzValue="security" nzLabel="安全风险分析"></nz-option>
+              <nz-option nzValue="financial" nzLabel="财务风险分析"></nz-option>
+              <nz-option nzValue="operational" nzLabel="运营风险分析"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        
+        <nz-form-item>
+          <nz-form-label>分析周期</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="analysisPeriod" nzPlaceHolder="选择分析周期">
+              <nz-option nzValue="monthly" nzLabel="月度"></nz-option>
+              <nz-option nzValue="quarterly" nzLabel="季度"></nz-option>
+              <nz-option nzValue="yearly" nzLabel="年度"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        
+        <nz-form-item>
+          <nz-form-label>开始日期</nz-form-label>
+          <nz-form-control>
+            <nz-date-picker formControlName="startDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+          </nz-form-control>
+        </nz-form-item>
+        
+        <nz-form-item>
+          <nz-form-label>结束日期</nz-form-label>
+          <nz-form-control>
+            <nz-date-picker formControlName="endDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+          </nz-form-control>
+        </nz-form-item>
+        
+        <div class="form-actions">
+          <button nz-button nzType="primary" (click)="analyzeRisk()" [disabled]="loading">
+            <i nz-icon nzType="search"></i>
+            分析风险
+          </button>
+          <button nz-button (click)="exportReport()" [disabled]="!analysisResult">
+            <i nz-icon nzType="export"></i>
+            导出报告
+          </button>
+        </div>
+      </form>
+    </div>
+    
+    <div class="analysis-result" *ngIf="analysisResult">
+      <h3>分析结果</h3>
+      <nz-card nzTitle="风险评估" [nzBordered]="true">
+        <div class="risk-score">
+          <div class="score-item">
+            <span class="score-label">安全风险评分:</span>
+            <span class="score-value" [class.high-risk]="analysisResult.securityScore > 70" [class.medium-risk]="analysisResult.securityScore > 40 && analysisResult.securityScore <= 70" [class.low-risk]="analysisResult.securityScore <= 40">
+              {{ analysisResult.securityScore }}/100
+            </span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">财务风险评分:</span>
+            <span class="score-value" [class.high-risk]="analysisResult.financialScore > 70" [class.medium-risk]="analysisResult.financialScore > 40 && analysisResult.financialScore <= 70" [class.low-risk]="analysisResult.financialScore <= 40">
+              {{ analysisResult.financialScore }}/100
+            </span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">运营风险评分:</span>
+            <span class="score-value" [class.high-risk]="analysisResult.operationalScore > 70" [class.medium-risk]="analysisResult.operationalScore > 40 && analysisResult.operationalScore <= 70" [class.low-risk]="analysisResult.operationalScore <= 40">
+              {{ analysisResult.operationalScore }}/100
+            </span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">综合风险评分:</span>
+            <span class="score-value total-score" [class.high-risk]="analysisResult.totalScore > 70" [class.medium-risk]="analysisResult.totalScore > 40 && analysisResult.totalScore <= 70" [class.low-risk]="analysisResult.totalScore <= 40">
+              {{ analysisResult.totalScore }}/100
+            </span>
+          </div>
+        </div>
+      </nz-card>
+      
+      <nz-card nzTitle="风险详情" [nzBordered]="true" class="risk-details">
+        <ul class="risk-list">
+          <li *ngFor="let risk of analysisResult.riskDetails">
+            <div class="risk-item">
+              <span class="risk-name">{{ risk.name }}</span>
+              <span class="risk-level" [class.high]="risk.level === 'high'" [class.medium]="risk.level === 'medium'" [class.low]="risk.level === 'low'">
+                {{ risk.level | uppercase }}
+              </span>
+              <span class="risk-description">{{ risk.description }}</span>
+            </div>
+          </li>
+        </ul>
+      </nz-card>
+      
+      <nz-card nzTitle="建议措施" [nzBordered]="true">
+        <ul class="suggestions">
+          <li *ngFor="let suggestion of analysisResult.suggestions">
+            <i nz-icon nzType="check-circle" nzTheme="outline"></i>
+            {{ suggestion }}
+          </li>
+        </ul>
+      </nz-card>
+    </div>
+  </div>
+</nz-card>

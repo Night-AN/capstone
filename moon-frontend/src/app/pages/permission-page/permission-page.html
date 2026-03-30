@@ -1,75 +1,143 @@
 <div class="permission-page">
-  <nz-card nzTitle="权限管理" [nzExtra]="extraTemplate">
-    <nz-table #permissionTable [nzData]="permissions" nzBordered>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>权限名称</th>
-          <th>权限编码</th>
-          <th>权限描述</th>
-          <th>权限标识</th>
-          <th>创建时间</th>
-          <th>更新时间</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let permission of permissions">
-          <td>{{ permission.id }}</td>
-          <td>{{ permission.permission_name }}</td>
-          <td>{{ permission.permission_code }}</td>
-          <td>{{ permission.permission_description }}</td>
-          <td>{{ permission.permission_flag }}</td>
-          <td>{{ permission.created_at }}</td>
-          <td>{{ permission.updated_at || '-' }}</td>
-          <td>
-            <button nz-button nzType="primary" nzSize="small" (click)="editPermission(permission)">编辑</button>
-            <button nz-button nzDanger nzSize="small" (click)="deletePermission(permission.id)">删除</button>
-          </td>
-        </tr>
-      </tbody>
-    </nz-table>
-  </nz-card>
+  <!-- 标题行 -->
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzSpan="24">
+      <h2>权限管理</h2>
+    </div>
+  </div>
 
-  <ng-template #extraTemplate>
-    <button nz-button nzType="primary" (click)="createPermission()">
-      <span nz-icon nzType="plus"></span>
-      创建权限
-    </button>
-  </ng-template>
+  <!-- 查询行 -->
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzSpan="24">
+      <div class="search-area">
+        <div nz-row [nzGutter]="[16, 16]">
+          <div nz-col nzSpan="8">
+            <nz-input-group nzSearch [nzAddOnAfter]="searchButton">
+              <input type="text" nz-input [(ngModel)]="searchName" placeholder="请输入权限名称" />
+            </nz-input-group>
+            <ng-template #searchButton>
+              <button nz-button nzType="primary" nzSearch (click)="searchPermissions()">
+                <i nz-icon nzType="search"></i>
+              </button>
+            </ng-template>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-input-group nzSearch [nzAddOnAfter]="searchCodeButton">
+              <input type="text" nz-input [(ngModel)]="searchCode" placeholder="请输入权限编码" />
+            </nz-input-group>
+            <ng-template #searchCodeButton>
+              <button nz-button nzType="primary" nzSearch (click)="searchPermissions()">
+                <i nz-icon nzType="search"></i>
+              </button>
+            </ng-template>
+          </div>
+          <div nz-col nzSpan="8">
+            <div nz-row [nzGutter]="[8, 8]">
+              <div nz-col nzSpan="12">
+                <nz-input-group nzSearch [nzAddOnAfter]="searchFlagButton">
+                  <input type="text" nz-input [(ngModel)]="searchFlag" placeholder="请输入权限标识" />
+                </nz-input-group>
+                <ng-template #searchFlagButton>
+                  <button nz-button nzType="primary" nzSearch (click)="searchPermissions()">
+                    <i nz-icon nzType="search"></i>
+                  </button>
+                </ng-template>
+              </div>
+              <div nz-col nzSpan="12">
+                <button nz-button nzType="primary" (click)="searchPermissions()">
+                  <i nz-icon nzType="search"></i>
+                  查询
+                </button>
+                <button nz-button (click)="resetSearch()" style="margin-left: 8px;">
+                  <i nz-icon nzType="reload"></i>
+                  重置
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <nz-modal
-    [(nzVisible)]="visible"
-    [nzTitle]="modalTitle"
-    (nzOnCancel)="handleCancel()"
-    (nzOnOk)="handleOk()"
-    [nzOkLoading]="isLoading"
-  >
-    <nz-form [formGroup]="permissionForm">
-      <nz-form-item>
-        <nz-form-label nzRequired>权限名称</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="permission_name" placeholder="请输入权限名称" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzRequired>权限编码</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="permission_code" placeholder="请输入权限编码" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzRequired>权限描述</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="permission_description" placeholder="请输入权限描述" />
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzRequired>权限标识</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="permission_flag" placeholder="请输入权限标识" />
-        </nz-form-control>
-      </nz-form-item>
-    </nz-form>
+  <!-- 功能行 -->
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzSpan="24">
+      <div class="function-area">
+        <button nz-button nzType="primary" (click)="createPermission()">
+          <i nz-icon nzType="plus"></i>
+          创建权限
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 列表行 -->
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzSpan="24">
+      <nz-table [nzData]="permissions" nzBordered [nzLoading]="loading">
+        <thead>
+          <tr>
+            <th nzWidth="80px">ID</th>
+            <th nzWidth="120px">权限名称</th>
+            <th nzWidth="120px">权限编码</th>
+            <th nzWidth="200px">权限描述</th>
+            <th nzWidth="120px">权限标识</th>
+            <th nzWidth="160px">创建时间</th>
+            <th nzWidth="160px">更新时间</th>
+            <th nzWidth="120px">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of permissions; track item.id) {
+          <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.permission_name }}</td>
+            <td>{{ item.permission_code }}</td>
+            <td>{{ item.permission_description }}</td>
+            <td>{{ item.permission_flag }}</td>
+            <td>{{ item.created_at | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+            <td>{{ item.updated_at ? (item.updated_at | date: 'yyyy-MM-dd HH:mm:ss') : '-' }}</td>
+            <td>
+              <button nz-button nzType="primary" nzSize="small" (click)="editPermission(item)">编辑</button>
+              <button nz-button nzType="dashed" nzSize="small" (click)="deletePermission(item.id)" style="margin-left: 8px;">删除</button>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+
+  <!-- 弹窗 -->
+  <nz-modal [(nzVisible)]="visible" [nzTitle]="modalTitle" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()" [nzOkLoading]="isLoading">
+    <ng-template #modalContent>
+        <form nz-form [formGroup]="permissionForm">
+            <nz-form-item>
+                <nz-form-label nzRequired>权限名称</nz-form-label>
+                <nz-form-control nzErrorTip="请输入权限名称">
+                    <input nz-input formControlName="permission_name" placeholder="请输入权限名称" />
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzRequired>权限编码</nz-form-label>
+                <nz-form-control nzErrorTip="请输入权限编码">
+                    <input nz-input formControlName="permission_code" placeholder="请输入权限编码" />
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzRequired>权限描述</nz-form-label>
+                <nz-form-control nzErrorTip="请输入权限描述">
+                    <input nz-input formControlName="permission_description" placeholder="请输入权限描述" />
+                </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-label nzRequired>权限标识</nz-form-label>
+                <nz-form-control nzErrorTip="请输入权限标识">
+                    <input nz-input formControlName="permission_flag" placeholder="请输入权限标识" />
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+    </ng-template>
   </nz-modal>
 </div>

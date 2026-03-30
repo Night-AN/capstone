@@ -10,6 +10,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CommonModule } from '@angular/common';
 import { FileService } from '../../services/file.service';
 
@@ -27,7 +28,8 @@ import { FileService } from '../../services/file.service';
     NzIconModule,
     NzCardModule,
     NzFormModule,
-    NzModalModule
+    NzModalModule,
+    NzSelectModule
   ],
   templateUrl: './file-page.html',
   styleUrls: ['./file-page.less']
@@ -35,6 +37,7 @@ import { FileService } from '../../services/file.service';
 export class FilePageComponent implements OnInit {
   // 搜索相关
   searchValue: string = '';
+  searchType: string = '';
   
   // 分页相关
   currentPage: number = 1;
@@ -99,6 +102,14 @@ export class FilePageComponent implements OnInit {
 
   // 搜索文件
   searchFiles() {
+    this.currentPage = 1;
+    this.getFiles();
+  }
+
+  // 重置搜索
+  resetSearch() {
+    this.searchValue = '';
+    this.searchType = '';
     this.currentPage = 1;
     this.getFiles();
   }

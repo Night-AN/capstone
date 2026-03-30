@@ -1,0 +1,148 @@
+<div nz-row [nzGutter]="[24, 24]">
+  <!-- 会计数据导出 -->
+  <div nz-col nzSpan="24">
+    <h3 class="section-title">会计数据导出</h3>
+    <div nz-row [nzGutter]="[16, 16]">
+      <div nz-col nzSpan="12" nzMd="24" nzSm="24">
+        <nz-card [nzBordered]="true" nzSize="small">
+          <h4 class="export-item-title">资产台账导出</h4>
+          <div class="export-form">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">导出格式</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-select [(ngModel)]="assetFormat" nzPlaceHolder="选择格式">
+                  <nz-option nzValue="excel" nzLabel="Excel"></nz-option>
+                  <nz-option nzValue="csv" nzLabel="CSV"></nz-option>
+                  <nz-option nzValue="pdf" nzLabel="PDF"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+            <div class="export-actions">
+              <button nz-button nzType="primary" (click)="exportAssetLedger()" [disabled]="loading">
+                <i nz-icon nzType="download"></i>
+                导出资产台账
+              </button>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+      <div nz-col nzSpan="12" nzMd="24" nzSm="24">
+        <nz-card [nzBordered]="true" nzSize="small">
+          <h4 class="export-item-title">会计凭证导出</h4>
+          <div class="export-form">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">导出格式</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-select [(ngModel)]="voucherFormat" nzPlaceHolder="选择格式">
+                  <nz-option nzValue="excel" nzLabel="Excel"></nz-option>
+                  <nz-option nzValue="csv" nzLabel="CSV"></nz-option>
+                  <nz-option nzValue="pdf" nzLabel="PDF"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">开始日期</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-date-picker [(ngModel)]="voucherStartDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">结束日期</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-date-picker [(ngModel)]="voucherEndDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+            <div class="export-actions">
+              <button nz-button nzType="primary" (click)="exportAccountingVouchers()" [disabled]="loading">
+                <i nz-icon nzType="download"></i>
+                导出会计凭证
+              </button>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- 审计数据导出 -->
+  <div nz-col nzSpan="24">
+    <h3 class="section-title">审计数据导出</h3>
+    <div nz-row [nzGutter]="[16, 16]">
+      <div nz-col nzSpan="12" nzMd="24" nzSm="24">
+        <nz-card [nzBordered]="true" nzSize="small">
+          <h4 class="export-item-title">审计报告导出</h4>
+          <div class="export-form">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">导出格式</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-select [(ngModel)]="auditFormat" nzPlaceHolder="选择格式">
+                  <nz-option nzValue="excel" nzLabel="Excel"></nz-option>
+                  <nz-option nzValue="pdf" nzLabel="PDF"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">开始日期</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-date-picker [(ngModel)]="auditStartDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">结束日期</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-date-picker [(ngModel)]="auditEndDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+            <div class="export-actions">
+              <button nz-button nzType="primary" (click)="exportAuditReport()" [disabled]="loading">
+                <i nz-icon nzType="download"></i>
+                导出审计报告
+              </button>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- 出纳数据导出 -->
+  <div nz-col nzSpan="24">
+    <h3 class="section-title">出纳数据导出</h3>
+    <div nz-row [nzGutter]="[16, 16]">
+      <div nz-col nzSpan="12" nzMd="24" nzSm="24">
+        <nz-card [nzBordered]="true" nzSize="small">
+          <h4 class="export-item-title">出纳流水导出</h4>
+          <div class="export-form">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">导出格式</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-select [(ngModel)]="cashierFormat" nzPlaceHolder="选择格式">
+                  <nz-option nzValue="excel" nzLabel="Excel"></nz-option>
+                  <nz-option nzValue="csv" nzLabel="CSV"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">开始日期</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-date-picker [(ngModel)]="cashierStartDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzSpan]="6">结束日期</nz-form-label>
+              <nz-form-control [nzSpan]="18">
+                <nz-date-picker [(ngModel)]="cashierEndDate" nzFormat="yyyy-MM-dd"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+            <div class="export-actions">
+              <button nz-button nzType="primary" (click)="exportCashierRecords()" [disabled]="loading">
+                <i nz-icon nzType="download"></i>
+                导出出纳流水
+              </button>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+    </div>
+  </div>
+</div>

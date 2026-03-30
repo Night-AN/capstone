@@ -7,6 +7,11 @@
       }
     </div>
     <ul class="menu" nz-menu nzTheme="dark" nzMode="inline">
+
+      <li nz-menu-item>
+        <nz-icon nzType="dashboard" nzTheme="outline" />&nbsp;&nbsp;
+        <a routerLink="/backend">资产仪表盘</a>
+      </li>
       <li nz-submenu nzTitle="系统管理" nzIcon="user">
         <ul>
           <li nz-menu-item><a routerLink="/backend/user-page">用户管理</a></li>
@@ -14,31 +19,33 @@
           <li nz-menu-item><a routerLink="/backend/role-page">角色管理</a></li>
           <li nz-menu-item><a routerLink="/backend/permission-page">权限管理</a></li>
           <li nz-menu-item><a routerLink="/backend/file-page">文件管理</a></li>
+          <li nz-menu-item><a routerLink="/backend/financial-export-page">财务数据导出</a></li>
         </ul>
       </li>
       <li nz-submenu nzTitle="业务管理" nzIcon="team">
         <ul>
-          <li nz-menu-item><a routerLink="/backend/procurement-plan-type-page">计划类型管理</a></li>
           <li nz-menu-item><a routerLink="/backend/procurement-plan-page">采购计划管理</a></li>
-          <li nz-menu-item><a routerLink="/backend/procurement-expert-page">专家管理</a></li>
-          <li nz-menu-item><a routerLink="/backend/procurement-review-page">评审记录管理</a></li>
           <li nz-menu-item><a routerLink="/backend/procurement-implementation-page">实施记录管理</a></li>
           <li nz-menu-item><a routerLink="/backend/procurement-acceptance-page">验收记录管理</a></li>
           <li nz-menu-item><a routerLink="/backend/assets-page">资产管理</a></li>
+          <li nz-menu-item><a routerLink="/backend/procurement-review-page">评审记录管理</a></li>
+          <li nz-menu-item><a routerLink="/backend/procurement-expert-page">专家管理</a></li>
           <li nz-menu-item><a routerLink="/backend/asset-type-page">资产类型管理</a></li>
           <li nz-menu-item><a routerLink="/backend/asset-category-page">资产分类管理</a></li>
+          <li nz-menu-item><a routerLink="/backend/procurement-plan-type-page">计划类型管理</a></li>
         </ul>
       </li>
       <li nz-submenu nzTitle="AI管理" nzIcon="robot">
         <ul>
-          <li nz-menu-item><a routerLink="/backend/llm-model-page">LLM模型管理</a></li>
           <li nz-menu-item><a routerLink="/backend/llm-procurement-analysis-page">采购分析管理</a></li>
-          <li nz-menu-item><a routerLink="/backend/llm-token-usage-page">Token使用管理</a></li>
           <li nz-menu-item><a routerLink="/backend/procurement-fraud-risk-page">欺诈风险管理</a></li>
+          <li nz-menu-item><a routerLink="/backend/supply-chain-risk-analysis-page">供应链风险分析</a></li>
+          <li nz-menu-item><a routerLink="/backend/llm-model-page">LLM模型管理</a></li>
+          <li nz-menu-item><a routerLink="/backend/llm-token-usage-page">Token使用管理</a></li>
         </ul>
       </li>
     </ul>
-    
+
   </nz-sider>
   <nz-layout class="content">
     <nz-header>
@@ -46,11 +53,7 @@
         (click)="isCollapsed = !isCollapsed" />
     </nz-header>
     <nz-content>
-      <nz-breadcrumb>
-        @for(item of breadcrumbItems; track item){
-        <nz-breadcrumb-item>{{item}}</nz-breadcrumb-item>
-        }
-      </nz-breadcrumb>
+
       <div class="inner-content">
         <router-outlet></router-outlet>
       </div>

@@ -1,0 +1,159 @@
+<div class="dashboard-container">
+  <h2>资产仪表盘</h2>
+  
+  <!-- 资产统计卡片 -->
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzSpan="6">
+      <nz-card>
+        <nz-statistic title="总资产数量" [nzValue]="assetStatistics.totalAssets">
+          <ng-template #prefix>
+            <i nz-icon nzType="database" nzTheme="outline" style="color: #1890ff;"></i>
+          </ng-template>
+          <ng-template #suffix>
+            <span style="color: #52c41a;">个</span>
+          </ng-template>
+          <ng-template #extra>
+            <div class="statistic-extra">
+              <span>包含所有类型资产</span>
+            </div>
+          </ng-template>
+        </nz-statistic>
+      </nz-card>
+    </div>
+    <div nz-col nzSpan="6">
+      <nz-card>
+        <nz-statistic title="总资产价值" [nzValue]="assetStatistics.totalValue">
+          <ng-template #prefix>
+            <i nz-icon nzType="dollar" nzTheme="outline" style="color: #52c41a;"></i>
+          </ng-template>
+          <ng-template #suffix>
+            <span style="color: #52c41a;">元</span>
+          </ng-template>
+          <ng-template #extra>
+            <div class="statistic-extra">
+              <span>当前资产总价值</span>
+            </div>
+          </ng-template>
+        </nz-statistic>
+      </nz-card>
+    </div>
+    <div nz-col nzSpan="6">
+      <nz-card>
+        <nz-statistic title="折旧率" [nzValue]="assetStatistics.depreciationRate">
+          <ng-template #prefix>
+            <i nz-icon nzType="fall" nzTheme="outline" style="color: #faad14;"></i>
+          </ng-template>
+          <ng-template #suffix>
+            <span style="color: #faad14;">%</span>
+          </ng-template>
+          <ng-template #extra>
+            <div class="statistic-extra">
+              <span>资产平均折旧率</span>
+            </div>
+          </ng-template>
+        </nz-statistic>
+      </nz-card>
+    </div>
+    <div nz-col nzSpan="6">
+      <nz-card>
+        <nz-statistic title="高价值资产" [nzValue]="assetStatistics.highValueAssets">
+          <ng-template #prefix>
+            <i nz-icon nzType="star" nzTheme="outline" style="color: #f5222d;"></i>
+          </ng-template>
+          <ng-template #suffix>
+            <span style="color: #52c41a;">个</span>
+          </ng-template>
+          <ng-template #extra>
+            <div class="statistic-extra">
+              <span>价值超过5000元的资产</span>
+            </div>
+          </ng-template>
+        </nz-statistic>
+      </nz-card>
+    </div>
+  </div>
+  
+  <!-- 资产分布 -->
+  <div nz-row [nzGutter]="[16, 16]" style="margin-top: 16px;">
+    <div nz-col nzSpan="12">
+      <nz-card nzTitle="资产类型分布">
+        <div *ngFor="let item of assetTypeDistribution" class="distribution-item">
+          <div class="distribution-label">
+            <span class="distribution-name">{{ item.name }}</span>
+            <span class="distribution-value">{{ item.value }}%</span>
+          </div>
+          <nz-progress 
+            [nzPercent]="item.value" 
+            [nzStrokeColor]="item.color"
+            [nzShowInfo]="false"
+          ></nz-progress>
+        </div>
+      </nz-card>
+    </div>
+    <div nz-col nzSpan="12">
+      <nz-card nzTitle="资产状态分布">
+        <div *ngFor="let item of assetStatusDistribution" class="distribution-item">
+          <div class="distribution-label">
+            <span class="distribution-name">{{ item.name }}</span>
+            <span class="distribution-value">{{ item.value }}%</span>
+          </div>
+          <nz-progress 
+            [nzPercent]="item.value" 
+            [nzStrokeColor]="item.color"
+            [nzShowInfo]="false"
+          ></nz-progress>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+  
+  <!-- 最近添加的资产 -->
+  <div nz-row style="margin-top: 16px;">
+    <div nz-col nzSpan="24">
+      <nz-card nzTitle="最近添加的资产">
+        <nz-table [nzData]="recentAssets" nzSize="small">
+          <thead>
+            <tr>
+              <th>资产名称</th>
+              <th>资产类型</th>
+              <th>资产价值</th>
+              <th>购买日期</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let asset of recentAssets">
+              <td>{{ asset.name }}</td>
+              <td>{{ asset.type }}</td>
+              <td>{{ formatCurrency(asset.value) }}</td>
+              <td>{{ asset.purchaseDate }}</td>
+              <td>
+                <nz-tag [nzColor]="getStatusColor(asset.status)">{{ asset.status }}</nz-tag>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </div>
+  </div>
+  
+  <!-- 资产价值趋势 -->
+  <div nz-row style="margin-top: 16px;">
+    <div nz-col nzSpan="24">
+      <nz-card nzTitle="资产价值趋势">
+        <div class="trend-chart">
+          <div *ngFor="let item of assetValueTrend" class="trend-item">
+            <div class="trend-month">{{ item.month }}</div>
+            <div class="trend-bar-container">
+              <div 
+                class="trend-bar" 
+                [style.height]="(item.value / assetValueTrend[assetValueTrend.length - 1].value) * 100 + '%'"
+              ></div>
+            </div>
+            <div class="trend-value">{{ formatCurrency(item.value) }}</div>
+          </div>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+</div>

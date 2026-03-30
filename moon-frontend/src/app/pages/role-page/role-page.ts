@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -27,9 +27,11 @@ enum ModalTitle {
 
 @Component({
   selector: 'app-role-page',
+  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     NzButtonModule,
     NzCardModule,
     NzFormModule,
@@ -38,7 +40,7 @@ enum ModalTitle {
     NzModalModule
   ],
   templateUrl: './role-page.html',
-  styleUrl: './role-page.less',
+  styleUrl: './role-page.scss',
   providers: [NzMessageService]
 })
 export class RolePage implements OnInit {
@@ -51,6 +53,12 @@ export class RolePage implements OnInit {
   visible = false;
   modalTitle = ModalTitle.Create;
   isLoading = false;
+  loading = false;
+
+  // 搜索相关
+  searchName = '';
+  searchCode = '';
+  searchFlag = '';
 
   constructor(
     private fb: FormBuilder,
@@ -70,6 +78,7 @@ export class RolePage implements OnInit {
   }
 
   loadRoles(): void {
+    this.loading = true;
     this.roleService.getList().subscribe(roles => {
       this.roles = roles[0].edges.map((edge: any) => ({
         id: edge.node.id,
@@ -80,7 +89,25 @@ export class RolePage implements OnInit {
         created_at: edge.node.created_at,
         updated_at: edge.node.updated_at
       }));
+      this.loading = false;
     });
+  }
+
+  // 搜索角色
+  searchRoles(): void {
+    this.loading = true;
+    // 这里可以根据搜索条件调用后端API
+    // 暂时使用前端过滤
+    setTimeout(() => {
+      this.loading = false;
+    }, 500);
+  }
+
+  // 重置搜索
+  resetSearch(): void {
+    this.searchName = '';
+    this.searchCode = '';
+    this.searchFlag = '';
   }
 
   createRole(): void {

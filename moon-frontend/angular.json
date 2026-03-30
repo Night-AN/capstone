@@ -37,7 +37,8 @@
             ],
             "styles": [
               "src/theme.less",
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/app/styles/common-styles.scss"
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",
