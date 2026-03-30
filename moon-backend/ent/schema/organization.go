@@ -20,29 +20,26 @@ type Organization struct {
 // Fields of the Organization.
 func (Organization) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).
-			StorageKey("organization_id").
+		field.UUID("id", uuid.UUID{}).StorageKey("organization_id").
+			Default(uuid.New).Immutable().
 			Annotations(entgql.OrderField("ID")),
-		field.String("organization_name").
-			StorageKey("organization_name").
-			NotEmpty().Annotations(entgql.OrderField("ORGANIZATION_NAME")),
-		field.String("organization_code").
-			StorageKey("organization_code").
-			NotEmpty().Annotations(entgql.OrderField("ORGANIZATION_CODE")),
-		field.String("organization_description").
-			StorageKey("organization_description").
-			NotEmpty().Annotations(entgql.OrderField("ORGANIZATION_DESCRIPTION")),
-		field.String("organization_flag").
-			StorageKey("organization_flag").
-			NotEmpty().Annotations(entgql.OrderField("ORGANIZATION_FLAG")),
-		field.UUID("parent_id", uuid.UUID{}).Nillable().
-			StorageKey("parent_id").Annotations(entgql.OrderField("PARENET_ID")),
+		field.String("organization_name").NotEmpty().
+			Annotations(entgql.OrderField("ORGANIZATION_NAME")),
+		field.String("organization_code").NotEmpty().
+			Annotations(entgql.OrderField("ORGANIZATION_CODE")),
+		field.String("organization_description").NotEmpty().
+			Annotations(entgql.OrderField("ORGANIZATION_DESCRIPTION")),
+		field.String("organization_flag").NotEmpty().
+			Annotations(entgql.OrderField("ORGANIZATION_FLAG")),
+		field.UUID("parent_id", uuid.UUID{}).Optional().
+			Annotations(entgql.OrderField("PARENET_ID")),
 		field.Time("created_at").
-			StorageKey("created_at").
-			Default(time.Now).Annotations(entgql.OrderField("CREATED_AT")),
+			Default(time.Now()).Immutable().
+			Annotations(entgql.OrderField("CREATED_AT")),
 		field.Time("updated_at").
-			StorageKey("updated_at").
-			Optional().Annotations(entgql.OrderField("UPDATED_AT")),
+			Default(time.Now()).Immutable().
+			UpdateDefault(time.Now).
+			Annotations(entgql.OrderField("UPDATED_AT")),
 	}
 }
 

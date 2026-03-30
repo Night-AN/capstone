@@ -120,5 +120,14 @@ extend type Query {
     llmTokenUsages(after: Cursor,before: Cursor,first: Int,last: Int,where: LlmTokenUsageWhereInput): [LlmTokenUsageConnection!]!
     procurementFraudRisks(after: Cursor,before: Cursor,first: Int,last: Int,where: ProcurementFraudRiskWhereInput): [ProcurementFraudRiskConnection!]!
     llmProcurementAnalyses(after: Cursor,before: Cursor,first: Int,last: Int,where: LlmProcurementAnalysisWhereInput): [LlmProcurementAnalysisConnection!]!
-   }
+   
+    # 会计
+    # 账目登记，财务报表编制
+
+    # 审计
+    # 导出采购计划，采购的AI报告，资产的数据
+
+    # 出纳
+    # 导出专家评审次数 采购的东西总价
+}
     

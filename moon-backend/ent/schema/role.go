@@ -40,7 +40,7 @@ func (Role) Fields() []ent.Field {
 			Default(time.Now).Annotations(entgql.OrderField("CREATED_AT")),
 		field.Time("updated_at").
 			StorageKey("updated_at").
-			Optional().Annotations(entgql.OrderField("UPDATED_AT")),
+			Optional().Nillable().Annotations(entgql.OrderField("UPDATED_AT")),
 	}
 }
 

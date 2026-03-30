@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS systems.organization (
+CREATE TABLE IF NOT EXISTS sys.organization (
     organization_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_name text NOT NULL,
     organization_code text NOT NULL,
@@ -6,9 +6,12 @@ CREATE TABLE IF NOT EXISTS systems.organization (
     organization_flag text NOT NULL,
     parent_id uuid DEFAULT NULL,
     created_at timestamptz DEFAULT now(),
-    updated_at timestamptz DEFAULT NULL
+    updated_at timestamptz DEFAULT now(),
+    ts_vec vector(3)
 );
-INSERT INTO systems.organization (
+
+INSERT INTO sys.organization (
+    organization_id,
     organization_name,
     organization_code,
     organization_description,
@@ -18,44 +21,44 @@ INSERT INTO systems.organization (
     updated_at
 ) VALUES
 -- 1️⃣ 顶级：学校（parent_id = NULL）
-('岭南师范学院','岭南师范学院','广东省湛江市赤坎区跃进路3号','ACTIVE', NULL, NOW(), NOW()),
+('11111111-1111-1111-1111-111111111111', '岭南师范学院', '岭南师范学院', '广东省湛江市赤坎区跃进路3号', 'ACTIVE', NULL, NOW(), NOW()),
 
 -- 2️⃣ 二级：校本部 → 父级=学校
-('校本部', '岭南师范学院::校本部', '主校区，位于市中心', 'ACTIVE',
+('22222222-2222-2222-2222-222222222222', '校本部', '岭南师范学院::校本部', '主校区，位于市中心', 'ACTIVE',
  (SELECT organization_id FROM systems.organization WHERE organization_name = '岭南师范学院'),
  NOW(), NOW()),
 
 -- 3️⃣ 二级：湖光校区 → 父级=学校
-('湖光校区','岭南师范学院::湖光校区','湖光校区', 'ACTIVE',
+('33333333-3333-3333-3333-333333333333', '湖光校区', '岭南师范学院::湖光校区', '湖光校区', 'ACTIVE',
  (SELECT organization_id FROM systems.organization WHERE organization_name = '岭南师范学院'),
  NOW(), NOW()),
 
 -- 4️⃣ 三级：计算机学院 → 父级=校本部
-('计算机与智能教育学院','岭南师范学院::校本部::计算机与智能教育学院','计算机与智能教育学院', 'ACTIVE',
+('44444444-4444-4444-4444-444444444444', '计算机与智能教育学院', '岭南师范学院::校本部::计算机与智能教育学院', '计算机与智能教育学院', 'ACTIVE',
  (SELECT organization_id FROM systems.organization WHERE organization_name = '校本部'),
  NOW(), NOW()),
 
 -- 5️⃣ 三级：音乐与舞蹈学院 → 父级=校本部
-('音乐与舞蹈学院','岭南师范学院::校本部::音乐与舞蹈学院','音乐与舞蹈学院', 'ACTIVE',
+('55555555-5555-5555-5555-555555555555', '音乐与舞蹈学院', '岭南师范学院::校本部::音乐与舞蹈学院', '音乐与舞蹈学院', 'ACTIVE',
  (SELECT organization_id FROM systems.organization WHERE organization_name = '校本部'),
  NOW(), NOW()),
 
 -- 6️⃣ 三级：教室管理科 → 父级=校本部
-('校本部第五教学楼教室管理科','岭南师范学院::校本部::第五教学楼教室管理科','第五教学楼教室管理科', 'ACTIVE',
+('66666666-6666-6666-6666-666666666666', '校本部第五教学楼教室管理科', '岭南师范学院::校本部::第五教学楼教室管理科', '第五教学楼教室管理科', 'ACTIVE',
  (SELECT organization_id FROM systems.organization WHERE organization_name = '校本部'),
  NOW(), NOW()),
 
 -- 7️⃣ 三级：法政学院 → 父级=湖光校区
-('法政学院','岭南师范学院::校光校区::法政学院','法政学院', 'ACTIVE',
+('77777777-7777-7777-7777-777777777777', '法政学院', '岭南师范学院::湖光校区::法政学院', '法政学院', 'ACTIVE',
  (SELECT organization_id FROM systems.organization WHERE organization_name = '湖光校区'),
  NOW(), NOW()),
 
 -- 8️⃣ 三级：信息工程学院 → 父级=湖光校区
-('信息工程学院','岭南师范学院::校光校区::信息工程学院','信息工程工程学院', 'DEPRECATED',
+('88888888-8888-8888-8888-888888888888', '信息工程学院', '岭南师范学院::湖光校区::信息工程学院', '信息工程工程学院', 'DEPRECATED',
  (SELECT organization_id FROM systems.organization WHERE organization_name = '湖光校区'),
  NOW(), NOW());
 
-CREATE TABLE IF NOT EXISTS systems.user (
+CREATE TABLE IF NOT EXISTS sys.app_user (
     user_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     nickname text NOT NULL,
     full_name text NOT NULL,
@@ -63,10 +66,10 @@ CREATE TABLE IF NOT EXISTS systems.user (
     password_hash text NOT NULL,
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT NULL,
-    organization_id uuid NOT NULL REFERENCES systems.organization(organization_id)
+    organization_id uuid DEFAULT NULL REFERENCES systems.organization(organization_id)
 );
 
-INSERT INTO systems.user (
+INSERT INTO sys.app_user (
     nickname,
     full_name,
     email,

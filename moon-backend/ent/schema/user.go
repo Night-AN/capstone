@@ -20,33 +20,25 @@ type User struct {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New).
-			StorageKey("user_id").
-			Immutable().Annotations(
-			entgql.OrderField("ID")),
-		field.String("Nickname").
-			StorageKey("nickname").Annotations(
-			entgql.OrderField("NICKNAME")),
-		field.String("Fullname").
-			StorageKey("full_name").Annotations(
-			entgql.OrderField("FULLNAME")),
-		field.String("Email").
-			StorageKey("email").Annotations(
-			entgql.OrderField("EMAIL")),
-		field.String("PasswordHash").
-			StorageKey("password_hash").Annotations(
-			entgql.OrderField("PASSWORD_HASH")),
-		field.Time("CreatedAt").
-			StorageKey("created_at").
-			Default(time.Now).
+		field.UUID("id", uuid.UUID{}).StorageKey("user_id").
+			Default(uuid.New).Immutable().
+			Annotations(entgql.OrderField("ID")),
+		field.String("nickname").NotEmpty().
+			Annotations(entgql.OrderField("NICKNAME")),
+		field.String("fullname").NotEmpty().
+			Annotations(entgql.OrderField("FULLNAME")),
+		field.String("email").NotEmpty().
+			Annotations(entgql.OrderField("EMAIL")),
+		field.String("password_hash").NotEmpty().
+			Annotations(entgql.OrderField("PASSWORD_HASH")),
+		field.Time("created_at").
+			Default(time.Now).Immutable().
 			Annotations(entgql.OrderField("CREATED_AT")),
-		field.Time("UpdatedAt").
-			StorageKey("updated_at").
-			Optional().
-			Annotations(
-				entgql.OrderField("UPDATED_AT")),
-		field.UUID("organization_id", uuid.UUID{}).
-			StorageKey("organization_id").Optional().Nillable(),
+		field.Time("updated_at").
+			Default(time.Now).Immutable().
+			UpdateDefault(time.Now()).
+			Annotations(entgql.OrderField("UPDATED_AT")),
+		field.UUID("organization_id", uuid.UUID{}).Optional().Nillable(),
 	}
 }
 
